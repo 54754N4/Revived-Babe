@@ -12,3 +12,6 @@ tokens
 
 # Ignore logs
 logs
+
+# Ignore generated files
+*.class
