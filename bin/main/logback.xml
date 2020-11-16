@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false"> <!-- scan="true" scanPeriod="30 seconds" -->
+	<property name="LOGS_PATH" value="logs"/>
+	<property name="LOG_NAME" value="current-babe"/>
+	
+	<statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />	<!-- output to console status -->
+	 
+	<!-- file appender -->
+    <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_PATH}/${LOG_NAME}.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_PATH}/archived/babe.%d{yyyy-MM-dd-HH}-%i.zip</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize> 
+            <totalSizeCap>10GB</totalSizeCap>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d %p %c{1.} [%t] %m%n</pattern>
+        </encoder>
+    </appender>
+	<!-- System.out appender -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- Async logging is faster so wrap them -->
+	<appender name="ASYNC-STDOUT" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="STDOUT" />
+    </appender>
+	<appender name="ASYNC-FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE-ROLLING" />
+    </appender>
+    
+	<root level="INFO">
+		<appender-ref ref="ASYNC-FILE"/>   <!-- Every log will apear on file -->
+		<appender-ref ref="ASYNC-STDOUT" /> <!-- Every log will apear on screen -->
+	</root>
+	
+	<shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+	
+</configuration>
