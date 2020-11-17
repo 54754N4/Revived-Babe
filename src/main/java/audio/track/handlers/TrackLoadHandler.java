@@ -30,7 +30,7 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 
 	@Override
 	public void trackLoaded(AudioTrack track) {
-		if (callback != null) callback.print(scheduler.getQueue().size()+". Adding to queue " + track.getInfo().title);
+		if (callback != null) callback.println(scheduler.getQueue().size()+". Adding to queue " + track.getInfo().title);
 		if (top) scheduler.queueTop(track);
 		else if (next) scheduler.queueNext(track);
 		else scheduler.queue(track);
@@ -38,7 +38,7 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 
 	@Override
 	public void playlistLoaded(AudioPlaylist pl) {
-		if (callback != null) callback.print("Playlist name : "+pl.getName());
+		if (callback != null) callback.println("Playlist name : "+pl.getName());
 		List<AudioTrack> tracks = pl.getTracks();
 		if (next) Collections.reverse(tracks);
 		int i = 0;
@@ -48,12 +48,12 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 
 	@Override
 	public void noMatches() {
-		if (callback != null) callback.print("Track search returned nothing.");
+		if (callback != null) callback.println("Track search returned nothing.");
 	}
 
 	@Override
 	public void loadFailed(FriendlyException exception) {
-		if (callback != null) callback.print("Load track(s) failed because: " + exception.getMessage());
+		if (callback != null) callback.println("Load track(s) failed because: " + exception.getMessage());
 	}
 	
 	private void loadSongs(List<AudioTrack> tracks) {
@@ -68,7 +68,7 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 		else if (next) scheduler.queueNext(track);
 		else scheduler.queue(track);
 		if (callback != null) {
-			callback.print((size + num)
+			callback.println((size + num)
 					+ ".\tQueuing " + track.getInfo().title
 					+ " (" + StringLib.millisToTime(track.getDuration()) + ")");
 		}
@@ -76,6 +76,6 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 	
 	@FunctionalInterface
 	public static interface StatusUpdater {
-		void print(String message);
+		void println(String message);
 	}
 }

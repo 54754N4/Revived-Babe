@@ -48,8 +48,12 @@ public class TrackScheduler extends AudioEventAdapter {
 		nextPaused = paused;
 	}
 	
-	public boolean toggleRepeat() {
-		return queue.toggleRepeat();
+	public boolean toggleRepeating() {
+		return queue.toggleRepeating();
+	}
+	
+	public boolean toggleLooping() {
+		return queue.toggleLooping();
 	}
 	
 	public boolean seekTo(long position) {
@@ -90,6 +94,10 @@ public class TrackScheduler extends AudioEventAdapter {
 		return player.isPaused();
 	}
 	
+	public boolean isPaused() {
+		return player.isPaused();
+	}
+	
 	public void stop() {
 		player.stopTrack();
 		queue.stopTrack();
@@ -101,16 +109,20 @@ public class TrackScheduler extends AudioEventAdapter {
 		else queue.clear();
 	}
 	
-	public void setRepeatQueue(boolean repeat) {
-		queue.setLooping(repeat);
+	public boolean setLooping(boolean repeat) {
+		return queue.setLooping(repeat);
 	}
 	
-	public void setRepeatSong(boolean repeat) {
-		queue.setRepeatSong(repeat);
+	public boolean setRepeating(boolean repeat) {
+		return queue.setRepeating(repeat);
+	}
+	
+	public boolean isLooping() {
+		return queue.isLooping();              
 	}
 	
 	public boolean isRepeating() {
-		return queue.getLooping();              
+		return queue.isRepeating();
 	}
 	
 	public int play(int i) {

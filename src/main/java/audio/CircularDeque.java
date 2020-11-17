@@ -131,23 +131,27 @@ public class CircularDeque extends ArrayList<AudioTrack> {
 		} else clear();
 	}
 	
-	public void setLooping(boolean loop) {
-		this.circular = loop;
+	public boolean setLooping(boolean loop) {
+		return this.circular = loop;
 	}
 	
-	public void setRepeatSong(boolean repeat) {
-		this.repeatSong = repeat;	
+	public boolean setRepeating(boolean repeat) {
+		return this.repeatSong = repeat;	
 	}
 
-	public boolean getLooping() {
+	public boolean isLooping() {
 		return circular;
 	}
 	
-	public boolean getRepeating() {
+	public boolean isRepeating() {
 		return repeatSong;
 	}
 	
-	public boolean toggleRepeat() {
+	public boolean toggleLooping() {
+		return circular = !circular;
+	}
+	
+	public boolean toggleRepeating() {
 		return repeatSong = !repeatSong;
 	}
 	
