@@ -1,6 +1,5 @@
 package bot.model;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import commands.model.Invoker;
 import lib.StringLib;
-import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -44,20 +42,24 @@ public class ReplyListener extends ListenerAdapter {
     }
     
     public boolean ignore(User user) {
+    	logger.info("Started ignoring {}", user.getAsMention());
     	ignoredUsers.put(user.getId(), user.getAsMention());
     	return true;
     }
     
-    public boolean ignore(TextChannel channel, boolean store) {
+    public boolean ignore(TextChannel channel) {
+    	logger.info("Started ignoring {}", channel.getAsMention());
     	ignoredChannels.put(channel.getId(), channel.getAsMention());
     	return true;
     }
     
     public void stopIgnoring(User user) {
+    	logger.info("Stopped ignoring {}", user.getAsMention());
     	ignoredUsers.remove(user.getId());
     }
     
-    public void stopIgnoring(GuildChannel channel) {
+    public void stopIgnoring(TextChannel channel) {
+    	logger.info("Stopped ignoring {}", channel.getAsMention());
     	ignoredChannels.remove(channel.getId());
     }
     
@@ -70,10 +72,13 @@ public class ReplyListener extends ListenerAdapter {
     }
 
 	/* Reply filtering */
+    
+    private static final boolean isOwner(Message m) {
+    	return m.getAuthor().getIdLong() == OWNER_ID;
+    }
 	
 	public void consume(Message message) {
 		String content = message.getContentDisplay();
-    	logger.info("Looking for prefix :"+Arrays.toString(bot.getPrefixes()));
     	if (!StringLib.startsWithPrefix(content, bot.getPrefixes())) 
     		return;
     	for (String input : StringLib.split(content, COMMAND_SEPARATOR)) 
@@ -85,9 +90,8 @@ public class ReplyListener extends ListenerAdapter {
     		return; 
     	else if (message.getAuthor().isBot()) 
     		return;
-    	Invoker.Reflector.Type type = message.getAuthor().getIdLong() == OWNER_ID ? 
-    			Invoker.Reflector.Type.ADMIN : 
-    			Invoker.Reflector.Type.NORMAL;
+    	Invoker.Reflector.Type type = isOwner(message) ? 
+    			Invoker.Reflector.Type.ADMIN : Invoker.Reflector.Type.NORMAL;
     	input = StringLib.consumePrefix(message.getContentDisplay(), bot.getPrefixes());		// remove bot prefix
         if (!input.trim().equals(""))
         	Invoker.invoke(bot, message, input, type);
@@ -100,13 +104,11 @@ public class ReplyListener extends ListenerAdapter {
     
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-//		logger.info(String.format("GUILD> %s", event.getMessage().getContentDisplay()));
 		consume(event.getMessage());
 	}
 	
 	@Override
     public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
-//		logger.info("PRIVATE> %s", event.getMessage().getContentDisplay());
 		consume(event.getMessage());
 	}
 }

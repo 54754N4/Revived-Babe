@@ -32,7 +32,7 @@ import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public abstract class UserBot extends ListenerAdapter implements User, Runnable {
-	private static final int EXIT_SUCCESS = 0;
+	public static final int EXIT_SUCCESS = 0;
 	protected JDA jda;
 	protected final Bot bot;
 	protected final String name;

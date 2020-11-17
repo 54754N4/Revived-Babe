@@ -51,7 +51,7 @@ public final class StringLib {
 		for (String name : names)
 			if (command.toLowerCase().startsWith(name.toLowerCase()))
 				return command.substring(name.length()).trim();
-		return null;
+		return "";
 	}
 	
 	public static String consumeMentions(String command, List<String> mentioned) {
@@ -269,6 +269,8 @@ public final class StringLib {
 	}
 	
 	public static String unQuote(String str) {
+		if (str == null)
+			return str;
 		str = str.replace("\\\"", "\"");
 		if (str.startsWith("\"") && str.endsWith("\"")) return str.substring(1, str.length()-1);
 		return str;
