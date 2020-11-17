@@ -15,3 +15,4 @@ logs
 
 # Ignore generated files
 *.class
+bin
