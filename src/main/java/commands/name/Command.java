@@ -11,10 +11,16 @@ public enum Command {
 	PRAISE("praise", "pr"),
 	JOIN("join", "j"),
 	LEAVE("leave", "le"),
-	PLAY("play", "p"), 
+	PLAY("play", "p"),
+	PAUSE("pause", "pa", "unpause", "unpa"),
+	STOP("stop", "st"),
+	NEXT("skip", "next", "ne"),
+	PREVIOUS("previous", "prev", "pr"),
+	CLEAR("clear", "clr", "cl"),
+	REPEAT("repeat", "replay", "loop"),
 	VOLUME("volume", "vol", "vo", "v"), 
-	PAUSE("pause", "pa", "unpause", "un"),
-	REPEAT("repeat", "replay", "loop")
+	DEAFEN("deafen", "def", "undeafen", "undef"),
+	MUTE("mute", "mu", "unmute", "unmu"),
 	;
 	
 	public final String[] names;

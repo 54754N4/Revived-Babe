@@ -21,20 +21,36 @@ public class Volume extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		MusicBot bot = getMusicBot();
 		if (input.trim().equals(""))
-			println("Current volume is %d", bot.getVolume(guild));
+			printCurrentVolume();
 		else if (!StringLib.isInteger(input)) 
-			println("I only take integers as argument/parameter.");
-		else {
-			int vol = Integer.parseInt(input);
-			if (vol < MIN || vol > MAX)
-				println("Volume cannot be outside the range of [0, 200]%");
-			else {
-				bot.setVolume(guild, vol);
-				println("Set volume to %d", vol);
-			}
-		}
+			handleText(input);
+		else 
+			handleInt(Integer.parseInt(input));
+	}
+	
+	private void printCurrentVolume() {
+		println("Current volume is %d", getMusicBot().getVolume(guild));
 	}
 
+	private void handleInt(int vol) {
+		if (vol < MIN || vol > MAX)
+			println("Volume cannot be outside the range of [0, 200]%");
+		else {
+			getMusicBot().setVolume(guild, vol);
+			println("Set volume to %d", vol);
+		}
+	}
+	
+	private void handleText(String input) {
+		MusicBot bot = getMusicBot();
+		if (input.matches("[\\+-]+")) {
+			for (char c : input.toCharArray())
+				if (c == '+')
+					bot.increaseVolume(guild);
+				else
+					bot.decreaseVolume(guild);
+		} else
+			println("I only take integers as argument/parameter or +/-");
+	}
 }

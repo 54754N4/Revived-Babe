@@ -29,6 +29,6 @@ public class Repeat extends DiscordCommand {
 			bot.toggleRepeating(guild);
 			println("Toggled song repeating to %b", bot.isRepeating(guild));
 		} else
-			print("Song repeat state is : %b\nQueue repeat state is : %b", bot.isRepeating(guild), bot.isLooping(guild));
+			println("Song repeat state is : %b\nQueue repeat state is : %b", bot.isRepeating(guild), bot.isLooping(guild));
 	}
 }
