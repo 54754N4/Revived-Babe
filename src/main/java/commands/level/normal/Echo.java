@@ -2,12 +2,13 @@ package commands.level.normal;
 
 import bot.model.UserBot;
 import commands.model.DiscordCommand;
+import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Echo extends DiscordCommand {
 
 	public Echo(UserBot bot, Message msg) {
-		super(bot, msg, "echo", "e");
+		super(bot, msg, Command.ECHO.names);
 	}
 
 	@Override

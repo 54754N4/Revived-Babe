@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import audio.track.handlers.TrackLoadHandler.StatusUpdater;
 import bot.model.UserBot;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
@@ -83,4 +84,7 @@ public abstract class PrintCommand extends Command {
 			print(markdown(entry.getKey()+" = "+entry.getValue()));
 	}
 
+	protected StatusUpdater getPrinter() {
+		return str -> println(str);
+	}
 }

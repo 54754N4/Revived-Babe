@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 
 import bot.model.UserBot;
 import commands.model.DiscordCommand;
+import commands.name.Command;
 import json.cat.facts.Results;
 import lib.HTTP;
 import net.dv8tion.jda.api.entities.Message;
@@ -19,7 +20,7 @@ public class Cats extends DiscordCommand {
 	private static Results results;		// lazy loading for attributes that can throw
 
 	public Cats(UserBot bot, Message message) {
-		super(bot, message, "cats");
+		super(bot, message, Command.CATS.names);
 	}
 
 	@Override

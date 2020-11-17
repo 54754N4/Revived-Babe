@@ -2,12 +2,13 @@ package commands.level.normal;
 
 import bot.model.UserBot;
 import commands.model.DiscordCommand;
+import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Highlight extends DiscordCommand {
 	
 	public Highlight(UserBot bot, Message msg) {
-		super(bot, msg, "highlight", "hl");
+		super(bot, msg, Command.HIGHLIGHT.names);
 	}
 	
 	@Override

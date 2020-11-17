@@ -87,9 +87,9 @@ public abstract class Command implements Callable<Void> {
 		return nonArgs.toArray(new String[nonArgs.size()]);
 	}
 	
-	public Command start(String input) { 
-		mentioned = new Mentions(message, input);				// filter mentions from input first
-		this.input = StringLib.consumeName(StringLib.join(setParams(mentioned.filteredMessage)), names); 	// then args + name
+	public Command start(String command) { 
+		mentioned = new Mentions(message, command);				// filter mentions from input first
+		input = StringLib.consumeName(StringLib.join(setParams(mentioned.filteredMessage)), names); 	// then args + name
 		channel = hasArgs(Global.PRIVATE_MESSAGE_REPLY.params) ? 
 				message.getAuthor().openPrivateChannel().complete()
 				: message.getChannel();
