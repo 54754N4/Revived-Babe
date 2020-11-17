@@ -25,6 +25,12 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 
+/**
+ * A single bot can run in multiple guilds/servers, so we need to keep track of 
+ * all the different audio managers, players etc which are unique to each one. 
+ * This class does that while also offering convenience methods for simple 
+ * music/voice handling from commands.
+ */
 public abstract class MusicBot extends UserBot {
 	public static int MAX_LOADER_THREAD_POOL = 20, 
 			BUFFER_DURATION = 30*1000, 		// 30s
@@ -34,7 +40,6 @@ public abstract class MusicBot extends UserBot {
 	private final Map<Long, AudioPlayer> players;
 	private final Map<Long, AudioSendHandler> senders;
 	private final Map<Long, TrackScheduler> schedulers;
-	
 	
 	public MusicBot(Bot bot) {
 		super(bot);
