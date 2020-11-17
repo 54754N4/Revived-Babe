@@ -18,6 +18,7 @@ import audio.track.handlers.TrackLoadHandler.StatusUpdater;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
@@ -223,6 +224,32 @@ public abstract class MusicBot extends UserBot {
 		return getManager(guild).isSelfDeafened();
 	}
 	
+	public MusicBot deafen(Member member) {
+		Guild guild = member.getGuild();
+		setupAudio(guild);
+		member.deafen(true).queue();
+		return this;
+	}
+	
+	public MusicBot undeafen(Member member) {
+		Guild guild = member.getGuild();
+		setupAudio(guild);
+		member.deafen(false).queue();
+		return this;
+	}
+	
+	public MusicBot toggleDeafen(Member member) {
+		Guild guild = member.getGuild();
+		setupAudio(guild);
+		member.deafen(!member.getVoiceState().isDeafened());
+		return this;
+	}
+	
+	public boolean isDeafened(Member member) {
+		setupAudio(member.getGuild());
+		return member.getVoiceState().isDeafened();
+	}
+	
 	/* Muting */
 	
 	public MusicBot mute(Guild guild) {
@@ -247,6 +274,29 @@ public abstract class MusicBot extends UserBot {
 	public boolean isMuted(Guild guild) {
 		setupAudio(guild);
 		return getManager(guild).isSelfMuted();
+	}
+	
+	public MusicBot mute(Member member) {
+		setupAudio(member.getGuild());
+		member.mute(true).queue();
+		return this;
+	}
+	
+	public MusicBot unmute(Member member) {
+		setupAudio(member.getGuild());
+		member.mute(false).queue();
+		return this;
+	}
+	
+	public MusicBot toggleMute(Member member) {
+		setupAudio(member.getGuild());
+		member.mute(!member.getVoiceState().isMuted()).queue();
+		return this;
+	}
+	
+	public boolean isMuted(Member member) {
+		setupAudio(member.getGuild());
+		return member.getVoiceState().isMuted();
 	}
 	
 	/* Pausing */
