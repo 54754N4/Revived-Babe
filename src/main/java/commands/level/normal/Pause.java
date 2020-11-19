@@ -17,6 +17,6 @@ public class Pause extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		println("Toggled pause state to %b", getMusicBot().togglePause(guild));
+		println("Toggled pause state to %b", getMusicBot().togglePause(guild).isPaused(guild));
 	}
 }

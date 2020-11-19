@@ -1,14 +1,11 @@
  package commands.level.normal;
 
-import java.util.Random;
-
 import bot.model.UserBot;
 import commands.model.DiscordCommand;
 import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Praise extends DiscordCommand {
-	public static final Random rand = new Random();
 	public static final String[] praises = new String[] {"That's Incredible", "How Extraordinary!", "Far Out!", "Great!", 
 			"Outstanding Performance", "Marvelous", "I Can't Get Over It!", "Wonderful!", "Amazing Effort!", "Unbelievable Work", 
 			"You Should Be Proud", "Phenomenal!", "You've Got It", "Superb!", "You're Special", "Excellent!", "Cool!", 
