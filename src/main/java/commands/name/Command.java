@@ -14,6 +14,7 @@ public enum Command {
 	PLAY("play", "p"),
 	PAUSE("pause", "pa", "unpause", "unpa"),
 	STOP("stop", "st"),
+	SEEK("seek", "se"),
 	NEXT("skip", "next", "ne"),
 	PREVIOUS("previous", "prev", "pr"),
 	CLEAR("clear", "clr", "cl"),
@@ -21,7 +22,11 @@ public enum Command {
 	VOLUME("volume", "vol", "vo", "v"), 
 	DEAFEN("deafen", "def", "undeafen", "undef"),
 	MUTE("mute", "mu", "unmute", "unmu"),
-	;
+	INSULT("insult", "swear"),
+	CHUCK_NORRIS("chuck", "norris"), 
+	FOOD("food", "fo"),
+	RECIPE("recipe", "re"), 
+	IP("geolocate", "ip");
 	
 	public final String[] names;
 	

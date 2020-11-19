@@ -122,7 +122,7 @@ public class Invoker {
 			Map<List<String>, Class<? extends Command>> dict = (type == Type.ADMIN) ? admin : normal;
 			for (List<String> names : dict.keySet())
 				for (String name : names)
-					if (name.startsWith(input))
+					if (name.equals(input))
 						return dict.get(names);
 			logger.debug("Matched no entry");
 			return null;

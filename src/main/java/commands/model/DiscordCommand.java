@@ -1,12 +1,18 @@
 package commands.model;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
+
+import com.google.gson.Gson;
 
 import bot.model.MusicBot;
 import bot.model.UserBot;
+import lib.HTTP;
 import lib.PrintBooster;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Member;
@@ -14,6 +20,8 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 
 public abstract class DiscordCommand extends PrintCommand {
+	protected static final Gson gson = new Gson();
+	protected static Random rand = new Random();
 	
 	public static enum Global {
 		DELETE_USER_MESSAGE("-d", "--delete"), 
@@ -42,6 +50,10 @@ public abstract class DiscordCommand extends PrintCommand {
 	}
 	
 	/* Convenience methods */
+	
+	public boolean isOwner() {
+		return message.getAuthor().getIdLong() == 188033164864782336l;
+	}
 	
 	public void actTyping() {
 		channel.sendTyping().queue();
@@ -77,6 +89,16 @@ public abstract class DiscordCommand extends PrintCommand {
 		message.delete().queue();
 	}
 	
+	public static <T> T restRequest(String api, Class<T> cls, Object... args) throws MalformedURLException, IOException {
+		try (	// try-with-resources to auto-close close-able resources
+			HTTP.RequestBuilder builder = new HTTP.RequestBuilder(String.format(api, args));
+			HTTP.ResponseHandler handler = new HTTP.ResponseHandler(builder.build());
+		) {
+			return gson.fromJson(handler.getResponse(), cls);
+		}	
+	}	
+	
+	
 	/* help building + argument parsing*/
 	
 	protected String helpBuilder(String args, String... lines) {
@@ -109,11 +131,12 @@ public abstract class DiscordCommand extends PrintCommand {
 			}
 			if (hasArgs(Global.SHOW_EXECUTION_TIME.params)) 
 				println(String.format("Execution time: %d ms", time));
-			finalise();
 		} catch (Exception e) {
+			println("Error during execution, check logs: `%s`", e.getMessage());
 			getLogger().error(this+" thread generated "+e+" : "+e.getMessage(), e);
-		}
-		return null;
+		} finally {
+			finalise();
+		} return null;
 	}
 	
 	private void finalise() {

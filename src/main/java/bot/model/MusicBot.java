@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
 import audio.TrackScheduler;
@@ -415,6 +416,12 @@ public abstract class MusicBot extends UserBot {
 		return this;
 	}
 	
+	public MusicBot seekTo(Guild guild, long position) {
+		setupAudio(guild);
+		getScheduler(guild).seekTo(position);
+		return this;
+	}
+	
 	public MusicBot clear(Guild guild) {
 		setupAudio(guild);
 		getScheduler(guild).clear();
@@ -431,6 +438,11 @@ public abstract class MusicBot extends UserBot {
 		setupAudio(guild);
 		getScheduler(guild).previousTrack();
 		return this;
+	}
+	
+	public AudioTrack getCurrentTrack(Guild guild) {
+		setupAudio(guild);
+		return getPlayer(guild).getPlayingTrack();
 	}
 	
 	/* Play */
