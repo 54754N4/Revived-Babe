@@ -20,7 +20,6 @@ number		:= [-] digits
 digits 		:= [0-9]+ 
 constant	:= true | false | null
 */
-
 public class JsonParser extends IterativeParser<Type, AST> {
 	
 	public JsonParser(JsonLexer lexer) throws ParsingException {

@@ -18,7 +18,6 @@ number		:= [-] digits
 digits 		:= [0-9]+ 
 constant	:= true | false | null
 */
-
 public class JsonLexer extends Lexer<Type> {
 
 	public JsonLexer(String text) {
