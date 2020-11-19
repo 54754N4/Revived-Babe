@@ -1,9 +1,9 @@
-package json.cat.facts;
+package json;
 
-public class Results {
+public class CatFactsResults {
 	public Result[] all;
 	
-	public Results(Result[] all) {
+	public CatFactsResults(Result[] all) {
 		this.all = all;
 	}
 	
