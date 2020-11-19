@@ -1,6 +1,7 @@
 package lib;
 
 import json.interpreter.AST;
+import json.interpreter.JsonPrintInterpreter;
 import json.interpreter.JsonLexer;
 import json.interpreter.JsonParser;
 import lib.interpreter.parser.ParsingException;
@@ -35,15 +36,17 @@ public abstract class JsonPojo {
 				+ "    \"arr\": [1, true, false, null, {\"el\":\"value\"}]"
 				+ "  }\r\n"
 				+ "}";
-		JsonLexer lexer = new JsonLexer(input);
+//		JsonLexer lexer = new JsonLexer(input);
 //		Token<Type> token;
 //		do {
 //			token = lexer.getNextToken();
 //			System.out.println(token);
 //		} while (token.type != Type.EOF);
 		
-		JsonParser parser = new JsonParser(lexer);
-		AST tree = parser.parse();
-		System.out.println(tree);
+//		JsonParser parser = new JsonParser(lexer);
+//		AST tree = parser.parse();
+//		System.out.println(tree);
+		JsonPrintInterpreter interpreter = new JsonPrintInterpreter(input);
+		interpreter.interpret();
 	}
 }
