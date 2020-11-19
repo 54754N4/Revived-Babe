@@ -6,8 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AST {
+public class AST implements Visitable {
 
+	@Override
+	public void accept(Visitor visitor) {
+		visitor.visit(this);
+	}
+	
 	public static final class Member extends AST {
 		public String key;
 		public Object value;	
@@ -29,7 +34,7 @@ public class AST {
 		public String toString() {
 			return dict.toString();
 		}
-	} 
+	}
 	
 	public static final class JsonArray extends AST {
 		public String name;
