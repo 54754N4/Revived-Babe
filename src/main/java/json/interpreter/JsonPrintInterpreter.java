@@ -16,7 +16,7 @@ public class JsonPrintInterpreter implements Visitor {
 		ast = parser.parse();
 	}
 	
-	public void interpret() {
+	public void interpret() throws Exception {
 		visit(ast);
 	}
 	

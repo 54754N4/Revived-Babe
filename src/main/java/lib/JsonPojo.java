@@ -1,10 +1,7 @@
 package lib;
 
-import json.interpreter.AST;
+import json.interpreter.JsonGenerator;
 import json.interpreter.JsonPrintInterpreter;
-import json.interpreter.JsonLexer;
-import json.interpreter.JsonParser;
-import lib.interpreter.parser.ParsingException;
 
 
 /* Grammar: 
@@ -26,14 +23,18 @@ public abstract class JsonPojo {
 		return null;
 	}
 	
-	public static void main(String[] args) throws ParsingException {
+	public static void main(String[] args) throws Exception {
 		String input = "{\r\n"
 				+ "  \"base\": \"EUR\",\r\n"
 				+ "  \"date\": \"2020-11-16\",\r\n"
+				+ "  \"val\": null,\r\n"
+				+ "  \"vali\": 1,\r\n"
+				+ "  \"vald\": 1.0,\r\n"
+				+ "  \"valb\": false\r\n,"
+				+ "  \"arr\": [1, true, false, null, {\"el\":\"value\"}],\r\n"
 				+ "  \"rates\": {\r\n"
 				+ "    \"GBP\": 0.89819,\r\n"
-				+ "    \"HKD\": 9.1725,\r\n"
-				+ "    \"arr\": [1, true, false, null, {\"el\":\"value\"}]"
+				+ "    \"HKD\": 9.1725\r\n"
 				+ "  }\r\n"
 				+ "}";
 //		JsonLexer lexer = new JsonLexer(input);
@@ -48,5 +49,8 @@ public abstract class JsonPojo {
 //		System.out.println(tree);
 		JsonPrintInterpreter interpreter = new JsonPrintInterpreter(input);
 		interpreter.interpret();
+//		String name = "ExchangeRate"; 
+//		JsonGenerator generator = new JsonGenerator(name, input);
+//		generator.interpret();
 	}
 }

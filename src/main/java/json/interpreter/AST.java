@@ -9,7 +9,7 @@ import java.util.Map;
 public class AST implements Visitable {
 
 	@Override
-	public void accept(Visitor visitor) {
+	public void accept(Visitor visitor) throws Exception {
 		visitor.visit(this);
 	}
 	
