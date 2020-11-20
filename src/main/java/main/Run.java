@@ -13,6 +13,6 @@ public class Run {
 	}
 	
 	public static void debug(UserBot bot) {
-
+		
 	}
 }

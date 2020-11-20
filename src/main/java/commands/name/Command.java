@@ -26,7 +26,8 @@ public enum Command {
 	CHUCK_NORRIS("chuck", "norris"), 
 	FOOD("food", "fo"),
 	RECIPE("recipe", "re"), 
-	IP("geolocate", "ip");
+	IP("geolocate", "ip"),
+	LS("list", "ls");
 	
 	public final String[] names;
 	
