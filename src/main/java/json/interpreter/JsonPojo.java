@@ -1,8 +1,4 @@
-package lib;
-
-import json.interpreter.JsonGenerator;
-import json.interpreter.JsonPrintInterpreter;
-
+package json.interpreter;
 
 /* Grammar: 
 expression 	:= object
