@@ -46,7 +46,7 @@ public class Play extends DiscordCommand {
 				max = bot.getScheduler(guild).getQueue().size(); 
 			if (max == 0) 
 				println("Queue is currently empty..");
-			else if (index>max || index<0) 
+			else if (index >= max || index < 0) 
 				println("Number currently can't be outside the range of [0,%d].", max-1);
 			else 
 				println("Loading song #%d", bot.play(guild, index));
