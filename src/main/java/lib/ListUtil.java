@@ -3,6 +3,7 @@ package lib;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,6 +21,24 @@ public class ListUtil {
 			i++;
 		}
 		return subset;
+	}
+	
+	public static <T extends Comparable<T>> Comparator<T> ascendingOrder() {
+		return new Comparator<T>() {
+			@Override
+			public int compare(T i1, T i2) {
+				return i1.compareTo(i2);	// reverse order
+			}
+		};
+	}
+	
+	public static <T extends Comparable<T>> Comparator<T> descendingOrder() {
+		return new Comparator<T>() {
+			@Override
+			public int compare(T i1, T i2) {
+				return -i1.compareTo(i2);	// reverse order
+			}
+		};
 	}
 	
 	public static void main(String[] args) {

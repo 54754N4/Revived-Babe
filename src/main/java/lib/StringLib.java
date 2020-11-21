@@ -28,6 +28,10 @@ public final class StringLib {
 //		System.out.println(replaceAll(spaced, "@[DCN] xentorno", "REPLACED", true));
 	}
 
+	public static String fromUnicode(int unicode) {
+		return new String(Character.toChars(unicode));
+	}
+	
 	public static String consume(String start, String input) {
 		if (start.equals(input)) return "";
     	return input.trim().substring(start.length()).trim();

@@ -43,10 +43,10 @@ public abstract class JsonPojo {
 //		JsonParser parser = new JsonParser(lexer);
 //		AST tree = parser.parse();
 //		System.out.println(tree);
-		JsonPrintInterpreter interpreter = new JsonPrintInterpreter(input);
-		interpreter.interpret();
-//		String name = "ExchangeRate"; 
-//		JsonGenerator generator = new JsonGenerator(name, input);
-//		generator.interpret();
+//		JsonPrintInterpreter interpreter = new JsonPrintInterpreter(input);
+//		interpreter.interpret();
+		String name = "ExchangeRate"; 
+		JsonGenerator generator = new JsonGenerator(name, input);
+		generator.interpret();
 	}
 }

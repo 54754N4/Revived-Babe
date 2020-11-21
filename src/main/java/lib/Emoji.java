@@ -1728,6 +1728,18 @@ public enum Emoji {
 	}
 
 	public String toString() {
-		return new String(Character.toChars(unicode[0]));
+		return fromUnicode(unicode[0]);
+	}
+	
+	public static String fromUnicode(int unicode) {
+		return StringLib.fromUnicode(unicode);
+	}
+	
+	public static String toCodepoint(int unicode) {
+		return "U+"+Integer.toHexString(unicode).toUpperCase();
+	}
+	
+	public String toCodepoint() {
+		return "U+"+Integer.toHexString(unicode[0]).toUpperCase();
 	}
 }

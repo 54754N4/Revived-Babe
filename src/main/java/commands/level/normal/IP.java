@@ -5,7 +5,7 @@ import commands.model.DiscordCommand;
 import commands.name.Command;
 import json.BabeIPResult;
 import json.GeolocateResult;
-import lib.ValidatingEmbedBuilder;
+import lib.messages.ValidatingEmbedBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 
 import lib.Restart;
+import lib.messages.ReactionHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.audio.factory.IAudioSendFactory;
@@ -83,7 +84,10 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	
 	// children can override and: return super.attachListeners(builder.addEventListeers(...))
 	protected JDABuilder attachListeners(JDABuilder builder) {
-		return builder.addEventListeners(this, new ReplyListener(this));
+		return builder.addEventListeners(
+			this, 
+			new ReplyListener(this),
+			ReactionHandler.INSTANCE);
 	}
 	
 	public UserBot addOnLoadListener(OnLoadListener...listeners) {
