@@ -74,16 +74,20 @@ public class Invoker {
 		static { update(); }
 		
 		public static enum Type { 
-			NORMAL("commands.level.normal", (cls) -> cls.getPackage().getName().equals(NORMAL_PACKAGE_NAME)), 
-			ADMIN("commands.level.admin", (cls) -> cls.getPackage().getName().equals(ADMIN_PACKAGE_NAME)), 
-			ALL("commands.level", (cls) -> true);
+			NORMAL("commands.level.normal"), 
+			ADMIN("commands.level.admin"), 
+			ALL("commands.level");
 			
 			public final String name;
 			public final Predicate<Class<? extends Command>> predicate;
 			
-			private Type(String name, Predicate<Class<? extends Command>> predicate) {
+			private Type(String name) {
 				this.name = name;
-				this.predicate = predicate;
+				switch (name) {
+					case NORMAL_PACKAGE_NAME: predicate = cls -> cls.getPackage().getName().equals(NORMAL_PACKAGE_NAME); break;
+					case ADMIN_PACKAGE_NAME: predicate = cls -> cls.getPackage().getName().equals(ADMIN_PACKAGE_NAME); break;
+					default: predicate = cls -> true; break;
+				}
 			}
 		}
 		
