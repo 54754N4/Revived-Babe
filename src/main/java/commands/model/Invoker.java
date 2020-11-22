@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bot.model.UserBot;
+import commands.level.All;
+import commands.level.admin.Exit;
 import commands.level.admin.Test;
 import commands.level.normal.Echo;
 import net.dv8tion.jda.api.entities.Message;
@@ -26,15 +28,12 @@ import net.dv8tion.jda.api.entities.Message;
 /* Finds the appropriate command based on string command */
 public class Invoker {
 	private static final Logger logger = LoggerFactory.getLogger(Invoker.class);
-	public static final String NORMAL_PACKAGE_NAME = Echo.class.getPackage().getName(),
-		ADMIN_PACKAGE_NAME = Test.class.getPackage().getName(),
-		BOTH = NORMAL_PACKAGE_NAME.substring(0, NORMAL_PACKAGE_NAME.lastIndexOf('.'));
 	
 	public static void main(String[] args) throws Exception {
-		String term = "pi";
+		String term = "exit";
 		System.out.println(
 				Arrays.toString(
-						Reflector.find(term, Reflector.Type.NORMAL)
+						Reflector.find(term, Reflector.Type.ADMIN)
 							.getConstructor(UserBot.class, Message.class)
 							.newInstance(null, null).names));
 	}
@@ -49,7 +48,6 @@ public class Invoker {
         logger.info("Checking command : "+name);
         Class<? extends Command> command = Reflector.find(name, type);
         Command created;
-        logger.info("Command is : "+command);
         if (command != null && (created = instantiate(bot, message, command)) != null)
 			return created.start(input);
 		else {
@@ -76,21 +74,22 @@ public class Invoker {
 		static { update(); }
 		
 		public static enum Type { 
-			NORMAL(NORMAL_PACKAGE_NAME),
-			ADMIN(ADMIN_PACKAGE_NAME),
-			ALL(BOTH);
+			NORMAL(
+				Echo.class.getPackage().getName(),
+				cls -> cls.getPackage().getName().equals(Echo.class.getPackage().getName())),
+			ADMIN(
+				Exit.class.getPackage().getName(),
+				cls -> cls.getPackage().getName().equals(Exit.class.getPackage().getName())),
+			ALL(
+				All.class.getPackage().getName(),
+				cls -> true);
 			
 			public final String name;
 			public Predicate<Class<? extends Command>> predicate;
 			
-			private Type(String name) {
+			private Type(String name, Predicate<Class<? extends Command>> predicate) {
 				this.name = name;
-				if (name.equals(NORMAL_PACKAGE_NAME))
-					predicate = cls -> cls.getPackage().getName().equals(NORMAL_PACKAGE_NAME);
-				else if (name.equals(ADMIN_PACKAGE_NAME))
-					predicate = cls -> cls.getPackage().getName().equals(ADMIN_PACKAGE_NAME);
-				else
-					predicate = cls -> true;
+				this.predicate = predicate;
 			}
 		}
 		
@@ -106,17 +105,25 @@ public class Invoker {
 		    return new Reflections(configurationBuilder);
 		}
 		
+		private static Class<?>[] pack(Class<?>... classes) {
+			if (classes == null)
+				return new Class<?>[] {};
+			return classes;
+		}
+		
 		private static Map<List<String>, Class<? extends Command>> buildDictionary(Type type) {
 			Map<List<String>, Class<? extends Command>> map = new HashMap<>();
-			Class<?>[] include = {Echo.class}, exclude = {},
-				aInclude = {Test.class}, aExclude = {};
-			Reflections reflections = createReflections(type.name, 
-					type == Type.ADMIN ? aInclude : include, 
-					type == Type.ADMIN ? aExclude : exclude);
+			Class<?>[] empty = pack();
+			Reflections reflections = type == Type.ALL ?
+					createReflections(type.name, pack(All.class), empty) :
+					type == Type.ADMIN ? 
+							createReflections(type.name, pack(Test.class), empty) :
+							createReflections(type.name, pack(Echo.class), empty);
 			Set<Class<? extends Command>> classes = reflections.getSubTypesOf(DiscordCommand.class)
 					.stream()
 					.filter(type.predicate)
 					.collect(Collectors.toSet());
+			logger.info("Type = {} dictionary = {}", type, Arrays.toString(classes.toArray()));
 			try {
 				for (Class<? extends Command> commandClass : classes) {
 					Constructor<? extends Command> constructor = commandClass.getConstructor(UserBot.class, Message.class);
