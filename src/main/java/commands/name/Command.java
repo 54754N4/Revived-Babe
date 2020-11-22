@@ -29,7 +29,8 @@ public enum Command {
 	IP("geolocate", "ip"),
 	LS("list", "ls"), 
 	PRUNE("prune", "delete", "del"), 
-	RESTART("restart", "res");
+	RESTART("restart", "res"),
+	GET("get", "g");
 	
 	public final String[] names;
 	
