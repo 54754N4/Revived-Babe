@@ -6,6 +6,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lib.StringLib;
+
 public enum Command {
 	EXIT("exit", "quit"), 
 	TEST("test"),
@@ -55,7 +57,7 @@ public enum Command {
 				}
 			}
 		}
-		logger.info("Verification duration: {} ms", System.currentTimeMillis() - duration);
+		logger.info("Verification duration: {}", StringLib.millisToTime(System.currentTimeMillis() - duration));
 	}
 	
 	Command(final String...names) {
