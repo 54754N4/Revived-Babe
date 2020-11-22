@@ -21,6 +21,7 @@ dependencies {
   implementation 'ch.qos.logback:logback-classic:1.2.3'	// logging
   implementation 'org.reflections:reflections:0.9.12'	// command's class matching
   implementation 'com.google.code.gson:gson:2.8.6'		// json parsing
+  
 }
 
 compileJava.options.encoding = 'UTF-8'

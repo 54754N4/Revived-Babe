@@ -30,7 +30,8 @@ public enum Command {
 	LS("list", "ls"), 
 	PRUNE("prune", "delete", "del"), 
 	RESTART("restart", "res"),
-	GET("get", "g");
+	GET("get", "g"),
+	SMS("sms");
 	
 	public final String[] names;
 	
