@@ -19,7 +19,7 @@ public class IP extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("<ip address>", "Makes me geolocate the ip address given.");
 	}
 

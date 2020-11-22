@@ -14,7 +14,7 @@ public class Get extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("<index>", "Give me index of song to get url from.");
 	}
 

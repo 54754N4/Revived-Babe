@@ -16,7 +16,7 @@ public class Play extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder(	"[args] <index>",
 				"Plays the song referenced by index from the queue.",
 				"[args] <URI or keyword>",

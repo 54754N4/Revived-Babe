@@ -11,7 +11,7 @@ public class Previous extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Plays previous track (if there is one).");
 	}
 

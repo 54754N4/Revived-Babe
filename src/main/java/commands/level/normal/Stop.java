@@ -12,7 +12,7 @@ public class Stop extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Stops currently playing track.");
 	}
 

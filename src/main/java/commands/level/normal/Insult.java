@@ -15,7 +15,7 @@ public class Insult extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("",
 				"--lang=L\twhere L is 'en' by default",
 				"I insult.");

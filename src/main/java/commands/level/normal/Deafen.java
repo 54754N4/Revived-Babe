@@ -13,7 +13,7 @@ public class Deafen extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("[<mentions>]", "If you mention people I'll toggle their deafened-state, otherwise I'll toggle mine.");
 	}
 

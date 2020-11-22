@@ -12,7 +12,7 @@ public class Update extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", 
 			"-cmds or --commands\t Makes me re-discover newly created commands (without restart)",
 			"Used for updating specific things. No shit lol.");

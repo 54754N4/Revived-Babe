@@ -15,7 +15,7 @@ public class Volume extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("[<number>]", "If you give me a number, I set it. Otherwise I print current.");
 	}
 

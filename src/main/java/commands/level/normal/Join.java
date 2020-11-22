@@ -13,7 +13,7 @@ public class Join extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("<channel>", "Makes me join your voice channel");
 	}
 

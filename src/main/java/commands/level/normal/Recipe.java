@@ -20,7 +20,7 @@ public class Recipe extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", 
 			"--ingredients=I\twhere I is a comma-separated list of ingredients",
 			"--recipe=R\tmakes me match search result recipes with R",

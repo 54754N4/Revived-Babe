@@ -12,7 +12,7 @@ public class Repeat extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("",
 				"-q or --queue\tToggles queue repeat state",
 				"-t or --track\tToggles current track repeat state",

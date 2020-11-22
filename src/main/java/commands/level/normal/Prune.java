@@ -16,7 +16,7 @@ public class Prune extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("<integer> [<mentions>]", 
 				"# Args",
 				"-a or --all\tmakes me delete everything in a text channel",
@@ -32,7 +32,7 @@ public class Prune extends DiscordCommand {
 		}
 		Message last = message;
 		List<Message> messages;
-		int count = 0, total = bypass ? Integer.parseInt(input) : 1;
+		int count = 0, total = bypass ? 1 : Integer.parseInt(input);
 		deleting_loop: do {
 			messages = channel.getHistoryBefore(last, 100).complete().getRetrievedHistory();
 			if (mentioned.users.size() == 0) {
@@ -50,7 +50,8 @@ public class Prune extends DiscordCommand {
 					}
 				}
 			}
-			last = messages.get(messages.size()-1);
+			if (messages.size() != 0)
+				last = messages.get(messages.size()-1);
 		} while (messages.size() != 0);
 		message.delete().queue();
 	}

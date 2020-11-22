@@ -12,7 +12,7 @@ public class Leave extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Makes me leave voice channel (if i'm in one ofc =v).");
 	}
 

@@ -98,7 +98,7 @@ public abstract class Command implements Callable<Void> {
 		return this;
 	}
 	
-	protected abstract String helpMessage();
+	public abstract String helpMessage();
 	protected abstract void execute(String input) throws Exception;
 	
 	public static class Comparator implements java.util.Comparator<Command> {

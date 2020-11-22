@@ -11,7 +11,7 @@ public class Next extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Skips current track and plays next one (if there is one).");
 	}
 

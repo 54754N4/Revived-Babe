@@ -126,7 +126,7 @@ public abstract class DiscordCommand extends PrintCommand {
 				print(helpMessage());
 			else {
 				time = System.currentTimeMillis();		
-				execute(StringLib.unQuote(input));
+				execute(StringLib.unQuote(input.trim()).trim());
 				time = System.currentTimeMillis() - time;
 			}
 			if (hasArgs(Global.SHOW_EXECUTION_TIME.params)) 

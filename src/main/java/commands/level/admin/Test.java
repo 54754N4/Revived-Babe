@@ -13,7 +13,7 @@ public class Test extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Just used for testing");
 	}
 

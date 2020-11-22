@@ -14,7 +14,7 @@ public class Food extends DiscordCommand {
 	}
 	
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Feast your eyes.");
 	}
 

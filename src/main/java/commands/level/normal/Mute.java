@@ -14,7 +14,7 @@ public class Mute extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("[<mentions>]", "If you mention people I'll toggle their muted-state, otherwise I'll toggle mine.");
 	}
 

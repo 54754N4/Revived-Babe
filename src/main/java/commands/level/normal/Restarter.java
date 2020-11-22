@@ -22,7 +22,7 @@ public class Restarter extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", 
 			"# Args",
 			"-n or --now\tMakes me shutdown faster",

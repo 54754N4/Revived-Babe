@@ -12,7 +12,7 @@ public class Clear extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("",
 //				"-b or --backup\t\tClears backed up queue",
 				"-f or --force\t\tForces the clear of even the currently playing song",

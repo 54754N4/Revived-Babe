@@ -1,5 +1,11 @@
 package commands.name;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum Command {
 	EXIT("exit", "quit"), 
 	TEST("test"),
@@ -8,7 +14,7 @@ public enum Command {
 	ECHO("echo", "e"),
 	HIGHLIGHT("highlight", "hl"),
 	PING("ping", "pi"),
-	PRAISE("praise", "pr"),
+	PRAISE("praise"),
 	JOIN("join", "j"),
 	LEAVE("leave", "le"),
 	PLAY("play", "p"),
@@ -31,9 +37,26 @@ public enum Command {
 	PRUNE("prune", "delete", "del"), 
 	RESTART("restart", "res"),
 	GET("get", "g"),
-	SMS("sms");
+	HELP("help", "h");
 	
+	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
+	
+	static {
+		// Static verification of duplications in command names
+		long duration = System.currentTimeMillis();
+		Set<String> names = new HashSet<>();
+		outside: 
+		for (Command command : Command.values()) {
+			for (String name : command.names) {
+				if (!names.add(name)) {
+					logger.error("Duplicated command name "+name, new IllegalArgumentException());
+					break outside;
+				}
+			}
+		}
+		logger.info("Verification duration: {} ms", System.currentTimeMillis() - duration);
+	}
 	
 	Command(final String...names) {
 		this.names = names;

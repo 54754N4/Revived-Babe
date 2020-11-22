@@ -11,7 +11,7 @@ public class Pause extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Toggles between pause and unpause.");
 	}
 

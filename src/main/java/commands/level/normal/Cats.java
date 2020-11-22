@@ -14,7 +14,7 @@ public class Cats extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "For all cat fact lovers. Rawr~");
 	}
 

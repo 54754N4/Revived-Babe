@@ -18,7 +18,7 @@ public class ListTracks extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", 
 				"# Args",
 				"-p or --paged\tmakes me list tracks as paged results",

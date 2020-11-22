@@ -30,7 +30,7 @@ public class Praise extends DiscordCommand {
 	}
 	
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Just in case you need some praising.");
 	}
 

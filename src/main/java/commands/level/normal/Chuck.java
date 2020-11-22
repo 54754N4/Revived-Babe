@@ -14,7 +14,7 @@ public class Chuck extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "I give you the best Chuck Norris jokes.");
 	}
 

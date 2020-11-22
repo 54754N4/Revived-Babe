@@ -11,7 +11,7 @@ public class Exit extends DiscordCommand {
 	}
 
 	@Override
-	protected String helpMessage() {
+	public String helpMessage() {
 		return helpBuilder("", "Makes bot exit (if sent to @Babe, then will shutdown all)");
 	}
 
