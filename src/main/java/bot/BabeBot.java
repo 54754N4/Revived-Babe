@@ -3,6 +3,7 @@ package bot;
 import bot.model.Bot;
 import bot.model.MusicBot;
 import lib.Emoji;
+import lib.messages.ReactionsTracker;
 
 public class BabeBot extends MusicBot {
 	public static String FAST_PREFIX = "..", BOT_PREFIX = "hey babe ";
@@ -24,4 +25,9 @@ public class BabeBot extends MusicBot {
 			+"\",\nor just mention me at the start of a message ~~ "+Emoji.HEART_DECORATION;
 	}
 
+	@Override 
+	protected void preKill(boolean now) throws Exception {
+		ReactionsTracker.INSTANCE.stopTracking();
+		super.preKill(now);
+	}
 }

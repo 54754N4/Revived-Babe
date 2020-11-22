@@ -3,7 +3,8 @@ package commands.level.admin;
 import bot.model.UserBot;
 import commands.model.DiscordCommand;
 import commands.name.Command;
-import lib.messages.ReactionsTracker;
+import lib.messages.PagedHandler;
+import lib.messages.ReactionsHandler;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Test extends DiscordCommand {
@@ -18,9 +19,14 @@ public class Test extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		channel.sendMessage("Testing")
-			.queue(new ReactionsTracker()
+		if (hasArgs("--react"))
+			channel.sendMessage("Testing")
+				.queue(new ReactionsHandler()
 					.handle("zero", reaction -> printlnIndependently("I am custom"))
-					.handle(0x1F4AF, reaction -> printlnIndependently("I am native")));
+					.handle("\u0030\uFE0F\u20E3", reaction -> printlnIndependently("I am extended unicode native")));
+		if (hasArgs("--page")) {
+			channel.sendMessage("Loading..")
+				.queue(new PagedHandler<>(getMusicBot().getPlaylist(guild)));
+		}
 	}
 }

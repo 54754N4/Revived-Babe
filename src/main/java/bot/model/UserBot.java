@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 
 import lib.Restart;
-import lib.messages.ReactionHandler;
+import lib.messages.ReactionsTracker;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.audio.factory.IAudioSendFactory;
@@ -87,7 +87,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 		return builder.addEventListeners(
 			this, 
 			new ReplyListener(this),
-			ReactionHandler.INSTANCE);
+			ReactionsTracker.INSTANCE);
 	}
 	
 	public UserBot addOnLoadListener(OnLoadListener...listeners) {

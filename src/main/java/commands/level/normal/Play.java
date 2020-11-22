@@ -7,6 +7,7 @@ import bot.model.UserBot;
 import commands.model.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
+import lib.messages.PagedTracksHandler;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Play extends DiscordCommand {
@@ -21,7 +22,7 @@ public class Play extends DiscordCommand {
 				"[args] <URI or keyword>",
 				"URI can be either keywords, a file path (found using search command) or a URL.",
 				"# Args",
-//				"-p or --paged\tmakes me print search results paginated",			// TO-DO LATER
+				"-p or --paged\tmakes me print search results paginated",
 				"-v or --verbose\tmakes me print the songs being queued",
 				"-pl or --playlist\t retrieves all songs of a playlist",
 				"-sc or --soundcloud\t  searches keywords using SoundCloud",
@@ -61,7 +62,13 @@ public class Play extends DiscordCommand {
 				input = SearchPrefix.YOUTUBE.prefix(input);
 		}
 		getLogger().info("Loading track(s) from: {}", input);
-		bot.play(guild, 
+		if (hasArgs("-p", "--paged")) {
+			PagedTracksHandler handler = new PagedTracksHandler(getMusicBot().getScheduler(guild));
+			bot.play(guild, input, handler).get();
+			channel.sendMessage("Loading...")
+				.queue(handler.enableHandlerButtons());
+		} else 
+			bot.play(guild, 
 				input, 
 				hasArgs("--top", "-t"), 
 				hasArgs("--next", "-n"), 

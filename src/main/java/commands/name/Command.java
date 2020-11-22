@@ -27,7 +27,8 @@ public enum Command {
 	FOOD("food", "fo"),
 	RECIPE("recipe", "re"), 
 	IP("geolocate", "ip"),
-	LS("list", "ls");
+	LS("list", "ls"), 
+	PRUNE("prune", "delete", "del");
 	
 	public final String[] names;
 	

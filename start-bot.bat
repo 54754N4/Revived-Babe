@@ -1,0 +1,3 @@
+@echo off
+echo Launching Babe ...
+java -jar ".\build\libs\Revived Babe-2.0-all.jar"
