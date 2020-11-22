@@ -84,15 +84,16 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	
 	// children can override and: return super.attachListeners(builder.addEventListeers(...))
 	protected JDABuilder attachListeners(JDABuilder builder) {
-		return builder.addEventListeners(
-			this, 
-			new ReplyListener(this),
-			ReactionsTracker.INSTANCE);
+		return builder.addEventListeners(getListeners());
 	}
 	
 	public UserBot addOnLoadListener(OnLoadListener...listeners) {
 		loadListeners.addAll(Arrays.asList(listeners));
 		return this;
+	}
+	
+	public Object[] getListeners() {
+		return new Object[] { this, new ReplyListener(this), ReactionsTracker.INSTANCE };
 	}
 
 	public Activity getActivity() {
@@ -122,8 +123,10 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	
 	public final void kill(boolean now) {
 		logger.info("Starting pre-kill procedures (top-bottom) for {}.", name);
-		try { preKill(now); }
-		catch (Exception e) {
+		try { 
+			jda.removeEventListener(getListeners());
+			preKill(now);
+		} catch (Exception e) {
 			logger.error("Error during {}'s preKill", e);
 		} finally {
 			logger.info("Killing {}..", name);

@@ -29,13 +29,14 @@ public class Restart {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				ProcessBuilder pb = new ProcessBuilder()
-						.inheritIO()						// pass back std.out and err to initial process that launched us
-						.command(starter)
-						.directory(path.toFile());
-				logger.info("Restart Hook: Initiating restart.");
-				try { pb.start(); } 
-				catch (IOException e) {
+				try {
+					logger.info("Restart Hook: Initiating restart.");
+					new ProcessBuilder()
+							.inheritIO()						// pass back std.out and err to initial process that launched us
+							.command(starter)
+							.directory(path.toFile())
+							.start();
+				} catch (IOException e) {
 					logger.error("Restart Hook: Error during restart", e);
 				}
 			}
