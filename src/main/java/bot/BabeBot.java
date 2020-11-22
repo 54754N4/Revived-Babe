@@ -10,6 +10,7 @@ public class BabeBot extends MusicBot {
 	
 	public BabeBot() {
 		super(Bot.BABE);
+		exitOnKill = true;
 	}
 
 	@Override

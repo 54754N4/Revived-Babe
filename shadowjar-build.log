@@ -1,8 +1,8 @@
 Configuration on demand is an incubating feature.
-> Task :compileJava UP-TO-DATE
+> Task :compileJava
 > Task :processResources UP-TO-DATE
-> Task :classes UP-TO-DATE
-> Task :shadowJar UP-TO-DATE
+> Task :classes
+> Task :shadowJar
 
-BUILD SUCCESSFUL in 984ms
-3 actionable tasks: 3 up-to-date
+BUILD SUCCESSFUL in 4s
+3 actionable tasks: 2 executed, 1 up-to-date

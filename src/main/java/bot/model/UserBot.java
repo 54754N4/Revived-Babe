@@ -121,12 +121,12 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	protected void preKill(boolean now) throws Exception {}
 	
 	public final void kill(boolean now) {
-		logger.info("Starting pre-kill procedures (top-bottom) for %s.", name);
+		logger.info("Starting pre-kill procedures (top-bottom) for {}.", name);
 		try { preKill(now); }
 		catch (Exception e) {
-			logger.error("Error during %s's preKill", e);
+			logger.error("Error during {}'s preKill", e);
 		} finally {
-			logger.info("Killing %s..", name);
+			logger.info("Killing {}..", name);
 			if (now) jda.shutdownNow();			// stop jda 
 			else jda.shutdown();
 			if (exitOnKill) exit();
@@ -143,7 +143,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	/* Utility methods */
 	
 	public UserBot delay(long milli) throws InterruptedException {
-		logger.debug("%s sleepig for %d ms", name, milli);
+		logger.debug("{} sleepig for {} ms", name, milli);
 		Thread.sleep(milli);
 		return this;
 	}

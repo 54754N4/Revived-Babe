@@ -19,11 +19,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bot.model.UserBot;
+import commands.level.admin.Test;
+import commands.level.normal.Echo;
 import net.dv8tion.jda.api.entities.Message;
 
 /* Finds the appropriate command based on string command */
 public class Invoker {
 	private static final Logger logger = LoggerFactory.getLogger(Invoker.class);
+	public static final String NORMAL_PACKAGE_NAME = Echo.class.getPackage().getName(),
+		ADMIN_PACKAGE_NAME = Test.class.getPackage().getName(),
+		BOTH = NORMAL_PACKAGE_NAME.substring(0, NORMAL_PACKAGE_NAME.lastIndexOf('.'));
 	
 	public static void main(String[] args) throws Exception {
 		String term = "pi";
@@ -65,29 +70,27 @@ public class Invoker {
 		}
 	}
 	
-	public static final class Reflector {
-		private static final String NORMAL_PACKAGE_NAME = "commands.level.normal",
-				ADMIN_PACKAGE_NAME = "commands.level.admin";  
-		
+	public static final class Reflector {				
 		public static Map<List<String>, Class<? extends Command>> normal, admin;
 		
 		static { update(); }
 		
 		public static enum Type { 
-			NORMAL("commands.level.normal"), 
-			ADMIN("commands.level.admin"), 
-			ALL("commands.level");
+			NORMAL(NORMAL_PACKAGE_NAME),
+			ADMIN(ADMIN_PACKAGE_NAME),
+			ALL(BOTH);
 			
 			public final String name;
-			public final Predicate<Class<? extends Command>> predicate;
+			public Predicate<Class<? extends Command>> predicate;
 			
 			private Type(String name) {
 				this.name = name;
-				switch (name) {
-					case NORMAL_PACKAGE_NAME: predicate = cls -> cls.getPackage().getName().equals(NORMAL_PACKAGE_NAME); break;
-					case ADMIN_PACKAGE_NAME: predicate = cls -> cls.getPackage().getName().equals(ADMIN_PACKAGE_NAME); break;
-					default: predicate = cls -> true; break;
-				}
+				if (name.equals(NORMAL_PACKAGE_NAME))
+					predicate = cls -> cls.getPackage().getName().equals(NORMAL_PACKAGE_NAME);
+				else if (name.equals(ADMIN_PACKAGE_NAME))
+					predicate = cls -> cls.getPackage().getName().equals(ADMIN_PACKAGE_NAME);
+				else
+					predicate = cls -> true;
 			}
 		}
 		
@@ -105,8 +108,11 @@ public class Invoker {
 		
 		private static Map<List<String>, Class<? extends Command>> buildDictionary(Type type) {
 			Map<List<String>, Class<? extends Command>> map = new HashMap<>();
-			Class<?>[] include = {}, exclude = {};
-			Reflections reflections = createReflections(type.name, include, exclude);
+			Class<?>[] include = {Echo.class}, exclude = {},
+				aInclude = {Test.class}, aExclude = {};
+			Reflections reflections = createReflections(type.name, 
+					type == Type.ADMIN ? aInclude : include, 
+					type == Type.ADMIN ? aExclude : exclude);
 			Set<Class<? extends Command>> classes = reflections.getSubTypesOf(DiscordCommand.class)
 					.stream()
 					.filter(type.predicate)

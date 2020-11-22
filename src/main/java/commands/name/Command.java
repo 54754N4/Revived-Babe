@@ -28,7 +28,8 @@ public enum Command {
 	RECIPE("recipe", "re"), 
 	IP("geolocate", "ip"),
 	LS("list", "ls"), 
-	PRUNE("prune", "delete", "del");
+	PRUNE("prune", "delete", "del"), 
+	RESTART("restart", "res");
 	
 	public final String[] names;
 	
