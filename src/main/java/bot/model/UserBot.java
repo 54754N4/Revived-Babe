@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 
-import lib.Restart;
+import commands.level.normal.Restarter;
 import lib.messages.ReactionsTracker;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -33,7 +33,7 @@ import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public abstract class UserBot extends ListenerAdapter implements User, Runnable {
-	public static final int EXIT_SUCCESS = 0;
+	public static final int EXIT_SUCCESS = 0, RESTART_CODE = 1;
 	protected JDA jda;
 	protected final Bot bot;
 	protected final String name;
@@ -41,6 +41,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	protected boolean exitOnKill;
 	private IAudioSendFactory audioSendFactory;
 	private List<OnLoadListener> loadListeners;
+	private Object[] eventListeners;
 	
 	public UserBot(Bot bot) {
 		this.bot = bot;
@@ -78,13 +79,13 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
                 .setChunkingFilter(getChunkingFilter())
                 .setActivity(getActivity())
                 .setBulkDeleteSplittingEnabled(false)
-                .setEnableShutdownHook(true)
+                .setEnableShutdownHook(false)
                 .setAutoReconnect(true);
 	}
 	
 	// children can override and: return super.attachListeners(builder.addEventListeers(...))
 	protected JDABuilder attachListeners(JDABuilder builder) {
-		return builder.addEventListeners(getListeners());
+		return builder.addEventListeners(createListeners());
 	}
 	
 	public UserBot addOnLoadListener(OnLoadListener...listeners) {
@@ -92,8 +93,8 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 		return this;
 	}
 	
-	public Object[] getListeners() {
-		return new Object[] { this, new ReplyListener(this), ReactionsTracker.INSTANCE };
+	public Object[] createListeners() {
+		return eventListeners = new Object[] { this, new ReplyListener(this), ReactionsTracker.INSTANCE };
 	}
 
 	public Activity getActivity() {
@@ -124,23 +125,24 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	public final void kill(boolean now) {
 		logger.info("Starting pre-kill procedures (top-bottom) for {}.", name);
 		try { 
-			jda.removeEventListener(getListeners());
+			jda.removeEventListener(eventListeners);
 			preKill(now);
 		} catch (Exception e) {
 			logger.error("Error during {}'s preKill", e);
 		} finally {
 			logger.info("Killing {}..", name);
-			if (now) jda.shutdownNow();			// stop jda 
-			else jda.shutdown();
-			if (exitOnKill) exit();
+			try {
+				if (now) jda.shutdownNow();			// stop jda
+				else jda.shutdown();
+			} catch (Exception e) {
+				logger.error("Failed to shutdown jda", e);
+			} finally { if (exitOnKill) exit(); }
 		}
 	}
 	
 	protected void exit() {
-		if (Restart.flag.get()) 
-			Restart.now();
-		logger.info("Exiting program..");
-		System.exit(EXIT_SUCCESS);
+		logger.info(Restarter.FLAG.get() ? "Restarting program" : "Exiting program..");
+		System.exit(Restarter.FLAG.get() ? RESTART_CODE : EXIT_SUCCESS);
 	}
 	
 	/* Utility methods */
