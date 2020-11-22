@@ -16,3 +16,6 @@ logs
 # Ignore generated files
 *.class
 bin
+
+# Ignore batch files
+.bat
