@@ -40,28 +40,36 @@ public enum Command {
 	RESTART("restart", "res"),
 	GET("get", "g"),
 	HELP("help", "h"), 
-	SPEAK("speak", "say", "tts");
+	SPEAK("speak", "say", "tts"), 
+	TIME("time", "t");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
 	
 	static {
 		// Static verification of duplications in command names
-		long duration = System.currentTimeMillis();
 		Set<String> names = new HashSet<>();
+		boolean fail = false;
+		long duration = System.currentTimeMillis();
 		outside: 
 		for (Command command : Command.values()) {
 			for (String name : command.names) {
 				if (!names.add(name)) {
-					logger.error("Duplicated command name "+name, new IllegalArgumentException());
+					System.out.println("Duplicated command name "+name);
+					fail = true;
 					break outside;
 				}
 			}
 		}
-		logger.info("Verification duration: {}", StringLib.millisToTime(System.currentTimeMillis() - duration));
+		logger.info(
+			"Command name duplicates verification: {}. (duration: {})", 
+			fail ? "FAILED" : "PASS", 
+			StringLib.millisToTime(System.currentTimeMillis() - duration));
 	}
 	
 	Command(final String...names) {
 		this.names = names;
 	}
+	
+	public static void main(String[] args) {} // just let static verification check run
 }
