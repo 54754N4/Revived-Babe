@@ -39,7 +39,8 @@ public enum Command {
 	PRUNE("prune", "delete", "del"), 
 	RESTART("restart", "res"),
 	GET("get", "g"),
-	HELP("help", "h");
+	HELP("help", "h"), 
+	SPEAK("speak", "say", "tts");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;

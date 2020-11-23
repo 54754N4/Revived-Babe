@@ -44,9 +44,13 @@ public class Play extends DiscordCommand {
 		MusicBot bot = getMusicBot();
 		if (!bot.isConnected(guild))
 			bot.connectTo(message.getMember().getVoiceState().getChannel());
+		else {
+			println("You have to be connected to a voice channel so I join..");
+			return;
+		}
 		if (StringLib.isInteger(input)) {
 			int index = Integer.parseInt(input),
-				max = bot.getScheduler(guild).getQueue().size(); 
+				max = bot.getScheduler(guild).getQueue().size();
 			if (max == 0) 
 				println("Queue is currently empty..");
 			else if (index >= max || index < 0) 

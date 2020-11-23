@@ -1,5 +1,6 @@
 package bot.model;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -14,8 +15,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import audio.CircularDeque;
 import audio.TrackScheduler;
 import audio.handlers.MirroredSendHandler;
+import audio.track.handlers.SpeakTrackHandler;
 import audio.track.handlers.TrackLoadHandler;
 import audio.track.handlers.TrackLoadHandler.StatusUpdater;
+import lib.Balabolka;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
@@ -443,6 +446,16 @@ public abstract class MusicBot extends UserBot {
 	public AudioTrack getCurrentTrack(Guild guild) {
 		setupAudio(guild);
 		return getPlayer(guild).getPlayingTrack();
+	}
+	
+	/* TTS */
+	
+	public MusicBot speak(Guild guild, String voice, String text) throws InterruptedException, IOException {
+		play(
+			guild, 
+			Balabolka.buildWav(voice, text).toAbsolutePath().toString(), 
+			new SpeakTrackHandler(schedulers.get(guild.getIdLong())));
+		return this;
 	}
 	
 	/* Play */
