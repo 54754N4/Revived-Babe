@@ -1,7 +1,6 @@
 package commands.model;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,6 +12,8 @@ import com.google.gson.Gson;
 import bot.model.MusicBot;
 import bot.model.UserBot;
 import lib.HTTP;
+import lib.HTTP.RequestBuilder;
+import lib.HTTP.ResponseHandler;
 import lib.PrintBooster;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Member;
@@ -89,14 +90,20 @@ public abstract class DiscordCommand extends PrintCommand {
 		message.delete().queue();
 	}
 	
-	public static <T> T restRequest(String api, Class<T> cls, Object... args) throws MalformedURLException, IOException {
+	public static <T> T restRequest(String apiFormat, Class<T> cls, Object... args) throws IOException {
 		try (	// try-with-resources to auto-close close-able resources
-			HTTP.RequestBuilder builder = new HTTP.RequestBuilder(String.format(api, args));
-			HTTP.ResponseHandler handler = new HTTP.ResponseHandler(builder.build());
+			RequestBuilder builder = new HTTP.RequestBuilder(String.format(apiFormat, args));
+			ResponseHandler handler = new HTTP.ResponseHandler(builder.build());
 		) {
 			return gson.fromJson(handler.getResponse(), cls);
 		}	
-	}	
+	}
+	
+	public static ResponseHandler restRequest(String apiFormat, Object...args) throws IOException {
+		try (RequestBuilder builder = new RequestBuilder(String.format(apiFormat, args))) {
+			return new ResponseHandler(builder.build());
+		}
+	}
 	
 	
 	/* help building + argument parsing*/

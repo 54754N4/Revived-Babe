@@ -11,10 +11,11 @@ public final class StringLib {
 
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
-		String works = "~\\Audio\\Songs\\Backstreet Boys\\Millennium\\Show Me the Meaning of Being Lonely.mp3",
-				url = "www.google.com",
-				url1 = "https://www.google.com/1234qwerqw4";
-		System.out.println(consumePrefix("..e hello", new String[] {".."}));
+		System.out.println(millisToTime(1606146691));
+//		String works = "~\\Audio\\Songs\\Backstreet Boys\\Millennium\\Show Me the Meaning of Being Lonely.mp3",
+//				url = "www.google.com",
+//				url1 = "https://www.google.com/1234qwerqw4";
+//		System.out.println(consumePrefix("..e hello", new String[] {".."}));
 //		System.out.println(deobfuscatePath(works));
 //		System.out.println(deobfuscatePath(url));
 //		System.out.println(deobfuscatePath(url1));
@@ -259,7 +260,7 @@ public final class StringLib {
 	}
 	
 	public static String simplify(String name) {
-		return name.replaceAll("[^A-Za-z0-9\\s]","").toLowerCase();
+		return name.replaceAll("[^A-Za-z0-9]","").toLowerCase();
 	}
 	
 	public static boolean simpleMatch(String input, String match) {
