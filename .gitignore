@@ -20,3 +20,7 @@ bin
 
 # Ignore batch files
 .bat
+
+# Ignore TTS files
+speak/*
+speak
