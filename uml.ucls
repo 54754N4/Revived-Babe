@@ -1136,8 +1136,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="127" language="java" name="json.interpreter.JsonPojo" project="Revived Babe" 
-    file="/Revived Babe/src/main/java/json/interpreter/JsonPojo.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="127" language="java" name="main.JsonPojo" project="Revived Babe" 
+    file="/Revived Babe/src/main/java/main/JsonPojo.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="117" width="132" x="2866" y="37"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="true" signature="true" 
       sort-features="false" accessors="true" visibility="true">      

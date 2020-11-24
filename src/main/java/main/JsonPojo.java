@@ -1,24 +1,8 @@
-package json.interpreter;
+package main;
 
-/* Grammar: 
-expression 	:= object
-object 		:= OPEN_CURLY members CLOSE_CURLY
-array		:= OPEN_BRACKET value [COMMA value]+ CLOSE_BRACKET
-members		:= EPSILON | string COLON value [COMMA members]+
-value		:= constant | number | double | string | array | object
-string		:= QUOTE value QUOTE
-double		:= number DOT digits
-number		:= [-] digits
-
-digits 		:= [0-9]+ 
-constant	:= true | false | null
-*/
+import json.interpreter.JsonGenerator;
 
 public abstract class JsonPojo {
-	public static Class<?> from(String input) {
-		return null;
-	}
-	
 	public static void main(String[] args) throws Exception {
 		String input = "{\r\n"
 				+ "  \"base\": \"EUR\",\r\n"
@@ -33,6 +17,7 @@ public abstract class JsonPojo {
 				+ "    \"HKD\": 9.1725\r\n"
 				+ "  }\r\n"
 				+ "}";
+		
 //		String input = "{\r\n"
 //				+ "    \"abbreviation\": \"GMT\",\r\n"
 //				+ "    \"client_ip\": \"115.79.140.65\",\r\n"
@@ -50,6 +35,7 @@ public abstract class JsonPojo {
 //				+ "    \"utc_offset\": \"+00:00\",\r\n"
 //				+ "    \"week_number\": 48\r\n"
 //				+ "}";
+
 //		JsonLexer lexer = new JsonLexer(input);
 //		Token<Type> token;
 //		do {
@@ -63,10 +49,11 @@ public abstract class JsonPojo {
 //		JsonPrintInterpreter interpreter = new JsonPrintInterpreter(input);
 //		interpreter.interpret();
 		
-		String name = "ExchangeRate"; 
-		JsonGenerator generator = new JsonGenerator(name, input);
-		generator.interpret();
 //		System.out.println(input);
+		
+		JsonGenerator generator = new JsonGenerator("ExchangeRate", input);
+		StringBuilder sb = generator.interpret();
+		System.out.println(sb);
 	}
 }
 

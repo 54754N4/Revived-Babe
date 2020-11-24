@@ -9,11 +9,6 @@ import java.util.regex.Pattern;
 import json.interpreter.AST.JsonArray;
 import json.interpreter.AST.JsonObject;
 
-
-/*
- * TO-DO: 	builder (useless probably => postponed)
- * DONE:	Serializable, constructors, getters, setters, toString, 
- */
 public class JsonGenerator implements Visitor {
 	// Formats to create name placeholder for anonymous objects/arrays 
 	private static final String OBJECT_NAME_FORMAT = "OBJECT_PLACEHOLDER%d";
@@ -41,11 +36,12 @@ public class JsonGenerator implements Visitor {
 		preprocess = true;
 	}
 	
-	public void interpret() throws Exception {
+	public StringBuilder interpret() throws Exception {
 		sb.append(Constants.IMPORT+"\n\n");
 		visit(ast);
 		postProcessChildren();
-		System.out.println(sb);	// <===========================result
+		System.out.println(String.format("Found %d object, %d array", objCount, arrCount));
+		return sb;
 	}
 	
 	/* Since we write all to 1 file, only first class
