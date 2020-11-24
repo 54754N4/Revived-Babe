@@ -1,9 +1,0 @@
-Starting a Gradle Daemon, 1 busy Daemon could not be reused, use --status for details
-Configuration on demand is an incubating feature.
-> Task :compileJava
-> Task :processResources UP-TO-DATE
-> Task :classes
-> Task :shadowJar
-
-BUILD SUCCESSFUL in 9s
-3 actionable tasks: 2 executed, 1 up-to-date
