@@ -98,6 +98,20 @@ public abstract class MusicBot extends UserBot {
 	}
 	
 	@Override
+	protected void preKill(boolean now) throws Exception {
+		for (AudioPlayer player : players.values())
+			player.destroy();
+		for (AudioManager manager : managers.values())
+			manager.closeAudioConnection();
+		// Allow GC
+		managers.clear();
+		senders.clear();
+		schedulers.clear();
+		players.clear();
+		super.preKill(now);
+	}
+	
+	@Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
 		if (isSelf(event)) handleVoiceChannelUpdate(event);
     }
@@ -174,18 +188,6 @@ public abstract class MusicBot extends UserBot {
 	}
 	
 	/* Music methods */
-	
-	public void kill() {
-		for (AudioPlayer player : players.values())
-			player.destroy();
-		for (AudioManager manager : managers.values())
-			manager.closeAudioConnection();
-		// Allow GC
-		managers.clear();
-		senders.clear();
-		schedulers.clear();
-		players.clear();
-	}
 	
 	public boolean managerExists(Guild guild) {
 		return managers.containsKey(guild.getIdLong());

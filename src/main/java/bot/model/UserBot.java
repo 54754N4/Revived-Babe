@@ -140,6 +140,10 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 		}
 	}
 	
+	public final void kill() {
+		kill(false);
+	}
+	
 	protected void exit() {
 		logger.info(Restarter.FLAG.get() ? "Restarting program" : "Exiting program..");
 		System.exit(Restarter.FLAG.get() ? RESTART_CODE : EXIT_SUCCESS);

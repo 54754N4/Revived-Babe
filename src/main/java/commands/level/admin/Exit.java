@@ -12,13 +12,15 @@ public class Exit extends DiscordCommand {
 
 	@Override
 	public String helpMessage() {
-		return helpBuilder("", "Makes bot exit (if sent to @Babe, then will shutdown all)");
+		return helpBuilder("",
+			"-n or --now\tmakes the bot shutdown faster",
+			"Makes bot exit (if sent to @Babe, then will shutdown all)");
 	}
 
 	@Override
 	protected void execute(String input) throws Exception {
 		printlnIndependently("Farewell!");
-		Thread.sleep(300);
-		System.exit(UserBot.EXIT_SUCCESS);
+		Thread.sleep(2000);
+		bot.kill(hasArgs("-n", "--now"));
 	}
 }

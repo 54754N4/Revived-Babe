@@ -7,6 +7,7 @@ import lib.messages.ReactionsTracker;
 
 public class BabeBot extends MusicBot {
 	public static String FAST_PREFIX = "..", BOT_PREFIX = "hey babe ";
+	private static String[] prefixes = new String[]{ BOT_PREFIX, FAST_PREFIX, "@Babe" }; 
 	
 	public BabeBot() {
 		super(Bot.BABE);
@@ -15,7 +16,7 @@ public class BabeBot extends MusicBot {
 
 	@Override
 	public String[] getPrefixes() {
-		return new String[]{ BOT_PREFIX, FAST_PREFIX, "@Babe" };
+		return prefixes;
 	}
 	
 	@Override
@@ -29,6 +30,7 @@ public class BabeBot extends MusicBot {
 	@Override 
 	protected void preKill(boolean now) throws Exception {
 		ReactionsTracker.INSTANCE.stopTracking();
+		Bot.Slaves.killSlaves(now);
 		super.preKill(now);
 	}
 }

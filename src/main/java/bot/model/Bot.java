@@ -2,8 +2,14 @@ package bot.model;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.PriorityBlockingQueue;
+
+import bot.SlaveBot;
+import bot.SlaveBot.NoMoreSlavesException;
+import commands.model.ThreadsManager;
 
 public enum Bot {
 	BABE, ECHO, MIRROR, SLAVE_1, SLAVE_2, SLAVE_3, SLAVE_4, SLAVE_5, SLAVE_6, SLAVE_7, SLAVE_8, SLAVE_9;
@@ -21,9 +27,35 @@ public enum Bot {
 	public static final class Slaves {
 		private static final int CAPACITY = 9, INDEX = 6;
 		private static final Bot[] slaves = new Bot[] { SLAVE_1, SLAVE_2, SLAVE_3, SLAVE_4, SLAVE_5, SLAVE_6, SLAVE_7, SLAVE_8, SLAVE_9 };
+		private static final List<SlaveBot> alive = new CopyOnWriteArrayList<>();
 		private static Queue<Bot> queue;
 
 		static { reset(); }
+		
+		public static SlaveBot newSlave() throws NoMoreSlavesException {
+			SlaveBot slave = new SlaveBot();
+			alive.add(slave);
+			ThreadsManager.newNativeThread(slave).start();
+			return slave;
+		}
+		
+		public static void killSlave(Bot bot) {
+			SlaveBot killed = null;
+			for (SlaveBot slave : alive)
+				if (slave.bot == bot)
+					killed = slave;
+			alive.remove(killed);
+			queue.offer(killed.bot);
+			killed.kill();
+		}
+		
+		public static void killSlaves(boolean now) {
+			alive.forEach(slave -> {
+				queue.offer(slave.bot);
+				slave.kill(now);
+			});
+			alive.clear();
+		}
 		
 		public static void reset() {
 			queue = new PriorityBlockingQueue<>(CAPACITY, comparator());

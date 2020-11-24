@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-  implementation 'net.dv8tion:JDA:4.2.0_221'			// discord
+  implementation 'net.dv8tion:JDA:4.2.0_222'			// discord
   implementation 'com.sedmelluq:lavaplayer:1.3.61'		// audio
   implementation 'com.sedmelluq:jda-nas:1.1.0'			// native audio streaming
   implementation 'ch.qos.logback:logback-classic:1.2.3'	// logging
