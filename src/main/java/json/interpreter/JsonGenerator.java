@@ -4,27 +4,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import json.interpreter.AST.JsonArray;
 import json.interpreter.AST.JsonObject;
 
 
 /*
- * TO-DO: 	builder (useless probably)
+ * TO-DO: 	builder (useless probably => postponed)
  * DONE:	Serializable, constructors, getters, setters, toString, 
  */
 public class JsonGenerator implements Visitor {
+	// Formats to create name placeholder for anonymous objects/arrays 
+	private static final String OBJECT_NAME_FORMAT = "OBJECT_PLACEHOLDER%d";
+	private static final String ARRAY_NAME_FORMAT = "ARRAY_PLACEHOLDER%d[]";
+	
 	private JsonParser parser;
 	private AST ast;
+	private Stack<Context> context;		// child objects/arrays
+	private String name;				// current object name
+	private StringBuilder sb;			// generated output
 	
-	private int depth = 0, count = 0;
-	private boolean preprocess = true;
-	private Stack<Context> context;
-	private String name;
-	private final StringBuilder sb;
-//	private BufferedWriter writer;	
+	private int depth, arrCount, objCount;	// tabulation depth + placeholders count
+	private boolean first, preprocess;
 	
 	public JsonGenerator(String name, String input) throws Exception {
 		this.name = name;
@@ -32,37 +34,76 @@ public class JsonGenerator implements Visitor {
 		ast = parser.parse();
 		context = new Stack<>();
 		sb = new StringBuilder();
+		depth = 0;
+		arrCount = 0;
+		objCount = 0;
+		first = true;
+		preprocess = true;
 	}
 	
 	public void interpret() throws Exception {
 		sb.append(Constants.IMPORT+"\n\n");
 		visit(ast);
-		handleContext();
-		System.out.println(sb);
+		postProcessChildren();
+		System.out.println(sb);	// <===========================result
 	}
 	
+	/* Since we write all to 1 file, only first class
+	 * can be public; so we keep track of it. All classes
+	 * are also final, since most json responses don't use
+	 * inheritance. 
+	 * Note: SUID defaults to 1 since there's no
+	 * backward-compatibility to care about. */
 	@Override
 	public void visit(JsonObject object) throws Exception {
-		sb.append(multiply("\t", depth++) + String.format("public static final class %s implements Serializable {%n", classify(name)));
-		Map<String, String> attributes = writeAttributes(object);
+		String prepend = "";
+		if (first) {	
+			first = false;
+			prepend = "public ";
+		}
+		sb.append(multiply("\t", depth++) + String.format("%sfinal class %s implements Serializable {%n", prepend, classify(name)));
+		sb.append(multiply("\t", depth) + "private static final long serialVersionUID = 1L;\n");
+		Map<String, String> attributes = scanAttributes(object);
+		writeAttributes(attributes);
 		writeConstructor(classify(name), attributes);
-		writeMethods(attributes);
+		writeGetters(attributes);
+		writeSetters(attributes, "");	// make return type void
 		writeToString(attributes);
 		writeBuilder(attributes);
 		sb.append(multiply("\t", --depth)+"}\n\n");
 	}
 
+	// Needs to figure out array type by looking at first element
 	@Override
-	public void visit(JsonArray array) {	
-		// deal with arrays
+	public void visit(JsonArray array) throws Exception {	 
+		String oldName, type = "";
+		Object value;
+		value = array.list.get(0);	// in json array parsing, only first value is parsed
+		if (value == null) 
+			type = "Object";
+		else if (Boolean.class.isInstance(value))
+			type = "boolean";
+		else if (Integer.class.isInstance(value))
+			type = "int";
+		else if (Double.class.isInstance(value))
+			type = "double";
+		else if (String.class.isInstance(value))
+			type = "String";
+		else if (JsonArray.class.isInstance(value))
+			type = String.format(ARRAY_NAME_FORMAT, arrCount-1);
+		else if (JsonObject.class.isInstance(value)) {
+			oldName = name;
+			name = type = String.format(OBJECT_NAME_FORMAT, objCount++);	// object in array == unnamed => insert placeholder
+			visit(JsonObject.class.cast(value));
+			name = oldName;
+		}
+		replaceAll(String.format(ARRAY_NAME_FORMAT, arrCount-1), type+"[]");
 	}
 	
 	/* Helpers */
 	
-	private Map<String, String> writeAttributes(JsonObject object) throws Exception {
+	private Map<String, String> scanAttributes(JsonObject object) {
 		Map<String, String> map = new HashMap<>();
-		String indent = multiply("\t", depth);
-		BiConsumer<String,String> printer = (type, identifier) -> sb.append(String.format("%spublic %s %s;%n", indent, type, identifier));
 		String key, type = "";
 		Object value;
 		for (Entry<String, Object> entry : object.dict.entrySet()) {
@@ -71,7 +112,7 @@ public class JsonGenerator implements Visitor {
 			if (value == null) 
 				type = "Object";
 			else if (Boolean.class.isInstance(value))
-				type = "bool";
+				type = "boolean";
 			else if (Integer.class.isInstance(value))
 				type = "int";
 			else if (Double.class.isInstance(value))
@@ -79,71 +120,91 @@ public class JsonGenerator implements Visitor {
 			else if (String.class.isInstance(value))
 				type = "String";
 			else if (JsonArray.class.isInstance(value)) {
-				if (preprocess) 
+				if (preprocess)
 					context.push(new ArrayContext(key, JsonArray.class.cast(value)));
-				type = String.format("PLACEHOLDER%d[]", count++);
+				type = String.format(ARRAY_NAME_FORMAT, arrCount++);
 			} else if (JsonObject.class.isInstance(value)) {
 				if (preprocess)
 					context.push(new ObjectContext(key, JsonObject.class.cast(value)));
 				type = classify(key);
 			}
-			printer.accept(type, key);
 			map.put(key, type);
-		} 
+		}
 		return map;
+	}
+	
+	private void writeAttributes(Map<String, String> dict) {
+		String indent = multiply("\t", depth);
+		for (Entry<String, String> entry : dict.entrySet())
+			sb.append(String.format("%spublic %s %s;%n", indent, entry.getValue(), entry.getKey()));
+		sb.append("\n");
 	}
 	
 	private void writeConstructor(String name, Map<String, String> attributes) {
 		String indent = multiply("\t", depth++);
-		Consumer<String> printer = str -> sb.append(str);
-		// Declare constructor
-		printer.accept(String.format("%n%spublic %s(", indent, name));
-		attributes.forEach((key, value) -> printer.accept(String.format("%s %s, ", value, key)));
-		// Delete last comma + space
-		deleteLastChars(2);
-		printer.accept(") {\n");
+		sb.append(String.format("%spublic %s(", indent, name));
+		attributes.forEach((key, value) -> sb.append(String.format("%s %s, ", value, key)));
+		deleteLastChars(2).append(") {\n");			// delete last comma + space 
 		// Transfer parameters to attributes
 		String inner = multiply("\t", depth);
-		attributes.forEach((key, value) -> printer.accept(String.format("%2$sthis.%1$s = %1$s;%n", key, inner)));
-		printer.accept(indent + "}\n\n");
+		attributes.forEach((key, value) -> sb.append(String.format("%2$sthis.%1$s = %1$s;%n", key, inner)));
+		sb.append(indent + "}\n\n");
 		depth--;
 	}
 	
-	private void writeMethods(Map<String, String> attributes) {
+	private void writeGetters(Map<String, String> attributes) {
 		String indent = multiply("\t", depth),
 				inner = multiply("\t", depth+1);
 		attributes.forEach((key, value) -> {
 			String name = classify(key), 
-				getter = (key.equals("bool") ? "is": "get") + name,
-				setter = "set" + name;
+				getter = (key.equals("bool") ? "is": "get") + name;
 			sb.append(String.format("%spublic %s %s() {%n%sreturn %s;%n%s}%n%n", indent, value, getter, inner, key, indent));
-			sb.append(String.format("%spublic %s %s(%s %s) {%n%sthis.%s = %s;%n%s}%n%n", indent, value, setter, value, key, inner, key, key, indent));
+		});
+	}
+	
+	private void writeSetters(Map<String, String> attributes, String returnType) {
+		String indent = multiply("\t", depth),
+				inner = multiply("\t", depth+1);
+		final String outType = returnType.equals("") ? "void" : returnType;
+		final String outValue = returnType.equals("") ? "" : "\n"+inner+"return this;";
+		attributes.forEach((key, value) -> {
+			String name = classify(key), 
+				setter = "set" + name;
+			sb.append(String.format("%spublic %s %s(%s %s) {%n%sthis.%s = %s;%s%n%s}%n%n", indent, outType, setter, value, key, inner, key, key, outValue, indent));
 		});
 	}
 	
 	private void writeToString(Map<String, String> attributes) {
 		String indent = multiply("\t", depth),
 				inner = multiply("\t", depth+1);
-		Consumer<String> printer = str -> sb.append(str);
-		printer.accept(String.format("%s@Override%n%spublic String toString() {%n%sreturn getClass() + \" {\\n\"", indent, indent, inner));
-		attributes.forEach((key, value) -> printer.accept(String.format(" + \"%s: \" + %s + \", \"", key, removeArray(key))));
-		printer.accept(String.format("+ \"\\n}\";%n%s}%n%n", indent));
+		sb.append(String.format("%s@Override%n%spublic String toString() {%n%sreturn new StringBuilder()%n%s.append(getClass().getName()).append(\"{\\n\")\n", indent, indent, inner, inner+"\t"));
+		attributes.forEach((key, value) -> sb.append(String.format("%s\t.append(\"%s: \").append(%s+\",\\n\")\n", inner, key, removeArray(key))));
+		sb.append(String.format("%s.append(\"\\n}\").toString();%n%s}%n%n", inner+"\t", indent));
 	}
 	
 	private void writeBuilder(Map<String, String> attributes) {
-		String indent = multiply("\t", depth++),
-				inner = multiply("\t", depth);
-		sb.append(String.format("%s// Insert builder here%n%n", indent));
-		// TO DO
+		String indent = multiply("\t", depth++);
+		sb.append(String.format("%spublic static class Builder {%n", indent));
+		writeAttributes(attributes);
+		writeSetters(attributes, "Builder");
+		writeBuild(attributes);
+		sb.append(String.format("%s}\n", indent));
 		depth--;
 	}
 	
-	private String removeArray(String str) {
-		return str.endsWith("[]") ? str.substring(0, str.length()-2) : str;
+	private void writeBuild(Map<String, String> attributes) {
+		String indent = multiply("\t", depth++),
+				inner = multiply("\t", depth);
+		sb.append(String.format("%spublic %s build() {%n%sreturn new %s(", indent, classify(name), inner, classify(name)));
+		attributes.forEach((key, value) -> sb.append(String.format("%s,", key)));
+		sb.deleteCharAt(sb.length()-1);
+		sb.append(String.format(");%n%s}%n", indent));
+		depth--;
 	}
 	
-	private void handleContext() throws Exception {
-		// Start postprocessing child classes and arrays
+	/* Start post-processing child classes and arrays
+	 * that had been replaced with placeholders. */
+	private void postProcessChildren() throws Exception {
 		preprocess = false;
 		String oldName;
 		ObjectContext obj;
@@ -153,8 +214,7 @@ public class JsonGenerator implements Visitor {
 			if (ObjectContext.class.isInstance(c)) {
 				obj = ObjectContext.class.cast(c);
 				name = obj.name;
-				visit(obj.object);
-				
+				visit(obj.object);			
 			} else if (ArrayContext.class.isInstance(c)) {
 				arr = ArrayContext.class.cast(c);
 				name = arr.name;
@@ -164,8 +224,18 @@ public class JsonGenerator implements Visitor {
 		}
 	}
 	
-	private void deleteLastChars(int count) {
+	// Replaces all placeholder names with actual type found or an object placeholder
+	public void replaceAll(String regex, String with) {
+		sb = new StringBuilder(sb.toString().replaceAll(Pattern.quote(regex), with));
+	}
+	
+	private String removeArray(String str) {
+		return str.endsWith("[]") ? str.substring(0, str.length()-2) : str;
+	}
+	
+	private StringBuilder deleteLastChars(int count) {
 		while (count-- > 0) sb.deleteCharAt(sb.length()-1);
+		return sb;
 	}
 	
 	private static String classify(String str) {
