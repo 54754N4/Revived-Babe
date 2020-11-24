@@ -62,6 +62,7 @@ public abstract class JsonPojo {
 //		System.out.println(tree);
 //		JsonPrintInterpreter interpreter = new JsonPrintInterpreter(input);
 //		interpreter.interpret();
+		
 		String name = "ExchangeRate"; 
 		JsonGenerator generator = new JsonGenerator(name, input);
 		generator.interpret();
