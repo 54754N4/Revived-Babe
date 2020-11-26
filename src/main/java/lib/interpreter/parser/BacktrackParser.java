@@ -14,19 +14,16 @@ public abstract class BacktrackParser<Type extends Enum<Type>, Tree> implements 
 	private Stack<Integer> stack;	// to backtrack at different levels
 	private int current;			// index in tokens list
 	
-	public BacktrackParser(BacktrackLexer<Type> lexer) throws ParsingException {
+	public BacktrackParser(BacktrackLexer<Type> lexer, Type eof) throws ParsingException {
 		this.lexer = lexer;
 		current = 0;
 		stack = new Stack<>();
 		tokens = new ArrayList<>();
 		Token<Type> token;
-		Type eof = finalToken();
 		while ((token = lexer.getNextToken()).type != eof)
 			tokens.add(token);
 		tokens.add(new Token<>(eof));
 	}
-	
-	protected abstract Type finalToken();
 	
 	protected boolean is(Type[] types) {
 		if (current >= tokens.size())
@@ -38,10 +35,8 @@ public abstract class BacktrackParser<Type extends Enum<Type>, Tree> implements 
 	}
 	
 	protected void consume(Type type) throws ParsingException {
-		if (is(type)) 
-			current++;
-		else 
-			lexer.error("Expected type :"+type.name()+" "+type);
+		if (is(type)) current++;
+		else lexer.error("Expected type :"+type.name()+" "+type);
 	}
 	
 	protected Token<Type> current() {

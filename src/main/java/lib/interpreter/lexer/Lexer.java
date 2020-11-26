@@ -4,12 +4,12 @@ import lib.interpreter.parser.ParsingException;
 
 public abstract class Lexer<Type extends Enum<Type>> {
 	protected String text;
-	protected int line, pos;
+	protected int line, col, pos;
 	protected char current;
 	
 	public Lexer(String text) {
 		this.text = text+"\0";
-		pos = line = 0;
+		pos = col = line = 0;
 		current = this.text.charAt(0);
 	}
 	
@@ -44,11 +44,23 @@ public abstract class Lexer<Type extends Enum<Type>> {
 	}
 	
 	protected boolean isNewline() {
-		return is('\n') || is('\r');
+		return is('\n');
+	}
+	
+	protected boolean isCarriageReturn() {
+		return is('\r');
+	}
+	
+	protected boolean isCRLF() {
+		return peek("\r\n");
 	}
 	
 	protected boolean isEscaped() {
 		return peekBehind("\\");
+	}
+	
+	protected boolean notEscaped() {
+		return !isEscaped();
 	}
 	
 	protected boolean isDot() {
@@ -90,10 +102,25 @@ public abstract class Lexer<Type extends Enum<Type>> {
 	}
 	
 	protected void skipNewline() {
-		while (isNewline()) { // no need for !isFinished
+		while (isNewline() && notFinished()) {
 			advance();
 			line++;
+			col = 0;
 		}
+	}
+	
+	protected void skipCRLF() {
+		while (isCRLF() && notFinished()) {
+			advance();
+			advance();
+			line++;
+			col = 0;
+		}
+	}
+	
+	protected void skipCarriageReturn() {
+		while (isCarriageReturn() && notFinished())
+			advance();
 	}
 	
 	public static boolean isInteger(String word) {
@@ -103,10 +130,10 @@ public abstract class Lexer<Type extends Enum<Type>> {
 	}
 	
 	public Token<Type> error() throws ParsingException {
-		throw new ParsingException(line, pos, current);
+		throw new ParsingException(line, col, current);
 	}
 	
 	public Token<Type> error(String msg) throws ParsingException {
-		throw new ParsingException(line, pos, current, msg);
+		throw new ParsingException(line, col, current, msg);
 	}
 }
