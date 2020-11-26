@@ -44,7 +44,6 @@ public class JsonGenerator implements Visitor {
 		visit(ast);
 		postProcessChildren();
 		System.out.println(String.format("Found %d object, %d array", objCount, arrCount));
-		System.out.println(context.size());
 		return sb;
 	}
 	

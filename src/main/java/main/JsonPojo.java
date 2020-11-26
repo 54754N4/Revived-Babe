@@ -792,14 +792,14 @@ public abstract class JsonPojo {
 		// Measure compilation/interpretation
 		long duration = System.currentTimeMillis();
 		try {
-			JsonGenerator generator = new JsonGenerator("Optometry", input);
+			JsonGenerator generator = new JsonGenerator("ExchangeRate", input);
 			StringBuilder sb = generator.interpret();
 			Files.writeString(Paths.get("out.java"), sb.toString());
 //			System.out.println(sb);
 		} finally {
 			System.out.println(
 					String.format(
-							"Executed for : %d", 
+							"Executed for : %d ms", 
 							System.currentTimeMillis() - duration));
 		}
 	}
