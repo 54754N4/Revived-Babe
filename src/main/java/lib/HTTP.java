@@ -71,6 +71,95 @@ public final class HTTP {
 		CookieHandler.setDefault(manager);
 	}
 	
+	public static String getParamsString(Map<String, String> params, String separator, boolean encode) throws UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+        	if (result.length() != 0) result.append(separator);
+        	if (entry.getValue() == null)
+        		result.append(entry.getKey());
+        	else if (encode)
+        		result.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
+        			.append("=")
+        			.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+        	else 
+        		result.append(entry.getKey())
+    				.append("=")
+    				.append(entry.getValue());
+        }
+        return result.toString(); 
+    }
+	
+	public static String parseCookies(String separator, List<HttpCookie> cookies) {
+		StringBuilder sb = new StringBuilder();
+		for (HttpCookie cookie : cookies) {
+			if (sb.length() != 0)
+				sb.append(separator);
+			sb.append(cookie.toString());
+		}
+		return sb.toString();
+	}
+	
+	public static StringBuilder readStream(InputStream stream) throws IOException {
+		StringBuilder buffer = new StringBuilder();
+		if (stream != null) { 
+			String line;
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(stream))) {
+				while ((line = in.readLine()) != null)
+					buffer.append(line)
+						.append(System.lineSeparator());
+			}
+		}
+		return buffer;
+	}
+	
+	public static class Permissions {
+		public static TrustManager[] trustAllCertificates = new TrustManager[] {
+	        new X509TrustManager() {
+	            @Override
+	            public X509Certificate[] getAcceptedIssuers() {
+	                return null; // Not relevant.
+	            }
+	            @Override
+	            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+	                // Do nothing. Just allow them all.
+	            }
+	            @Override
+	            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+	                // Do nothing. Just allow them all.
+	            }
+	        }
+	    };
+
+		public static HostnameVerifier trustAllHostnames = new HostnameVerifier() {
+	        @Override
+	        public boolean verify(String hostname, SSLSession session) {
+	            return true; // Just allow them all.
+	        }
+	    };
+	    private static SSLSocketFactory factory = null;
+	    private static HostnameVerifier verifier = null;
+	    
+	    public static void allowAll() {
+	    	factory = HttpsURLConnection.getDefaultSSLSocketFactory();
+	    	verifier = HttpsURLConnection.getDefaultHostnameVerifier();
+	    	try {
+		        System.setProperty("jsse.enableSNIExtension", "false");
+		        SSLContext sc = SSLContext.getInstance("SSL");
+		        sc.init(null, trustAllCertificates, new SecureRandom());
+		        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		        HttpsURLConnection.setDefaultHostnameVerifier(trustAllHostnames);
+		    }
+		    catch (GeneralSecurityException e) {
+		        throw new ExceptionInInitializerError(e);
+		    }
+	    }
+	    
+	    public static void reset() {
+	    	HttpsURLConnection.setDefaultSSLSocketFactory(factory);
+	        HttpsURLConnection.setDefaultHostnameVerifier(verifier);
+	    }
+	}
+	
 	public static class RequestBuilder implements Closeable {
 		protected Method verb;
 		protected Integer timeout;
@@ -378,8 +467,6 @@ public final class HTTP {
 			return connection;
 		}
 		
-		// helper
-		
 		private String getUnnamedParams() {
 			if (unnamedGetParams.size() == 0) 
 				return "";
@@ -388,34 +475,6 @@ public final class HTTP {
 				if (sb.length() != 0)
 					sb.append("&");
 				sb.append(token);
-			}
-			return sb.toString();
-		}
-		
-		public static String getParamsString(Map<String, String> params, String separator, boolean encode) throws UnsupportedEncodingException {
-	        StringBuilder result = new StringBuilder();
-	        for (Map.Entry<String, String> entry : params.entrySet()) {
-	        	if (result.length() != 0) result.append(separator);
-	        	if (entry.getValue() == null)
-	        		result.append(entry.getKey());
-	        	else if (encode)
-	        		result.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
-	        			.append("=")
-	        			.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-	        	else 
-	        		result.append(entry.getKey())
-        				.append("=")
-        				.append(entry.getValue());
-	        }
-	        return result.toString(); 
-	    }
-		
-		public static String parseCookies(String separator, List<HttpCookie> cookies) {
-			StringBuilder sb = new StringBuilder();
-			for (HttpCookie cookie : cookies) {
-				if (sb.length() != 0)
-					sb.append(separator);
-				sb.append(cookie.toString());
 			}
 			return sb.toString();
 		}
@@ -589,70 +648,8 @@ public final class HTTP {
 		public void close() throws IOException {
 			connection.disconnect();
 		}
-		
-		// helper
-		
-		public static StringBuilder readStream(InputStream stream) throws IOException {
-			StringBuilder buffer = new StringBuilder();
-			if (stream != null) { 
-				String line;
-				try (BufferedReader in = new BufferedReader(new InputStreamReader(stream))) {
-					while ((line = in.readLine()) != null)
-						buffer.append(line)
-							.append(System.lineSeparator());
-				}
-			}
-			return buffer;
-		}
 	}
 	
-	public static class Permissions {
-		public static TrustManager[] trustAllCertificates = new TrustManager[] {
-	        new X509TrustManager() {
-	            @Override
-	            public X509Certificate[] getAcceptedIssuers() {
-	                return null; // Not relevant.
-	            }
-	            @Override
-	            public void checkClientTrusted(X509Certificate[] certs, String authType) {
-	                // Do nothing. Just allow them all.
-	            }
-	            @Override
-	            public void checkServerTrusted(X509Certificate[] certs, String authType) {
-	                // Do nothing. Just allow them all.
-	            }
-	        }
-	    };
-
-		public static HostnameVerifier trustAllHostnames = new HostnameVerifier() {
-	        @Override
-	        public boolean verify(String hostname, SSLSession session) {
-	            return true; // Just allow them all.
-	        }
-	    };
-	    private static SSLSocketFactory factory = null;
-	    private static HostnameVerifier verifier = null;
-	    
-	    public static void allowAll() {
-	    	factory = HttpsURLConnection.getDefaultSSLSocketFactory();
-	    	verifier = HttpsURLConnection.getDefaultHostnameVerifier();
-	    	try {
-		        System.setProperty("jsse.enableSNIExtension", "false");
-		        SSLContext sc = SSLContext.getInstance("SSL");
-		        sc.init(null, trustAllCertificates, new SecureRandom());
-		        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		        HttpsURLConnection.setDefaultHostnameVerifier(trustAllHostnames);
-		    }
-		    catch (GeneralSecurityException e) {
-		        throw new ExceptionInInitializerError(e);
-		    }
-	    }
-	    
-	    public static void reset() {
-	    	HttpsURLConnection.setDefaultSSLSocketFactory(factory);
-	        HttpsURLConnection.setDefaultHostnameVerifier(verifier);
-	    }
-	}
 	
 	public static void main(String[] args) throws MalformedURLException, IOException {
 //		String endpoint = "http://api.qrserver.com/v1/create-qr-code/";
