@@ -83,6 +83,12 @@ public abstract class PrintCommand extends Command {
 		for (Entry<K, V> entry : map.entrySet()) 
 			print(markdown(entry.getKey()+" = "+entry.getValue()));
 	}
+	
+	protected void printBlock(Collection<String> lines) {
+		println("```");
+		lines.forEach(this::println);
+		println("```");
+	}
 
 	protected StatusUpdater getPrinter() {
 		return str -> println(str);
