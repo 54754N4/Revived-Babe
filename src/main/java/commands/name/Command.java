@@ -43,7 +43,8 @@ public enum Command {
 	SPEAK("speak", "say", "tts"), 
 	TIME("time", "t"), 
 	START("start", "s"), 
-	KILL("kill", "k");
+	KILL("kill", "k"), 
+	Log("log", "lo");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
