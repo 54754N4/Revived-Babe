@@ -1,6 +1,8 @@
 package json.interpreter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
@@ -16,24 +18,25 @@ public class JsonGenerator implements Visitor {
 	
 	private JsonParser parser;
 	private AST ast;
+	private List<String> created;
 	private Stack<Context> context;		// child objects/arrays
 	private String name;				// current object name
 	private StringBuilder sb;			// generated output
 	
 	private int depth, arrCount, objCount;	// tabulation depth + placeholders count
-	private boolean first, preprocess;
+	private boolean first;
 	
 	public JsonGenerator(String name, String input) throws Exception {
 		this.name = name;
 		parser = new JsonParser(new JsonLexer(input));
 		ast = parser.parse();
 		context = new Stack<>();
+		created = new ArrayList<>();
 		sb = new StringBuilder();
 		depth = 0;
 		arrCount = 0;
 		objCount = 0;
 		first = true;
-		preprocess = true;
 	}
 	
 	public StringBuilder interpret() throws Exception {
@@ -41,6 +44,7 @@ public class JsonGenerator implements Visitor {
 		visit(ast);
 		postProcessChildren();
 		System.out.println(String.format("Found %d object, %d array", objCount, arrCount));
+		System.out.println(context.size());
 		return sb;
 	}
 	
@@ -52,6 +56,9 @@ public class JsonGenerator implements Visitor {
 	 * backward-compatibility to care about. */
 	@Override
 	public void visit(JsonObject object) throws Exception {
+		if (created.contains(name))
+			return;
+		objCount++;
 		String prepend = "";
 		if (first) {	
 			first = false;
@@ -67,6 +74,7 @@ public class JsonGenerator implements Visitor {
 		writeToString(attributes);
 		writeBuilder(attributes);
 		sb.append(multiply("\t", --depth)+"}\n\n");
+		created.add(name);
 	}
 
 	// Needs to figure out array type by looking at first element
@@ -116,12 +124,10 @@ public class JsonGenerator implements Visitor {
 			else if (String.class.isInstance(value))
 				type = "String";
 			else if (JsonArray.class.isInstance(value)) {
-				if (preprocess)
-					context.push(new ArrayContext(key, JsonArray.class.cast(value)));
+				context.push(new ArrayContext(key, JsonArray.class.cast(value)));
 				type = String.format(ARRAY_NAME_FORMAT, arrCount++);
 			} else if (JsonObject.class.isInstance(value)) {
-				if (preprocess)
-					context.push(new ObjectContext(key, JsonObject.class.cast(value)));
+				context.push(new ObjectContext(key, JsonObject.class.cast(value)));
 				type = classify(key);
 			}
 			map.put(key, type);
@@ -201,23 +207,28 @@ public class JsonGenerator implements Visitor {
 	/* Start post-processing child classes and arrays
 	 * that had been replaced with placeholders. */
 	private void postProcessChildren() throws Exception {
-		preprocess = false;
 		String oldName;
 		ObjectContext obj;
 		ArrayContext arr;
-		for (Context c : context) {
-			oldName = name;
-			if (ObjectContext.class.isInstance(c)) {
-				obj = ObjectContext.class.cast(c);
-				name = obj.name;
-				visit(obj.object);			
-			} else if (ArrayContext.class.isInstance(c)) {
-				arr = ArrayContext.class.cast(c);
-				name = arr.name;
-				visit(arr.array);
+		List<Context> visitables = new ArrayList<>();
+		do {
+			visitables.addAll(context);
+			context.clear();
+			for (Context c : visitables) {
+				oldName = name;
+				if (ObjectContext.class.isInstance(c)) {
+					obj = ObjectContext.class.cast(c);
+					name = obj.name;
+					visit(obj.object);			
+				} else if (ArrayContext.class.isInstance(c)) {
+					arr = ArrayContext.class.cast(c);
+					name = arr.name;
+					visit(arr.array);
+				}
+				name = oldName;
 			}
-			name = oldName;
-		}
+			visitables.clear();
+		} while (context.size() != 0);
 	}
 	
 	// Replaces all placeholder names with actual type found or an object placeholder

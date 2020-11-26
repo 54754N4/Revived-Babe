@@ -44,7 +44,8 @@ public class JsonLexer extends Lexer<Type> {
 		StringBuilder sb = new StringBuilder();
 		char target = current;
 		advance();	// consume opening single or double quote
-		while (isNot(target) && notFinished()) {
+		while (notFinished() && 
+				(isNot(target) || (is(target) && isEscaped()))) {
 			sb.append(current);
 			advance();
 		}
@@ -74,9 +75,9 @@ public class JsonLexer extends Lexer<Type> {
 	public Token<Type> getNextToken() throws ParsingException {
 		while (notFinished()) {
 			if (isSpace()) skipWhiteSpace();
-			else if (isNewline()) skipNewline();
+			else if (isCRLF()) skipCRLF();
 			else if (isLetter()) return constant();
-			else if (isSingleQuote() || isDoubleQuote()) return string();
+			else if ((isSingleQuote() || isDoubleQuote()) && notEscaped()) return string();
 			else if (isDigit())	return number();
 			else switch (current) {
 				case ':': advance(); return Token.of(Type.COLON);

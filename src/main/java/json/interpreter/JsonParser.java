@@ -76,10 +76,14 @@ public class JsonParser extends IterativeParser<Type, AST> {
 		} else if (is(Type.DOUBLE)) {
 			consume(Type.DOUBLE);
 			return Double.parseDouble(curr.value);
-		} else if (is(Type.STRING)) {
+		} else if (is(Type.STRING)) {	
 			consume(Type.STRING);
 			return curr.value;
+		} else if (is(Type.EPSILON)) {
+			consume(Type.EPSILON);
+			return curr.value;
 		} else if (is(Type.OPEN_BRACKET)) return array(new JsonArray());
+		else if (is(Type.CLOSE_BRACKET)) return new JsonObject();	// return empty object in array
 		else if (is(Type.OPEN_CURLY)) return object();
 		return error(String.format("Invalid type value : %s", current.toString()));
 	}
