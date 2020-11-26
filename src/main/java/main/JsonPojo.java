@@ -753,22 +753,61 @@ public abstract class JsonPojo {
 //				+ "    }\r\n"
 //				+ "}";
 		
+//		String input = "{\r\n"
+//				+ "    \"abbreviation\": \"GMT\",\r\n"
+//				+ "    \"client_ip\": \"115.79.140.65\",\r\n"
+//				+ "    \"datetime\": \"2020-11-23T15:51:31.248095+00:00\",\r\n"
+//				+ "    \"day_of_week\": 1,\r\n"
+//				+ "    \"day_of_year\": 328,\r\n"
+//				+ "    \"dst\": false,\r\n"
+//				+ "    \"dst_from\": null,\r\n"
+//				+ "    \"dst_offset\": 0,\r\n"
+//				+ "    \"dst_until\": null,\r\n"
+//				+ "    \"raw_offset\": 0,\r\n"
+//				+ "    \"timezone\": \"Africa/Abidjan\",\r\n"
+//				+ "    \"unixtime\": 1606146691,\r\n"
+//				+ "    \"utc_datetime\": \"2020-11-23T15:51:31.248095+00:00\",\r\n"
+//				+ "    \"utc_offset\": \"+00:00\",\r\n"
+//				+ "    \"week_number\": 48\r\n"
+//				+ "}";
+		
 		String input = "{\r\n"
-				+ "    \"abbreviation\": \"GMT\",\r\n"
-				+ "    \"client_ip\": \"115.79.140.65\",\r\n"
-				+ "    \"datetime\": \"2020-11-23T15:51:31.248095+00:00\",\r\n"
-				+ "    \"day_of_week\": 1,\r\n"
-				+ "    \"day_of_year\": 328,\r\n"
-				+ "    \"dst\": false,\r\n"
-				+ "    \"dst_from\": null,\r\n"
-				+ "    \"dst_offset\": 0,\r\n"
-				+ "    \"dst_until\": null,\r\n"
-				+ "    \"raw_offset\": 0,\r\n"
-				+ "    \"timezone\": \"Africa/Abidjan\",\r\n"
-				+ "    \"unixtime\": 1606146691,\r\n"
-				+ "    \"utc_datetime\": \"2020-11-23T15:51:31.248095+00:00\",\r\n"
-				+ "    \"utc_offset\": \"+00:00\",\r\n"
-				+ "    \"week_number\": 48\r\n"
+				+ "    \"base\": \"EUR\",\r\n"
+				+ "    \"rates\": {\r\n"
+				+ "        \"GBP\": 0.89129,\r\n"
+				+ "        \"HKD\": 9.2235,\r\n"
+				+ "        \"IDR\": 16843.08,\r\n"
+				+ "        \"ILS\": 3.9538,\r\n"
+				+ "        \"DKK\": 7.442,\r\n"
+				+ "        \"INR\": 87.8655,\r\n"
+				+ "        \"CHF\": 1.0813,\r\n"
+				+ "        \"MXN\": 23.8479,\r\n"
+				+ "        \"CZK\": 26.138,\r\n"
+				+ "        \"SGD\": 1.593,\r\n"
+				+ "        \"THB\": 36.057,\r\n"
+				+ "        \"HRK\": 7.5552,\r\n"
+				+ "        \"MYR\": 4.8403,\r\n"
+				+ "        \"NOK\": 10.5705,\r\n"
+				+ "        \"CNY\": 7.8254,\r\n"
+				+ "        \"BGN\": 1.9558,\r\n"
+				+ "        \"PHP\": 57.257,\r\n"
+				+ "        \"SEK\": 10.1568,\r\n"
+				+ "        \"PLN\": 4.4749,\r\n"
+				+ "        \"ZAR\": 18.1098,\r\n"
+				+ "        \"CAD\": 1.5472,\r\n"
+				+ "        \"ISK\": 161.3,\r\n"
+				+ "        \"BRL\": 6.3494,\r\n"
+				+ "        \"RON\": 4.8743,\r\n"
+				+ "        \"NZD\": 1.7,\r\n"
+				+ "        \"TRY\": 9.3878,\r\n"
+				+ "        \"JPY\": 124.04,\r\n"
+				+ "        \"RUB\": 90.1153,\r\n"
+				+ "        \"KRW\": 1318.24,\r\n"
+				+ "        \"USD\": 1.19,\r\n"
+				+ "        \"HUF\": 361.18,\r\n"
+				+ "        \"AUD\": 1.6163\r\n"
+				+ "    },\r\n"
+				+ "    \"date\": \"2020-11-26\"\r\n"
 				+ "}";
 
 		// Test Lexer
@@ -792,7 +831,7 @@ public abstract class JsonPojo {
 		// Measure compilation/interpretation
 		long duration = System.currentTimeMillis();
 		try {
-			JsonGenerator generator = new JsonGenerator("ExchangeRate", input);
+			JsonGenerator generator = new JsonGenerator("ExchangeRatesResult", input);
 			StringBuilder sb = generator.interpret();
 			Files.writeString(Paths.get("out.java"), sb.toString());
 //			System.out.println(sb);
