@@ -5,14 +5,14 @@ public final class ExchangeRate implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public String date;
 	public Object val;
-	public OBJECT_PLACEHOLDER0[] arr;
+	public AnonymousObject[] arr;
 	public double vald;
 	public boolean valb;
 	public Rates rates;
 	public String base;
 	public int vali;
 
-	public ExchangeRate(String date, Object val, OBJECT_PLACEHOLDER0[] arr, double vald, boolean valb, Rates rates, String base, int vali) {
+	public ExchangeRate(String date, Object val, AnonymousObject[] arr, double vald, boolean valb, Rates rates, String base, int vali) {
 		this.date = date;
 		this.val = val;
 		this.arr = arr;
@@ -31,7 +31,7 @@ public final class ExchangeRate implements Serializable {
 		return val;
 	}
 
-	public OBJECT_PLACEHOLDER0[] getArr() {
+	public AnonymousObject[] getArr() {
 		return arr;
 	}
 
@@ -63,7 +63,7 @@ public final class ExchangeRate implements Serializable {
 		this.val = val;
 	}
 
-	public void setArr(OBJECT_PLACEHOLDER0[] arr) {
+	public void setArr(AnonymousObject[] arr) {
 		this.arr = arr;
 	}
 
@@ -105,7 +105,7 @@ public final class ExchangeRate implements Serializable {
 	public static class Builder {
 		public String date;
 		public Object val;
-		public OBJECT_PLACEHOLDER0[] arr;
+		public AnonymousObject[] arr;
 		public double vald;
 		public boolean valb;
 		public Rates rates;
@@ -122,7 +122,7 @@ public final class ExchangeRate implements Serializable {
 			return this;
 		}
 
-		public Builder setArr(OBJECT_PLACEHOLDER0[] arr) {
+		public Builder setArr(AnonymousObject[] arr) {
 			this.arr = arr;
 			return this;
 		}
@@ -158,11 +158,11 @@ public final class ExchangeRate implements Serializable {
 	}
 }
 
-final class OBJECT_PLACEHOLDER0 implements Serializable {
+final class AnonymousObject implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public String el;
 
-	public OBJECT_PLACEHOLDER0(String el) {
+	public AnonymousObject(String el) {
 		this.el = el;
 	}
 
@@ -190,8 +190,8 @@ final class OBJECT_PLACEHOLDER0 implements Serializable {
 			return this;
 		}
 
-		public OBJECT_PLACEHOLDER0 build() {
-			return new OBJECT_PLACEHOLDER0(el);
+		public AnonymousObject build() {
+			return new AnonymousObject(el);
 		}
 	}
 }
