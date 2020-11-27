@@ -14,6 +14,13 @@ repositories {
   jcenter()
 }
 
+test {
+  useJUnitPlatform {
+  	includeTags 'fast', 'slow'
+	//excludeTags 'slow'
+  }
+}
+
 dependencies {
   implementation 'net.dv8tion:JDA:4.2.0_222'			// discord
   implementation 'com.sedmelluq:lavaplayer:1.3.61'		// audio
@@ -22,6 +29,9 @@ dependencies {
   implementation 'org.reflections:reflections:0.9.12'	// command's class matching
   implementation 'com.google.code.gson:gson:2.8.6'		// json parsing
   
+  // JUnit 5 for testing
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
 compileJava.options.encoding = 'UTF-8'
