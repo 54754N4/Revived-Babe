@@ -6,12 +6,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import com.google.gson.Gson;
 
 import bot.model.MusicBot;
 import bot.model.UserBot;
-import lib.HTTP;
+import lib.HTTP.Method;
+import lib.HTTP.MultipartRequestBuilder;
 import lib.HTTP.RequestBuilder;
 import lib.HTTP.ResponseHandler;
 import lib.PrintBooster;
@@ -90,13 +92,18 @@ public abstract class DiscordCommand extends PrintCommand {
 		message.delete().queue();
 	}
 	
+	/* Rest + multipart/form requests */
+	
 	public static <T> T restRequest(String apiFormat, Class<T> cls, Object... args) throws IOException {
-		try (	// try-with-resources to auto-close close-able resources
-			RequestBuilder builder = new HTTP.RequestBuilder(String.format(apiFormat, args));
-			ResponseHandler handler = new HTTP.ResponseHandler(builder.build());
-		) {
+		try (ResponseHandler handler = restRequest(apiFormat, args)) {
 			return gson.fromJson(handler.getResponse(), cls);
-		}	
+		}
+	}
+	
+	public static <T> T formRequest(String apiFormat, Class<T> cls, Consumer<MultipartRequestBuilder> setup, Object...args) throws IOException {
+		try (ResponseHandler handler = formRequest(apiFormat, setup, args)) {
+			return gson.fromJson(handler.getResponse(), cls);
+		}
 	}
 	
 	public static ResponseHandler restRequest(String apiFormat, Object...args) throws IOException {
@@ -105,6 +112,13 @@ public abstract class DiscordCommand extends PrintCommand {
 		}
 	}
 	
+	public static ResponseHandler formRequest(String apiFormat, Consumer<MultipartRequestBuilder> setup, Object...args) throws IOException {
+		try (MultipartRequestBuilder builder = new MultipartRequestBuilder(String.format(apiFormat, args))) {
+			builder.setMethod(Method.POST);
+			setup.accept(builder);
+			return new ResponseHandler(builder.build());
+		}
+	}
 	
 	/* help building + argument parsing*/
 	

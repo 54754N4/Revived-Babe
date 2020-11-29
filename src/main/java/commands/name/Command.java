@@ -45,7 +45,8 @@ public enum Command {
 	START("start", "s"), 
 	KILL("kill", "k"), 
 	Log("log", "lo"), 
-	RATES("rates", "ra");
+	RATES("rates", "ra"), 
+	TRACE("trace", "what");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
