@@ -27,8 +27,8 @@ public class JsonGenerator implements Visitor {
 	private ArrayContext arrayContext;		// current array visited
 	private String name;					// current object name
 	
-	public JsonGenerator(String name, String input) throws Exception {
-		this.name = name;
+	public JsonGenerator(String responseName, String input) throws Exception {
+		this.name = responseName;
 		parser = new JsonParser(new JsonLexer(input));
 		ast = parser.parse();
 		sb = new StringBuilder();
@@ -152,6 +152,7 @@ public class JsonGenerator implements Visitor {
 			replaceAll(arrayName, with);
 		}
 		do {
+			// Copy objects array to allow visit to concurrently push to objects list
 			List<ObjectContext> copies = new ArrayList<>(objects);
 			for (ObjectContext objectContext : copies) {
 				oldName = name;
