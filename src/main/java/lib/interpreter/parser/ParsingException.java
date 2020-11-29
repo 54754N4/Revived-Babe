@@ -6,7 +6,7 @@ public class ParsingException extends Exception {
 	public final char c;
 
 	public ParsingException(int line, int pos, char c, String msg) {
-		super(String.format("[line,col]=[%d,%d] Unexpected syntax at: %c. %s", line, pos, c, msg));
+		super(String.format("[line,col]=[%d,%d] Unexpected syntax at: %c%n%s", line, pos, c, msg));
 		this.line = line;
 		this.pos = pos;
 		this.c = c;

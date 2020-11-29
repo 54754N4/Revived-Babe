@@ -43,6 +43,10 @@ public abstract class Lexer<Type extends Enum<Type>> {
 		return is(' ');
 	}
 	
+	protected boolean isTab() {
+		return is('\t');
+	}
+	
 	protected boolean isNewline() {
 		return is('\n');
 	}
@@ -98,6 +102,11 @@ public abstract class Lexer<Type extends Enum<Type>> {
 	
 	protected void skipWhiteSpace() {
 		while (isSpace()) 
+			advance();
+	}
+	
+	protected void skipTab() {
+		while (isTab()) 
 			advance();
 	}
 	

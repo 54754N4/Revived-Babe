@@ -28,7 +28,7 @@ public abstract class IterativeParser<Type extends Enum<Type>, Tree> implements 
 	
 	protected void consume(Type type) throws ParsingException {
 		if (current.type == type) current = lexer.getNextToken();
-		else lexer.error(String.format("Expected token of type: (%s , %s) ", type.name(), type.toString()));
+		else lexer.error(String.format("Expected token of type: (%s,%s) ", type.name(), type.toString()));
 	}
 	
 	public Tree error() throws ParsingException {
