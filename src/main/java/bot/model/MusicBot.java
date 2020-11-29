@@ -1,8 +1,8 @@
 package bot.model;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
@@ -47,11 +47,11 @@ public abstract class MusicBot extends UserBot {
 	
 	public MusicBot(Bot bot) {
 		super(bot);
-		playerManagers = new HashMap<>();
-		managers = new HashMap<>();
-		players = new HashMap<>();
-		senders = new HashMap<>();
-		schedulers = new HashMap<>();
+		playerManagers = new ConcurrentHashMap<>();
+		managers = new ConcurrentHashMap<>();
+		players = new ConcurrentHashMap<>();
+		senders = new ConcurrentHashMap<>();
+		schedulers = new ConcurrentHashMap<>();
 	}
 	
 	protected AudioSendHandler getAudioSendHandler() {
