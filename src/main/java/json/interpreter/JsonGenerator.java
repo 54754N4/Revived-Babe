@@ -12,37 +12,38 @@ import json.interpreter.AST.JsonArray;
 import json.interpreter.AST.JsonObject;
 
 public class JsonGenerator implements Visitor {
-	// Formats to create name placeholder for anonymous objects/arrays 
-	private static final String OBJECT_NAME_FORMAT = "OBJECT_PLACEHOLDER%d";
-	private static final String ARRAY_NAME_FORMAT = "ARRAY_PLACEHOLDER%d[]";
-	
+	// Interpreter attributes
 	private JsonParser parser;
 	private AST ast;
-	private List<String> created;
-	private Stack<Context> context;		// child objects/arrays
-	private String name;				// current object name
-	private StringBuilder sb;			// generated output
 	
-	private int depth, arrCount, objCount;	// tabulation depth + placeholders count
-	private boolean first;
+	private static final String ARRAY_NAME_FORMAT = "ARRAY_PLACEHOLDER%d[]";
+	
+	private int depth, arrCount, objCount;	// current tabulation depth + occurences
+	private boolean first, debug;			// first == public but not static class
+	private StringBuilder sb;				// generated output
+	
+	private List<ObjectContext> objects;
+	private Stack<ArrayContext> arrays;		// child objects/arrays
+	private ArrayContext arrayContext;		// current array visited
+	private String name;					// current object name
 	
 	public JsonGenerator(String name, String input) throws Exception {
 		this.name = name;
 		parser = new JsonParser(new JsonLexer(input));
 		ast = parser.parse();
-		context = new Stack<>();
-		created = new ArrayList<>();
 		sb = new StringBuilder();
+		objects = new ArrayList<>();
+		arrays = new Stack<>();
 		depth = 0;
 		arrCount = 0;
 		objCount = 0;
 		first = true;
+		debug = false;
 	}
 	
 	public StringBuilder interpret() throws Exception {
 		sb.append(Constants.IMPORT+"\n\n");
 		visit(ast);
-		postProcessChildren();
 		System.out.println(String.format("Found %d object, %d array", objCount, arrCount));
 		return sb;
 	}
@@ -55,56 +56,26 @@ public class JsonGenerator implements Visitor {
 	 * backward-compatibility to care about. */
 	@Override
 	public void visit(JsonObject object) throws Exception {
-		if (created.contains(name))
-			return;
 		objCount++;
-		String prepend = "";
+		if (debug) System.out.println("Inside object : "+name);
+		String prepend = "public static ";
 		if (first) {	
 			first = false;
 			prepend = "public ";
 		}
-		sb.append(multiply("\t", depth++) + String.format("%sfinal class %s implements Serializable {%n", prepend, classify(name)));
+		sb.append("\n"+multiply("\t", depth++) + String.format("%sfinal class %s implements Serializable {%n", prepend, classify(name)));
 		sb.append(multiply("\t", depth) + "private static final long serialVersionUID = 1L;\n");
 		Map<String, String> attributes = scanAttributes(object);
 		writeAttributes(attributes);
-		writeConstructor(classify(name), attributes);
+		writeConstructor(attributes);
 		writeGetters(attributes);
-		writeSetters(attributes, "");	// make return type void
+		writeSetters(attributes);	// return void by default
 		writeToString(attributes);
 		writeBuilder(attributes);
+		postProcessChildren();
 		sb.append(multiply("\t", --depth)+"}\n\n");
-		created.add(name);
 	}
 
-	// Needs to figure out array type by looking at first element
-	@Override
-	public void visit(JsonArray array) throws Exception {	 
-		String oldName, type = "";
-		Object value;
-		value = array.list.get(0);	// in json array parsing, only first value is parsed
-		if (value == null) 
-			type = "Object";
-		else if (Boolean.class.isInstance(value))
-			type = "boolean";
-		else if (Integer.class.isInstance(value))
-			type = "int";
-		else if (Double.class.isInstance(value))
-			type = "double";
-		else if (String.class.isInstance(value))
-			type = "String";
-		else if (JsonArray.class.isInstance(value))
-			type = String.format(ARRAY_NAME_FORMAT, arrCount-1);
-		else if (JsonObject.class.isInstance(value)) {
-			oldName = name;
-			name = type = String.format(OBJECT_NAME_FORMAT, objCount++);	// object in array == unnamed => insert placeholder
-			visit(JsonObject.class.cast(value));
-			name = oldName;
-		}
-		replaceAll(String.format(ARRAY_NAME_FORMAT, arrCount-1), type+"[]");
-	}
-	
-	/* Helpers */
-	
 	private Map<String, String> scanAttributes(JsonObject object) {
 		Map<String, String> map = new HashMap<>();
 		String key, type = "";
@@ -123,15 +94,73 @@ public class JsonGenerator implements Visitor {
 			else if (String.class.isInstance(value))
 				type = "String";
 			else if (JsonArray.class.isInstance(value)) {
-				context.push(new ArrayContext(key, JsonArray.class.cast(value)));
-				type = String.format(ARRAY_NAME_FORMAT, arrCount++);
+				type = String.format(ARRAY_NAME_FORMAT, arrCount);
+				arrays.push(new ArrayContext(key, type, JsonArray.class.cast(value)));
+				if (debug) System.out.println("Setting placeholder array : "+type+" for name : "+key);
+				arrCount++;
 			} else if (JsonObject.class.isInstance(value)) {
-				context.push(new ObjectContext(key, JsonObject.class.cast(value)));
 				type = classify(key);
+				objects.add(new ObjectContext(key, type, JsonObject.class.cast(value)));
+				if (debug) System.out.println("Setting placeholder object : "+type+" for name : "+key);
 			}
 			map.put(key, type);
 		}
 		return map;
+	}
+	
+	// Needs to figure out array type by looking at first element
+	@Override
+	public void visit(JsonArray array) throws Exception {
+		if (debug) System.out.println("Dealing with array : "+arrayContext.name);
+		String type = "";
+		Object value;
+		value = array.list.get(0);	// in json array parsing, only first value is parsed
+		if (value == null) 
+			type = "Object";
+		else if (Boolean.class.isInstance(value))
+			type = "boolean";
+		else if (Integer.class.isInstance(value))
+			type = "int";
+		else if (Double.class.isInstance(value))
+			type = "double";
+		else if (String.class.isInstance(value))
+			type = "String";
+		else if (JsonArray.class.isInstance(value)) {
+			visit(JsonArray.class.cast(value));	// nested array so visit child array to know type
+			type = arrayContext.name+"[]";		
+		} else if (JsonObject.class.isInstance(value)) {
+			type = removeS(classify(arrayContext.name));	// remove ending s if plurar since it's object of array
+			objects.add(new ObjectContext(type, arrayContext.placeholder, JsonObject.class.cast(value)));
+		}
+		arrayContext.name = type;
+	}
+	
+	/* Helpers */
+	
+	/* Start post-processing child classes and arrays
+	 * that had been replaced with placeholders. */
+	private void postProcessChildren() throws Exception {
+		String oldName;
+		ArrayContext arrayContext;	
+		while (!arrays.isEmpty()) {
+			arrayContext =  arrays.pop();
+			this.arrayContext = arrayContext;
+			visit(arrayContext.element);
+			String arrayName = arrayContext.placeholder,
+					with = arrayContext.name+"[]";
+			if (debug) System.out.println("Renaming array : "+arrayName+" with : "+with);
+			replaceAll(arrayName, with);
+		}
+		do {
+			List<ObjectContext> copies = new ArrayList<>(objects);
+			for (ObjectContext objectContext : copies) {
+				oldName = name;
+				name = objectContext.name;
+				objects.remove(objectContext);	// remove BEFORE visiting
+				visit(objectContext.element);
+				name = oldName;
+			}
+		} while (objects.size() != 0);
 	}
 	
 	private void writeAttributes(Map<String, String> dict) {
@@ -141,11 +170,14 @@ public class JsonGenerator implements Visitor {
 		sb.append("\n");
 	}
 	
-	private void writeConstructor(String name, Map<String, String> attributes) {
+	private void writeConstructor(Map<String, String> attributes) {
+		name = classify(name);
 		String indent = multiply("\t", depth++);
 		sb.append(String.format("%spublic %s(", indent, name));
 		attributes.forEach((key, value) -> sb.append(String.format("%s %s, ", value, key)));
-		deleteLastChars(2).append(") {\n");			// delete last comma + space 
+		if (attributes.size() != 0) // delete last comma + space
+			deleteLastChars(2);
+		sb.append(") {\n");
 		// Transfer parameters to attributes
 		String inner = multiply("\t", depth);
 		attributes.forEach((key, value) -> sb.append(String.format("%2$sthis.%1$s = %1$s;%n", key, inner)));
@@ -161,6 +193,10 @@ public class JsonGenerator implements Visitor {
 				getter = (key.equals("bool") ? "is": "get") + name;
 			sb.append(String.format("%spublic %s %s() {%n%sreturn %s;%n%s}%n%n", indent, value, getter, inner, key, indent));
 		});
+	}
+	
+	private void writeSetters(Map<String, String> attributes) {
+		writeSetters(attributes, "");
 	}
 	
 	private void writeSetters(Map<String, String> attributes, String returnType) {
@@ -198,36 +234,10 @@ public class JsonGenerator implements Visitor {
 				inner = multiply("\t", depth);
 		sb.append(String.format("%spublic %s build() {%n%sreturn new %s(", indent, classify(name), inner, classify(name)));
 		attributes.forEach((key, value) -> sb.append(String.format("%s,", key)));
-		sb.deleteCharAt(sb.length()-1);
+		if (attributes.size() != 0)
+			sb.deleteCharAt(sb.length()-1);
 		sb.append(String.format(");%n%s}%n", indent));
 		depth--;
-	}
-	
-	/* Start post-processing child classes and arrays
-	 * that had been replaced with placeholders. */
-	private void postProcessChildren() throws Exception {
-		String oldName;
-		ObjectContext obj;
-		ArrayContext arr;
-		List<Context> visitables = new ArrayList<>();
-		do {
-			visitables.addAll(context);
-			context.clear();
-			for (Context c : visitables) {
-				oldName = name;
-				if (ObjectContext.class.isInstance(c)) {
-					obj = ObjectContext.class.cast(c);
-					name = obj.name;
-					visit(obj.object);			
-				} else if (ArrayContext.class.isInstance(c)) {
-					arr = ArrayContext.class.cast(c);
-					name = arr.name;
-					visit(arr.array);
-				}
-				name = oldName;
-			}
-			visitables.clear();
-		} while (context.size() != 0);
 	}
 	
 	// Replaces all placeholder names with actual type found or an object placeholder
@@ -248,6 +258,10 @@ public class JsonGenerator implements Visitor {
 		return str.substring(0, 1).toUpperCase() + str.substring(1);
 	}
 	
+	private static String removeS(String str) {
+		return str.endsWith("s") ? str.substring(0, str.length()-1) : str;
+	}
+	
 	private static String multiply(String start, long count) {
 		StringBuilder sb = new StringBuilder();
 		while (count-- > 0) sb.append(start);
@@ -258,25 +272,26 @@ public class JsonGenerator implements Visitor {
 		public static final String IMPORT = "import java.io.Serializable;";
 	}
 	
-	public static class Context {}
-	
-	public static final class ObjectContext extends Context {
-		public String name;
-		public JsonObject object;
+	private static abstract class Context<T extends AST> {
+		public String name, placeholder;
+		public T element;
 		
-		public ObjectContext(String name, JsonObject object) {
+		public Context(String name, String placeholder, T element) {
 			this.name = name;
-			this.object = object;
+			this.element = element;
+			this.placeholder = placeholder;
 		}
 	}
 	
-	public static final class ArrayContext extends Context {
-		public String name;
-		public JsonArray array;
-		
-		public ArrayContext(String name, JsonArray array) {
-			this.name = name;
-			this.array = array;
+	private static final class ArrayContext extends Context<JsonArray> {
+		public ArrayContext(String name, String placeholder, JsonArray e) {
+			super(name, placeholder, e);
+		}
+	}
+	
+	private static final class ObjectContext extends Context<JsonObject>{
+		public ObjectContext(String name, String placeholder, JsonObject e) {
+			super(name, placeholder, e);
 		}
 	}
 }

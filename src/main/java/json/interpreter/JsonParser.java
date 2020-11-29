@@ -83,7 +83,7 @@ public class JsonParser extends IterativeParser<Type, AST> {
 			consume(Type.EPSILON);
 			return curr.value;
 		} else if (is(Type.OPEN_BRACKET)) return array(new JsonArray());
-		else if (is(Type.CLOSE_BRACKET)) return new JsonObject();	// return empty object in array
+		else if (is(Type.CLOSE_BRACKET)) return "";	// By default an empty array is made of strings 
 		else if (is(Type.OPEN_CURLY)) return object();
 		return error(String.format("Invalid type value : %s", current.toString()));
 	}

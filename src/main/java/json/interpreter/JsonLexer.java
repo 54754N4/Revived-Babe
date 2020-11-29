@@ -75,6 +75,7 @@ public class JsonLexer extends Lexer<Type> {
 	public Token<Type> getNextToken() throws ParsingException {
 		while (notFinished()) {
 			if (isSpace()) skipWhiteSpace();
+			else if (isTab()) skipTab();
 			else if (isCRLF()) skipCRLF();
 			else if (isLetter()) return constant();
 			else if ((isSingleQuote() || isDoubleQuote()) && notEscaped()) return string();
@@ -86,7 +87,7 @@ public class JsonLexer extends Lexer<Type> {
 				case ']': advance(); return Token.of(Type.CLOSE_BRACKET);
 				case '{': advance(); return Token.of(Type.OPEN_CURLY);
 				case '}': advance(); return Token.of(Type.CLOSE_CURLY);
-				default: return error();
+				default: return error("Unexpted character : "+current);
 			}
 		} return Token.of(Type.EOF);
 	}
