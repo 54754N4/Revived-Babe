@@ -5,19 +5,19 @@ import java.io.Serializable;
 
 public final class TraceMoeResult implements Serializable {
 	private static final long serialVersionUID = 1L;
-	public int RawDocsCount;
+	public long RawDocsCount;
 	public boolean CacheHit;
 	public String[] strings;
 	public Doc[] docs;
-	public int limit_ttl;
-	public int RawDocsSearchTime;
-	public int quota;
-	public int limit;
-	public int ReRankSearchTime;
-	public int quota_ttl;
-	public int trial;
+	public long limit_ttl;
+	public long RawDocsSearchTime;
+	public long quota;
+	public long limit;
+	public long ReRankSearchTime;
+	public long quota_ttl;
+	public long trial;
 
-	public TraceMoeResult(int RawDocsCount, boolean CacheHit, String[] strings, Doc[] docs, int limit_ttl, int RawDocsSearchTime, int quota, int limit, int ReRankSearchTime, int quota_ttl, int trial) {
+	public TraceMoeResult(long RawDocsCount, boolean CacheHit, String[] strings, Doc[] docs, long limit_ttl, long RawDocsSearchTime, long quota, long limit, long ReRankSearchTime, long quota_ttl, long trial) {
 		this.RawDocsCount = RawDocsCount;
 		this.CacheHit = CacheHit;
 		this.strings = strings;
@@ -31,7 +31,7 @@ public final class TraceMoeResult implements Serializable {
 		this.trial = trial;
 	}
 
-	public int getRawDocsCount() {
+	public long getRawDocsCount() {
 		return RawDocsCount;
 	}
 
@@ -47,35 +47,35 @@ public final class TraceMoeResult implements Serializable {
 		return docs;
 	}
 
-	public int getLimit_ttl() {
+	public long getLimit_ttl() {
 		return limit_ttl;
 	}
 
-	public int getRawDocsSearchTime() {
+	public long getRawDocsSearchTime() {
 		return RawDocsSearchTime;
 	}
 
-	public int getQuota() {
+	public long getQuota() {
 		return quota;
 	}
 
-	public int getLimit() {
+	public long getLimit() {
 		return limit;
 	}
 
-	public int getReRankSearchTime() {
+	public long getReRankSearchTime() {
 		return ReRankSearchTime;
 	}
 
-	public int getQuota_ttl() {
+	public long getQuota_ttl() {
 		return quota_ttl;
 	}
 
-	public int getTrial() {
+	public long getTrial() {
 		return trial;
 	}
 
-	public void setRawDocsCount(int RawDocsCount) {
+	public void setRawDocsCount(long RawDocsCount) {
 		this.RawDocsCount = RawDocsCount;
 	}
 
@@ -91,31 +91,31 @@ public final class TraceMoeResult implements Serializable {
 		this.docs = docs;
 	}
 
-	public void setLimit_ttl(int limit_ttl) {
+	public void setLimit_ttl(long limit_ttl) {
 		this.limit_ttl = limit_ttl;
 	}
 
-	public void setRawDocsSearchTime(int RawDocsSearchTime) {
+	public void setRawDocsSearchTime(long RawDocsSearchTime) {
 		this.RawDocsSearchTime = RawDocsSearchTime;
 	}
 
-	public void setQuota(int quota) {
+	public void setQuota(long quota) {
 		this.quota = quota;
 	}
 
-	public void setLimit(int limit) {
+	public void setLimit(long limit) {
 		this.limit = limit;
 	}
 
-	public void setReRankSearchTime(int ReRankSearchTime) {
+	public void setReRankSearchTime(long ReRankSearchTime) {
 		this.ReRankSearchTime = ReRankSearchTime;
 	}
 
-	public void setQuota_ttl(int quota_ttl) {
+	public void setQuota_ttl(long quota_ttl) {
 		this.quota_ttl = quota_ttl;
 	}
 
-	public void setTrial(int trial) {
+	public void setTrial(long trial) {
 		this.trial = trial;
 	}
 
@@ -138,19 +138,19 @@ public final class TraceMoeResult implements Serializable {
 	}
 
 	public static class Builder {
-		public int RawDocsCount;
+		public long RawDocsCount;
 		public boolean CacheHit;
 		public String[] strings;
 		public Doc[] docs;
-		public int limit_ttl;
-		public int RawDocsSearchTime;
-		public int quota;
-		public int limit;
-		public int ReRankSearchTime;
-		public int quota_ttl;
-		public int trial;
+		public long limit_ttl;
+		public long RawDocsSearchTime;
+		public long quota;
+		public long limit;
+		public long ReRankSearchTime;
+		public long quota_ttl;
+		public long trial;
 
-		public Builder setRawDocsCount(int RawDocsCount) {
+		public Builder setRawDocsCount(long RawDocsCount) {
 			this.RawDocsCount = RawDocsCount;
 			return this;
 		}
@@ -170,37 +170,37 @@ public final class TraceMoeResult implements Serializable {
 			return this;
 		}
 
-		public Builder setLimit_ttl(int limit_ttl) {
+		public Builder setLimit_ttl(long limit_ttl) {
 			this.limit_ttl = limit_ttl;
 			return this;
 		}
 
-		public Builder setRawDocsSearchTime(int RawDocsSearchTime) {
+		public Builder setRawDocsSearchTime(long RawDocsSearchTime) {
 			this.RawDocsSearchTime = RawDocsSearchTime;
 			return this;
 		}
 
-		public Builder setQuota(int quota) {
+		public Builder setQuota(long quota) {
 			this.quota = quota;
 			return this;
 		}
 
-		public Builder setLimit(int limit) {
+		public Builder setLimit(long limit) {
 			this.limit = limit;
 			return this;
 		}
 
-		public Builder setReRankSearchTime(int ReRankSearchTime) {
+		public Builder setReRankSearchTime(long ReRankSearchTime) {
 			this.ReRankSearchTime = ReRankSearchTime;
 			return this;
 		}
 
-		public Builder setQuota_ttl(int quota_ttl) {
+		public Builder setQuota_ttl(long quota_ttl) {
 			this.quota_ttl = quota_ttl;
 			return this;
 		}
 
-		public Builder setTrial(int trial) {
+		public Builder setTrial(long trial) {
 			this.trial = trial;
 			return this;
 		}
@@ -216,13 +216,13 @@ public final class TraceMoeResult implements Serializable {
 		public String title_native;
 		public String[] synonyms;
 		public String title_romaji;
-		public int episode;
-		public int mal_id;
+		public String episode;
+		public long mal_id;
 		public String title;
-		public int anilist_id;
+		public long anilist_id;
 		public boolean is_adult;
 		public String tokenthumb;
-		public Synonyms_chinese[] synonyms_chinese;
+		public String[] synonyms_chinese;
 		public double at;
 		public String filename;
 		public double similarity;
@@ -232,7 +232,7 @@ public final class TraceMoeResult implements Serializable {
 		public double to;
 		public String anime;
 
-		public Doc(String title_chinese, String title_native, String[] synonyms, String title_romaji, int episode, int mal_id, String title, int anilist_id, boolean is_adult, String tokenthumb, Synonyms_chinese[] synonyms_chinese, double at, String filename, double similarity, String season, String title_english, double from, double to, String anime) {
+		public Doc(String title_chinese, String title_native, String[] synonyms, String title_romaji, String episode, long mal_id, String title, long anilist_id, boolean is_adult, String tokenthumb, String[] synonyms_chinese, double at, String filename, double similarity, String season, String title_english, double from, double to, String anime) {
 			this.title_chinese = title_chinese;
 			this.title_native = title_native;
 			this.synonyms = synonyms;
@@ -270,11 +270,11 @@ public final class TraceMoeResult implements Serializable {
 			return title_romaji;
 		}
 
-		public int getEpisode() {
+		public String getEpisode() {
 			return episode;
 		}
 
-		public int getMal_id() {
+		public long getMal_id() {
 			return mal_id;
 		}
 
@@ -282,7 +282,7 @@ public final class TraceMoeResult implements Serializable {
 			return title;
 		}
 
-		public int getAnilist_id() {
+		public long getAnilist_id() {
 			return anilist_id;
 		}
 
@@ -294,7 +294,7 @@ public final class TraceMoeResult implements Serializable {
 			return tokenthumb;
 		}
 
-		public Synonyms_chinese[] getSynonyms_chinese() {
+		public String[] getSynonyms_chinese() {
 			return synonyms_chinese;
 		}
 
@@ -346,11 +346,11 @@ public final class TraceMoeResult implements Serializable {
 			this.title_romaji = title_romaji;
 		}
 
-		public void setEpisode(int episode) {
+		public void setEpisode(String episode) {
 			this.episode = episode;
 		}
 
-		public void setMal_id(int mal_id) {
+		public void setMal_id(long mal_id) {
 			this.mal_id = mal_id;
 		}
 
@@ -358,7 +358,7 @@ public final class TraceMoeResult implements Serializable {
 			this.title = title;
 		}
 
-		public void setAnilist_id(int anilist_id) {
+		public void setAnilist_id(long anilist_id) {
 			this.anilist_id = anilist_id;
 		}
 
@@ -370,7 +370,7 @@ public final class TraceMoeResult implements Serializable {
 			this.tokenthumb = tokenthumb;
 		}
 
-		public void setSynonyms_chinese(Synonyms_chinese[] synonyms_chinese) {
+		public void setSynonyms_chinese(String[] synonyms_chinese) {
 			this.synonyms_chinese = synonyms_chinese;
 		}
 
@@ -437,13 +437,13 @@ public final class TraceMoeResult implements Serializable {
 			public String title_native;
 			public String[] synonyms;
 			public String title_romaji;
-			public int episode;
-			public int mal_id;
+			public String episode;
+			public long mal_id;
 			public String title;
-			public int anilist_id;
+			public long anilist_id;
 			public boolean is_adult;
 			public String tokenthumb;
-			public Synonyms_chinese[] synonyms_chinese;
+			public String[] synonyms_chinese;
 			public double at;
 			public String filename;
 			public double similarity;
@@ -473,12 +473,12 @@ public final class TraceMoeResult implements Serializable {
 				return this;
 			}
 
-			public Builder setEpisode(int episode) {
+			public Builder setEpisode(String episode) {
 				this.episode = episode;
 				return this;
 			}
 
-			public Builder setMal_id(int mal_id) {
+			public Builder setMal_id(long mal_id) {
 				this.mal_id = mal_id;
 				return this;
 			}
@@ -488,7 +488,7 @@ public final class TraceMoeResult implements Serializable {
 				return this;
 			}
 
-			public Builder setAnilist_id(int anilist_id) {
+			public Builder setAnilist_id(long anilist_id) {
 				this.anilist_id = anilist_id;
 				return this;
 			}
@@ -503,7 +503,7 @@ public final class TraceMoeResult implements Serializable {
 				return this;
 			}
 
-			public Builder setSynonyms_chinese(Synonyms_chinese[] synonyms_chinese) {
+			public Builder setSynonyms_chinese(String[] synonyms_chinese) {
 				this.synonyms_chinese = synonyms_chinese;
 				return this;
 			}
@@ -550,44 +550,6 @@ public final class TraceMoeResult implements Serializable {
 
 			public Doc build() {
 				return new Doc(title_chinese,title_native,synonyms,title_romaji,episode,mal_id,title,anilist_id,is_adult,tokenthumb,synonyms_chinese,at,filename,similarity,season,title_english,from,to,anime);
-			}
-		}
-
-		public static final class Synonyms_chinese implements Serializable {
-			private static final long serialVersionUID = 1L;
-			public Object empty;
-
-			public Synonyms_chinese(Object empty) {
-				this.empty = empty;
-			}
-
-			public Object getEmpty() {
-				return empty;
-			}
-
-			public void setEmpty(Object empty) {
-				this.empty = empty;
-			}
-
-			@Override
-			public String toString() {
-				return new StringBuilder()
-					.append(getClass().getName()).append("{\n")
-					.append("empty: ").append(empty+",\n")
-					.append("\n}").toString();
-			}
-
-			public static class Builder {
-				public Object empty;
-
-				public Builder setEmpty(Object empty) {
-					this.empty = empty;
-					return this;
-				}
-
-				public Synonyms_chinese build() {
-					return new Synonyms_chinese(empty);
-				}
 			}
 		}
 

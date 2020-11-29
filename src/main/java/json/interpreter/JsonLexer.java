@@ -35,9 +35,13 @@ public class JsonLexer extends Lexer<Type> {
 			result.append(current);
 			advance();
 		}
+		String num = result.toString();
+		long l;
 		return foundDot ? 
-				Token.of(Type.DOUBLE, Double.parseDouble(result.toString())) : 
-				Token.of(Type.NUMBER, Integer.parseInt(result.toString()));
+				Token.of(Type.DOUBLE, Double.parseDouble(num)) : 
+				num.length() > 9 && (l = Long.parseLong(num)) > Integer.MAX_VALUE ?
+					Token.of(Type.LONG, l) :
+					Token.of(Type.NUMBER, Integer.parseInt(num));
 	}
 	
 	private Token<Type> string() throws ParsingException {

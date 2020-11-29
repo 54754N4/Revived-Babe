@@ -35,6 +35,8 @@ public class JsonPrintInterpreter implements Visitor {
 				System.out.print(indent+key+": "+"(Bool) "+value+end);
 			} else if (Integer.class.isInstance(value)) {
 				System.out.print(indent+key+": "+"(Integer) "+value+end);
+			} else if (Long.class.isInstance(value)) {
+				System.out.print(indent+key+": "+"(Long) "+value+end);
 			} else if (Double.class.isInstance(value)) {
 				System.out.print(indent+key+": "+"(Double) "+value+end);
 			} else if (String.class.isInstance(value)) {
@@ -68,6 +70,8 @@ public class JsonPrintInterpreter implements Visitor {
 				System.out.print(indent+"(Bool) "+o+end);
 			} else if (Integer.class.isInstance(o)) {
 				System.out.print(indent+"(Integer) "+o+end);
+			} else if (Long.class.isInstance(o)) {
+				System.out.print(indent+"(Long) "+o+end);
 			} else if (Double.class.isInstance(o)) {
 				System.out.print(indent+"(Double) "+o+end);
 			} else if (String.class.isInstance(o)) {

@@ -89,6 +89,8 @@ public class JsonGenerator implements Visitor {
 				type = "boolean";
 			else if (Integer.class.isInstance(value))
 				type = "int";
+			else if (Long.class.isInstance(value))
+				type = "long";
 			else if (Double.class.isInstance(value))
 				type = "double";
 			else if (String.class.isInstance(value))
@@ -121,6 +123,8 @@ public class JsonGenerator implements Visitor {
 			type = "boolean";
 		else if (Integer.class.isInstance(value))
 			type = "int";
+		else if (Long.class.isInstance(value))
+			type = "long";
 		else if (Double.class.isInstance(value))
 			type = "double";
 		else if (String.class.isInstance(value))

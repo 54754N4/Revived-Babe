@@ -73,6 +73,9 @@ public class JsonParser extends IterativeParser<Type, AST> {
 		} else if (is(Type.NUMBER)) {
 			consume(Type.NUMBER);
 			return Integer.parseInt(curr.value);
+		} else if (is(Type.LONG)) {
+			consume(Type.LONG);
+			return Long.parseLong(curr.value);
 		} else if (is(Type.DOUBLE)) {
 			consume(Type.DOUBLE);
 			return Double.parseDouble(curr.value);

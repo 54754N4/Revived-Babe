@@ -2,7 +2,7 @@ package json.interpreter;
 
 public enum Type {
 	TRUE, FALSE, NULL,
-	NUMBER, DOUBLE, STRING, 
+	NUMBER, LONG, DOUBLE, STRING, 
 	
 	COLON(":"), COMMA(","), 
 	OPEN_BRACKET("["), CLOSE_BRACKET("]"),
