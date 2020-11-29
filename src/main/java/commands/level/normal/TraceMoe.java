@@ -1,25 +1,26 @@
 package commands.level.normal;
 
 import java.io.File;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 
 import bot.model.UserBot;
 import commands.model.DiscordCommand;
 import commands.name.Command;
 import json.TraceMoeResult;
 import json.TraceMoeResult.Doc;
+import lib.encode.Encoder;
+import lib.messages.ReactionsHandler;
 import lib.messages.ValidatingEmbedBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
-import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.entities.MessageReaction;
 
 public class TraceMoe extends DiscordCommand {
-	private static final String API_FORMAT = "https://trace.moe/api/search%s";
+	private static final String API_FORMAT = "https://trace.moe/api/search%s",
+			PREVIEW_FORMAT = "https://media.trace.moe/video/%s/%s?t=%s&token=%s";
 
 	public TraceMoe(UserBot bot, Message message) {
 		super(bot, message, Command.TRACE.names);
@@ -46,15 +47,16 @@ public class TraceMoe extends DiscordCommand {
 			final File image = attachment.downloadToFile(filename).get();
 			result = formRequest(API_FORMAT, TraceMoeResult.class, builder -> builder.addFile("image", image), "");	// empty string because of %s
 		} else 
-			result = restRequest(API_FORMAT, TraceMoeResult.class, "?url=" + URLEncoder.encode(input, StandardCharsets.UTF_8));
-		buildEmbed(result)
-			.map(EmbedBuilder::build)
-			.map(channel::sendMessage)
-			.forEach(RestAction::queue);
+			result = restRequest(API_FORMAT, TraceMoeResult.class, "?url=" + Encoder.encodeURL(input));
+		List<Package> packages = buildEmbed(result);
+		for (Package pkg : packages)
+			channel.sendMessage(pkg.builder.build())
+				.queue(new ReactionsHandler()
+						.handle(0x25B6, pkg.consumer));
 	}
 
-	private static Stream<EmbedBuilder> buildEmbed(TraceMoeResult result) {
-		List<EmbedBuilder> builders = new ArrayList<>();
+	private List<Package> buildEmbed(TraceMoeResult result) {
+		List<Package> builders = new ArrayList<>();
 		ValidatingEmbedBuilder search = new ValidatingEmbedBuilder();
 		search.setTitle("Search Results");
 		search.addField("Total Frames Searched", result.RawDocsCount);
@@ -65,7 +67,7 @@ public class TraceMoe extends DiscordCommand {
 		search.addField("Searches Remaining", result.limit);
 		search.addField("Time until Reset", result.limit_ttl);
 		search.addField("Quota Remaining", result.quota);
-		builders.add(search);
+		builders.add(new Package(search, action -> {}));
 		for (Doc doc : result.getDocs()) {
 			ValidatingEmbedBuilder eb = new ValidatingEmbedBuilder();
 			eb.setTitle(doc.title_romaji);
@@ -82,8 +84,24 @@ public class TraceMoe extends DiscordCommand {
 			eb.addField("MyAnimeList ID", doc.mal_id);
 			eb.addField("Filename", doc.filename);
 			eb.addField("Token Thumb", doc.tokenthumb);
-			builders.add(eb);
+			builders.add(new Package(eb, action -> 
+				printlnIndependently(
+						PREVIEW_FORMAT, 
+						""+doc.anilist_id, 
+						Encoder.encodeURL(doc.filename), 
+						""+doc.at, 
+						""+doc.tokenthumb)));
 		}
-		return builders.parallelStream();
+		return builders;
+	}
+	
+	private class Package {
+		public final EmbedBuilder builder;
+		public final Consumer<MessageReaction> consumer;
+		
+		public Package(EmbedBuilder builder, Consumer<MessageReaction> consumer) {
+			this.builder = builder;
+			this.consumer = consumer;
+		}
 	}
 }
