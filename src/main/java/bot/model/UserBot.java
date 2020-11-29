@@ -98,7 +98,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	}
 
 	public Activity getActivity() {
-		return Activity.listening("for commands");
+		return Activity.listening("mentions or commands");
 	}
 	
 	protected @Nullable IAudioSendFactory getAudioSendFactory() {
