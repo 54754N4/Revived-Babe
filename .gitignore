@@ -18,6 +18,7 @@ logs
 # Ignore generated files
 *.class
 bin
+out.java
 
 # Ignore batch files
 bat
@@ -26,3 +27,7 @@ bat
 # Ignore TTS files
 speak/*
 speak
+
+# Ignore all download files
+download/*
+download
