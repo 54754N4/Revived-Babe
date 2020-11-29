@@ -68,9 +68,10 @@ public class TraceMoe extends DiscordCommand {
 		search.addField("Time until Reset", result.limit_ttl);
 		search.addField("Quota Remaining", result.quota);
 		builders.add(new Package(search, action -> {}));
-		for (Doc doc : result.getDocs()) {
+		for (int i=0 ; i < result.docs.length; i++) {
+			final Doc doc = result.docs[i];
 			ValidatingEmbedBuilder eb = new ValidatingEmbedBuilder();
-			eb.setTitle(doc.title_romaji);
+			eb.setTitle(doc.title_romaji+" ("+(i+1)+"/"+result.docs.length+")");
 			eb.addField("Native Title", doc.title_native);
 			eb.addField("Chinese Title", doc.title_chinese);
 			eb.addField("English Title", doc.title_english);
