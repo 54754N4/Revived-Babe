@@ -4,7 +4,7 @@ import java.util.concurrent.ExecutionException;
 
 import bot.model.MusicBot;
 import bot.model.UserBot;
-import commands.model.DiscordCommand;
+import commands.model.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
 import lib.messages.PagedTracksHandler;

@@ -1,4 +1,4 @@
-package commands.model;
+package commands.model.hierarchy;
 
 import java.io.IOException;
 import java.util.ArrayList;

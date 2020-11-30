@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import bot.model.UserBot;
-import commands.model.Command;
-import commands.model.DiscordCommand;
 import commands.model.Invoker.Reflector;
 import commands.model.Invoker.Reflector.Type;
+import commands.model.hierarchy.Command;
+import commands.model.hierarchy.DiscordCommand;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Help extends DiscordCommand {

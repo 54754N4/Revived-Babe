@@ -23,6 +23,8 @@ import commands.level.All;
 import commands.level.admin.Exit;
 import commands.level.admin.Test;
 import commands.level.normal.Echo;
+import commands.model.hierarchy.Command;
+import commands.model.hierarchy.DiscordCommand;
 import net.dv8tion.jda.api.entities.Message;
 
 /* Finds the appropriate command based on string command */

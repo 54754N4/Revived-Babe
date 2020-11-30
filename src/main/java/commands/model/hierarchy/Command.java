@@ -1,4 +1,4 @@
-package commands.model;
+package commands.model.hierarchy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bot.model.UserBot;
-import commands.model.DiscordCommand.Global;
+import commands.model.Mentions;
+import commands.model.Params;
+import commands.model.ThreadsManager;
+import commands.model.hierarchy.DiscordCommand.Global;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-public abstract class Command implements Callable<Void> {
+public abstract class Command extends ListenerAdapter implements Callable<Void> {
 	public static final int MESSAGE_MAX = Message.MAX_CONTENT_LENGTH;
 	public final String[] names;
 	public AtomicBoolean finished;			// stores cmd execution state

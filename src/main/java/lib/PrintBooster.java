@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import commands.model.DiscordCommand;
+import commands.model.hierarchy.DiscordCommand;
 
 /**
  * Performance boost strategy takes 2 steps and is as follows : 

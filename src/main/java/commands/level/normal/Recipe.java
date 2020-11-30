@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 import bot.model.UserBot;
-import commands.model.DiscordCommand;
+import commands.model.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.FoodRecipeResults;
 import json.FoodRecipeResults.Result;

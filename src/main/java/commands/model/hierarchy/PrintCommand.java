@@ -1,4 +1,4 @@
-package commands.model;
+package commands.model.hierarchy;
 
 import java.util.Collection;
 import java.util.Map;

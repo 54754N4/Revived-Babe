@@ -1,8 +1,8 @@
 package commands.level.admin;
 
 import bot.model.UserBot;
-import commands.model.DiscordCommand;
 import commands.model.Invoker;
+import commands.model.hierarchy.DiscordCommand;
 import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;
 

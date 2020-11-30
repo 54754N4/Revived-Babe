@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import bot.model.UserBot;
-import commands.model.DiscordCommand;
+import commands.model.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.ExchangeRatesResult;
 import lib.HTTP;
