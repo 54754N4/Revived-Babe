@@ -5,7 +5,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import audio.CircularDeque;
 import audio.TrackScheduler;
 import bot.model.UserBot;
-import commands.model.hierarchy.DiscordCommand;
+import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
 import lib.messages.PagedTracksHandler;

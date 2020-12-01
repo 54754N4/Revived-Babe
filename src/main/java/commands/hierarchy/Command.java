@@ -1,4 +1,4 @@
-package commands.model.hierarchy;
+package commands.hierarchy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,10 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bot.model.UserBot;
+import commands.hierarchy.DiscordCommand.Global;
 import commands.model.Mentions;
 import commands.model.Params;
 import commands.model.ThreadsManager;
-import commands.model.hierarchy.DiscordCommand.Global;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;

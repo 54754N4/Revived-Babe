@@ -2,7 +2,7 @@ package commands.level.normal;
 
 import bot.model.MusicBot;
 import bot.model.UserBot;
-import commands.model.hierarchy.DiscordCommand;
+import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;

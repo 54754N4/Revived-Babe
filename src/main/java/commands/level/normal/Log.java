@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import bot.model.UserBot;
-import commands.model.hierarchy.DiscordCommand;
+import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.LineShiftBuffer;
 import net.dv8tion.jda.api.entities.Message;

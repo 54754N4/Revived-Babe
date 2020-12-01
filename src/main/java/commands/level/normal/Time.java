@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bot.model.UserBot;
-import commands.model.hierarchy.DiscordCommand;
+import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.TimeResult;
 import lib.HTTP.ResponseHandler;

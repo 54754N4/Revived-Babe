@@ -1,7 +1,7 @@
 package commands.level.admin;
 
 import bot.model.UserBot;
-import commands.model.hierarchy.FSMCommand;
+import commands.hierarchy.FSMCommand;
 import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;
 

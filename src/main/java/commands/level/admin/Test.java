@@ -1,7 +1,7 @@
 package commands.level.admin;
 
 import bot.model.UserBot;
-import commands.model.hierarchy.DiscordCommand;
+import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.messages.PagedHandler;
 import lib.messages.ReactionsHandler;
