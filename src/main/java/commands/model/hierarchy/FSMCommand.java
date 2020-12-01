@@ -1,6 +1,7 @@
 package commands.model.hierarchy;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -10,62 +11,142 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public abstract class FSMCommand extends DiscordCommand {
+	private long issuer;
 	private State state;
 	
 	public FSMCommand(UserBot bot, Message message, String[] names) {
 		super(bot, message, names);
-		state = initialState();
-	}
-	
-	// Force implementors to give us initial state
-	protected abstract State initialState();
-	
-	public void attachListener() {
+		state = startState();
 		bot.getJDA().addEventListener(this);
 	}
 	
-	public void unattachListener() {
-		bot.getJDA().removeEventListener(this);
-	}
+	// Force implementors to give us initial and final states
+	protected abstract State startState();
+	protected abstract State exitState();
+	// FSM don't need execute so replace with
+	protected void onStart() {}
 	
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+		if (event.getAuthor().getIdLong() != issuer)
+			return;
 		state = state.check(event);
+		if (state == exitState())
+			bot.getJDA().removeEventListener(this);
+	}
+	
+	@Override
+	protected void execute(String input) throws Exception {
+		issuer = message.getAuthor().getIdLong();
+		onStart();
 	}
 
-	public static class State {
-		private List<Transition> transitions = new ArrayList<>();
+	/* Since thread would have died, override to print independently and
+	 * not use default print-on-command-death  */
+	@Override
+	public void println() {
+		printlnIndependently();
+	}
+	
+	@Override
+	public void print(String format, Object... args) { 
+		printIndependently(format, args);
+	}
+	
+	@Override
+	public void println(String format, Object... args) {
+		printlnIndependently(format, args);
+	}
+	
+	protected static class State {
+		private Collection<Transition> transitions;
 		
-		public State check(GuildMessageReceivedEvent event) {
+		private State(Collection<Transition> transitions) {
+			this.transitions = transitions;
+		}
+		
+		private State check(GuildMessageReceivedEvent event) {
 			for (Transition transition : transitions)
 				if (transition.occured(event))
 					return transition.handle(event);
 			return this;
 		}
 		
-		public State addTransition(Transition transition) {
-			transitions.add(transition);
-			return this;
+		public static class Builder {
+			private List<Transition> transitions = new ArrayList<>();
+			
+			public Builder addTransition(Transition transition) {
+				transitions.add(transition);
+				return this;
+			}
+			
+			public State build() {
+				return new State(transitions);
+			}
+		}
+	}
+	
+	protected static class Transition {
+		private final Predicate<GuildMessageReceivedEvent> predicate;
+		private final State nextState;
+		private final Consumer<GuildMessageReceivedEvent> action;
+		
+		private Transition(Predicate<GuildMessageReceivedEvent> predicate, State nextState, Consumer<GuildMessageReceivedEvent> action) {
+			this.predicate = predicate;
+			this.nextState = nextState;
+			this.action = action;
 		}
 		
-		public static class Transition {
-			private final Predicate<GuildMessageReceivedEvent> condition;
-			private final Consumer<GuildMessageReceivedEvent> consumer;
-			private final State to;
+		private boolean occured(GuildMessageReceivedEvent event) {
+			return predicate.test(event);
+		}
+		
+		private State handle(GuildMessageReceivedEvent event) {
+			action.accept(event);
+			return nextState;
+		}
+		
+		public static class Builder {
+			private Predicate<GuildMessageReceivedEvent> predicate;	// true for everything by default
+			private State nextState;
+			private Consumer<GuildMessageReceivedEvent> action = event -> {};		// by default no action
 			
-			private Transition(Predicate<GuildMessageReceivedEvent> condition, Consumer<GuildMessageReceivedEvent> consumer, State to) {
-				this.condition = condition;
-				this.consumer = consumer;
-				this.to = to;
+			public Builder setCondition(Predicate<GuildMessageReceivedEvent> predicate) {
+				this.predicate = predicate;
+				return this;
 			}
 			
-			private boolean occured(GuildMessageReceivedEvent event) {
-				return condition.test(event);
+			public Builder setConditionNot(Predicate<GuildMessageReceivedEvent> predicate) {
+				this.predicate = predicate.negate();
+				return this;
 			}
 			
-			private State handle(GuildMessageReceivedEvent event) {
-				consumer.accept(event);
-				return to;
+			public Builder setNextState(State nextState) {
+				this.nextState = nextState;
+				return this;
+			}
+			
+			public Builder setAction(Consumer<GuildMessageReceivedEvent> action) {
+				this.action = action;
+				return this;
+			}
+			
+			public Builder setPassthrough() {
+				predicate = event -> true;
+				return this;
+			}
+			
+			public Builder setDisabled() {
+				predicate = event -> false;
+				return this;
+			}
+			
+			public Transition build() {
+				if (predicate == null)
+					throw new IllegalArgumentException("How can a FSM transition to with a null predicate ? =v");
+				if (nextState == null)
+					throw new IllegalArgumentException("How can a FSM transition to a null state ? =v");
+				return new Transition(predicate, nextState, action);
 			}
 		}
 	}
