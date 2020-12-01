@@ -11,34 +11,33 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public abstract class FSMCommand extends DiscordCommand {
+	protected final State start, end;
 	private long issuer;
-	private State state;
+	private State state;	// tracks current state
 	
 	public FSMCommand(UserBot bot, Message message, String[] names) {
 		super(bot, message, names);
-		state = startState();
-		bot.getJDA().addEventListener(this);
+		state = start = new State.Builder().build();
+		end = new State.Builder().build();
 	}
 	
-	// Force implementors to give us initial and final states
-	protected abstract State startState();
-	protected abstract State exitState();
 	// FSM don't need execute so replace with
-	protected void onStart() {}
+	protected void setup() {}
 	
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
 		if (event.getAuthor().getIdLong() != issuer)
 			return;
 		state = state.check(event);
-		if (state == exitState())
+		if (state == end)
 			bot.getJDA().removeEventListener(this);
 	}
 	
 	@Override
 	protected void execute(String input) throws Exception {
+		bot.getJDA().addEventListener(this);
 		issuer = message.getAuthor().getIdLong();
-		onStart();
+		setup();
 	}
 
 	/* Since thread would have died, override to print independently and
@@ -63,6 +62,11 @@ public abstract class FSMCommand extends DiscordCommand {
 		
 		private State(Collection<Transition> transitions) {
 			this.transitions = transitions;
+		}
+		
+		public State addTransition(Transition transition) {
+			transitions.add(transition);
+			return this;
 		}
 		
 		private State check(GuildMessageReceivedEvent event) {
@@ -107,7 +111,7 @@ public abstract class FSMCommand extends DiscordCommand {
 		}
 		
 		public static class Builder {
-			private Predicate<GuildMessageReceivedEvent> predicate;	// true for everything by default
+			private Predicate<GuildMessageReceivedEvent> predicate;
 			private State nextState;
 			private Consumer<GuildMessageReceivedEvent> action = event -> {};		// by default no action
 			

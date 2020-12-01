@@ -128,6 +128,8 @@ public class Invoker {
 			logger.info("Type = {} dictionary = {}", type, Arrays.toString(classes.toArray()));
 			try {
 				for (Class<? extends Command> commandClass : classes) {
+					if (!commandClass.getPackageName().startsWith(type.name))
+						continue;
 					Constructor<? extends Command> constructor = commandClass.getConstructor(UserBot.class, Message.class);
 					Command command = constructor.newInstance(null, null);		// we just need names
 					map.put(Collections.unmodifiableList(Arrays.asList(command.names)), commandClass);
