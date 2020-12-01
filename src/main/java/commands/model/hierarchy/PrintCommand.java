@@ -53,13 +53,17 @@ public abstract class PrintCommand extends Command {
 		print(format+"\n", args);
 	}
 	
-	public void printlnIndependently(String format, Object... args) {
-		printIndependently(format+"\n", args);
+	public void printlnIndependently() {
+		printIndependently("\n");
 	}
 	
 	public void printIndependently(String format, Object... args) {
 		if (format.equals("")) return;
 		channel.sendMessage(returnOrFormat(format, args)).queue();
+	}
+	
+	public void printlnIndependently(String format, Object... args) {
+		printIndependently(format+"\n", args);
 	}
 	
 	public void printCentered(String text) {
