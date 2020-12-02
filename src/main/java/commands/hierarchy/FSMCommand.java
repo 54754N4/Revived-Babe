@@ -21,9 +21,6 @@ public abstract class FSMCommand extends DiscordCommand {
 		end = new State.Builder().build();
 	}
 	
-	// FSM don't need execute so replace with
-	protected void setup() {}
-	
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
 		if (event.getAuthor().getIdLong() != issuer)
@@ -32,6 +29,9 @@ public abstract class FSMCommand extends DiscordCommand {
 		if (state == end)
 			bot.getJDA().removeEventListener(this);
 	}
+	
+	// FSM don't need execute so replace with
+	protected void setup() {}
 	
 	@Override
 	protected void execute(String input) throws Exception {

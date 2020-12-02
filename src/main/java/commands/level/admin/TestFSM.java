@@ -12,15 +12,6 @@ public class TestFSM extends FSMCommand {
 	public TestFSM(UserBot bot, Message message) {
 		super(bot, message, Command.TEST_FSM.names);
 		count = 0;
-		start.addTransition(new Transition.Builder()
-				.setCondition(TestFSM::isNotExit)
-				.setAction(event -> println("Counted %d messages", count++))
-				.setNextState(start)
-				.build())
-			.addTransition(new Transition.Builder()
-				.setCondition(TestFSM::isExit)
-				.setNextState(end)
-				.build());
 	}
 
 	@Override
@@ -30,6 +21,15 @@ public class TestFSM extends FSMCommand {
 	
 	@Override
 	public void setup() {
+		start.addTransition(new Transition.Builder()
+				.setCondition(TestFSM::isNotExit)
+				.setAction(event -> println("Counted %d messages", count++))
+				.setNextState(start)
+				.build())
+			.addTransition(new Transition.Builder()
+				.setCondition(TestFSM::isExit)
+				.setNextState(end)
+				.build());
 		println("I'll start counting your replies, just say exit to stop.");
 	}
 	
