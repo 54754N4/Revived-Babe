@@ -1,8 +1,7 @@
 package spelling;
 
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -10,20 +9,33 @@ import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonIOException;
+
+import commands.name.Command;
+
 public class SpellingCorrector {
-	private static final String alphabet = "abcdefghijklmnopqrstuvwxyz";
-	private final BiFunction<String, Integer, Integer> counter;
+	private static final Logger logger = LoggerFactory.getLogger(SpellingCorrector.class);
+	private static final String FILEPATH = "dictionary", 
+			alphabet = "abcdefghijklmnopqrstuvwxyz";
+	
 	private final Map<String,Integer> dict;
 
-	public SpellingCorrector(Path dictionaryFile) throws IOException {
+	public SpellingCorrector() {
 		dict = new HashMap<>();
-		counter = (k, v) -> v == null ? 1 : v + 1;
-		Stream.of(
-				new String(Files.readAllBytes(dictionaryFile))
-					.toLowerCase()
-					.replaceAll("[^a-z ]","")
-					.split(" ")
-		).forEach(word -> dict.compute(word, counter));
+		BiFunction<String, Integer, Integer> counter = (k, v) -> v == null ? 1 : v + 1;
+		Stream.of(Command.values())
+			.map(enm -> enm.names)
+			.flatMap(Stream::of)
+			.forEach(word -> dict.compute(word, counter));
+		try (FileWriter writer = new FileWriter(FILEPATH)) {
+			for (String name : dict.keySet())
+				writer.append(name + System.lineSeparator());
+		} catch (IOException e) {
+			logger.error("Could not write to dictionary file", e);
+		} 
 	}
 
 	private Stream<String> edits1(final String word){
@@ -76,5 +88,10 @@ public class SpellingCorrector {
 	public static Stream<String> transposes(final String word) {
 		return IntStream.range(0, word.length() - 1)
 				.mapToObj(i-> word.substring(0, i) + word.substring(i+1, i+2) + word.charAt(i) + word.substring(i+2));
+	}
+	
+	public static void main(String[] args) throws JsonIOException, IOException {
+		SpellingCorrector corrector = new SpellingCorrector();
+		System.out.println(corrector.correct("echi"));
 	}
 }

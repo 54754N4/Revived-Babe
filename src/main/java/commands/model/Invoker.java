@@ -26,9 +26,11 @@ import commands.level.admin.Exit;
 import commands.level.admin.Test;
 import commands.level.normal.Echo;
 import net.dv8tion.jda.api.entities.Message;
+import spelling.SpellingCorrector;
 
 /* Finds the appropriate command based on string command */
 public class Invoker {
+	private static final SpellingCorrector corrector = new SpellingCorrector();
 	private static final Logger logger = LoggerFactory.getLogger(Invoker.class);
 	
 	public static void main(String[] args) throws Exception {
@@ -53,7 +55,8 @@ public class Invoker {
         if (command != null && (created = instantiate(bot, message, command)) != null)
 			return created.start(input);
 		else {
-			message.getChannel().sendMessage("`Unrecognized command verb : "+name+"`").queue();
+			String correction = String.format("%nDid you mean `%s` ?", corrector.correct(name));
+			message.getChannel().sendMessage("Unrecognized command verb `"+name+"`"+correction).queue();
 			return null;
 		}
 	}
