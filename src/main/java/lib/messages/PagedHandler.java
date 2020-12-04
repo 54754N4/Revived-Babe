@@ -59,7 +59,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 		}
 	}
 	
-	protected String parseElement(T t) {
+	protected String parseElement(int index, int queueIndex, T t) {
 		return t.toString();
 	}
 	
@@ -83,7 +83,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 	
 	protected void print() {
 		try { tracked.editMessage(parsePage(page)).queue(); } 
-		catch (Exception e) {}
+		catch (Exception e) { logger.error("Exception trying to print paged handler", e); }
 	}
 	
 	private void handleElement(int index) {
@@ -112,7 +112,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 		StringBuilder sb = new StringBuilder(CODE_BLOCK+NEW_LINE);
 		sb.append("#Page "+(page+1)+"/"+totalPages()+" ("+data.size()+" results)"+NEW_LINE);
 		for (int i=0; i<elements.size(); i++) 
-			sb.append(i+". "+parseElement(elements.get(i))+NEW_LINE);
+			sb.append(parseElement(i, i+page*count, elements.get(i))+NEW_LINE);
 		return sb.append(CODE_BLOCK).toString();
 	}
 	

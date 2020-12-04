@@ -1,31 +1,41 @@
 package lib.messages;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import audio.CircularDeque;
 import audio.TrackScheduler;
 import lib.StringLib;
 
 public class PagedTracksHandler extends PagedHandler<AudioTrack> implements AudioLoadResultHandler {
+	private final boolean listTracks;
 	private TrackScheduler scheduler;
 	
-	public PagedTracksHandler(List<AudioTrack> tracks) {
-		super(tracks);
+	public PagedTracksHandler(TrackScheduler scheduler) {
+		this(scheduler, false);
 	}
 	
-	public PagedTracksHandler(TrackScheduler scheduler) {
-		super(new ArrayList<>());	// initialize data
+	public PagedTracksHandler(TrackScheduler scheduler, boolean listTracks) {
+		super(listTracks ? scheduler.getQueue() : new ArrayList<>());
+		this.listTracks = listTracks;
 		this.scheduler = scheduler;
 	}
 	
 	@Override
-	protected String parseElement(AudioTrack track) {
-		return track.getInfo().title + " (" + StringLib.millisToTime(track.getDuration()) + ")";
+	protected String parseElement(int index, int queueIndex, AudioTrack track) {
+		CircularDeque queue = scheduler.getQueue();
+		String prefix = "", postfix = "";
+		if (listTracks && queueIndex == queue.getCurrent())
+			prefix = postfix = new String(Character.toChars(0x1F3B6));
+		return index + ". " 
+				+ prefix 
+				+ track.getInfo().title 
+				+ " (" + StringLib.millisToTime(track.getDuration()) + ")" 
+				+ postfix;
 	}
 	
 	@Override

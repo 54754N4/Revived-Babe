@@ -55,8 +55,10 @@ public class Invoker {
         if (command != null && (created = instantiate(bot, message, command)) != null)
 			return created.start(input);
 		else {
-			String correction = String.format("%nDid you mean `%s` ?", corrector.correct(name));
-			message.getChannel().sendMessage("Unrecognized command verb `"+name+"`"+correction).queue();
+			String correction = corrector.correct(name), postfix = "";
+			if (!correction.equals(name))
+				postfix = String.format("%nDid you mean `%s` ?", correction);
+			message.getChannel().sendMessage("Unrecognized command verb `"+name+"`"+postfix).queue();
 			return null;
 		}
 	}
