@@ -24,7 +24,7 @@ import net.dv8tion.jda.api.entities.Role;
 
 public abstract class DiscordCommand extends PrintCommand {
 	protected static final Gson gson = new Gson();
-	protected static Random rand = new Random();
+	protected static final Random rand = new Random();
 	
 	public static enum Global {
 		DELETE_USER_MESSAGE("-d", "--delete"), 
@@ -56,10 +56,6 @@ public abstract class DiscordCommand extends PrintCommand {
 	
 	public boolean isOwner() {
 		return message.getAuthor().getIdLong() == 188033164864782336l;
-	}
-	
-	public void actTyping() {
-		channel.sendTyping().queue();
 	}
 	
 	protected List<Role> getCallerRoles() {

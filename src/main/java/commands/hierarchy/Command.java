@@ -14,6 +14,7 @@ import commands.hierarchy.DiscordCommand.Global;
 import commands.model.Mentions;
 import commands.model.Params;
 import commands.model.ThreadsManager;
+import commands.model.TypingWatchdog;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -24,6 +25,7 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 	public static final int MESSAGE_MAX = Message.MAX_CONTENT_LENGTH;
 	public final String[] names;
 	public AtomicBoolean finished;			// stores cmd execution state
+	protected final Logger logger;
 	protected UserBot bot;					// bot responder
 	protected Guild guild;
 	protected Message message;				// message trigger
@@ -47,10 +49,11 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		}
 		finished = new AtomicBoolean();
 		stdout = new StringBuilder();
+		logger = LoggerFactory.getLogger(getClass());
 	}
 	
 	protected Logger getLogger() {
-		return LoggerFactory.getLogger(getClass());
+		return logger;
 	}
 	
 	public UserBot getBot() {
@@ -61,12 +64,16 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		return guild;
 	}
 	
-	public Future<Void> getFuture() {
+	public Future<Void> getThread() {
 		return thread;
 	}
 	
 	public boolean isFinished() {
 		return finished.get();
+	}
+	
+	public void actTyping() {
+		channel.sendTyping().queue();
 	}
 	
 	protected boolean hasArgs(String... args) {
@@ -98,6 +105,7 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 				message.getAuthor().openPrivateChannel().complete()
 				: message.getChannel();
 		thread = ThreadsManager.POOL.submit(this);
+		TypingWatchdog.handle(this);
 		getLogger().info("Started command "+getClass()+" thread");
 		return this;
 	}
