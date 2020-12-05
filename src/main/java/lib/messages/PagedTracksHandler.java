@@ -9,18 +9,19 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
 import audio.TrackScheduler;
+import bot.model.UserBot;
 import lib.StringLib;
 
 public class PagedTracksHandler extends PagedHandler<AudioTrack> implements AudioLoadResultHandler {
 	private final boolean listTracks;
 	private TrackScheduler scheduler;
 	
-	public PagedTracksHandler(TrackScheduler scheduler) {
-		this(scheduler, false);
+	public PagedTracksHandler(UserBot bot, TrackScheduler scheduler) {
+		this(bot, scheduler, false);
 	}
 	
-	public PagedTracksHandler(TrackScheduler scheduler, boolean listTracks) {
-		super(listTracks ? scheduler.getQueue() : new ArrayList<>());
+	public PagedTracksHandler(UserBot bot, TrackScheduler scheduler, boolean listTracks) {
+		super(bot, listTracks ? scheduler.getQueue() : new ArrayList<>());
 		this.listTracks = listTracks;
 		this.scheduler = scheduler;
 	}

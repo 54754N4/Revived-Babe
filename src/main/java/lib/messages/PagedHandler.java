@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bot.model.UserBot;
 import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -19,7 +20,8 @@ public class PagedHandler<T> extends ReactionsHandler {
 	private int page, count;
 	protected Message tracked;
 	
-	public PagedHandler(List<T> data) {
+	public PagedHandler(UserBot bot, List<T> data) {
+		super(bot);
 		this.data = data;
 		handlerButtons = false;
 		defaultBehaviour = true;

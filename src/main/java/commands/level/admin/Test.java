@@ -21,12 +21,12 @@ public class Test extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		if (hasArgs("--react"))
 			channel.sendMessage("Testing")
-				.queue(new ReactionsHandler()
+				.queue(new ReactionsHandler(bot)
 					.handle("zero", reaction -> printlnIndependently("I am custom"))
 					.handle("\u0030\uFE0F\u20E3", reaction -> printlnIndependently("I am extended unicode native")));
 		if (hasArgs("--page")) {
 			channel.sendMessage("Loading..")
-				.queue(new PagedHandler<>(getMusicBot().getPlaylist(guild)));
+				.queue(new PagedHandler<>(bot, getMusicBot().getPlaylist(guild)));
 		}
 	}
 }

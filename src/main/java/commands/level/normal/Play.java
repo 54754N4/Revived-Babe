@@ -63,7 +63,7 @@ public class Play extends DiscordCommand {
 		}
 		getLogger().info("Loading track(s) from: {}", input);
 		if (hasArgs("-p", "--paged")) {
-			PagedTracksHandler handler = new PagedTracksHandler(getMusicBot().getScheduler(guild));
+			PagedTracksHandler handler = new PagedTracksHandler(bot, getMusicBot().getScheduler(guild));
 			bot.play(guild, input, handler).get();
 			channel.sendMessage("Loading...")
 				.queue(handler.enableHandlerButtons());

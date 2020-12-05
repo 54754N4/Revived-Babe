@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import bot.model.UserBot;
 import lib.Emoji;
 import lib.messages.ReactionsTracker.CustomEmojiConsumer;
 import lib.messages.ReactionsTracker.NativeEmojiConsumer;
@@ -16,10 +17,19 @@ import net.dv8tion.jda.api.entities.MessageReaction;
 
 public class ReactionsHandler implements Consumer<Message> {
 	public static final int UNICODE_CLOSE = 0x274C;
-	private int count = 0;
-	private final Map<Integer, Object> keys = new ConcurrentHashMap<>();
-	private final List<Consumer<MessageReaction>> consumers = new ArrayList<>();
-	private final List<ReactionConsumer> handlers = new ArrayList<>();
+	private int count;
+	private final Map<Integer, Object> keys;
+	private final List<Consumer<MessageReaction>> consumers;
+	private final List<ReactionConsumer> handlers;
+	private final UserBot bot;
+	
+	public ReactionsHandler(UserBot bot) {
+		this.bot = bot;
+		count = 0;
+		keys = new ConcurrentHashMap<>();
+		consumers = new ArrayList<>();
+		handlers = new ArrayList<>();
+	}
 	
 	public ReactionsHandler handle(String name, Consumer<MessageReaction> consumer) {
 		keys.put(count++, name);
@@ -50,12 +60,12 @@ public class ReactionsHandler implements Consumer<Message> {
 			 else continue;
 			handlers.add(consumer);
 		}
-		handlers.forEach(ReactionsTracker.INSTANCE::subscribe);
+		handlers.forEach(bot.getReactionsTracker()::subscribe);
 	}
 
 	protected void onDelete(Message message) {
 		if (message != null) message.delete().queue();
-		handlers.forEach(ReactionsTracker.INSTANCE::unsubscribe);
+		handlers.forEach(bot.getReactionsTracker()::unsubscribe);
 	}
 	
 	private ReactionConsumer handleCustom(Message message, String name, int key) {

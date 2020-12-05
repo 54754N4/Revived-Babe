@@ -51,7 +51,7 @@ public class TraceMoe extends DiscordCommand {
 		List<Package> packages = buildEmbed(result);
 		for (Package pkg : packages)
 			channel.sendMessage(pkg.builder.build())
-				.queue(new ReactionsHandler()
+				.queue(new ReactionsHandler(bot)
 						.handle(0x25B6, pkg.consumer));
 	}
 

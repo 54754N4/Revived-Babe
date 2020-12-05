@@ -51,7 +51,7 @@ public class ListTracks extends DiscordCommand {
 	private void createPlayer(Void v) {
 		final CircularDeque queue = getMusicBot().getPlaylist(guild);
 		final TrackScheduler scheduler = getMusicBot().getScheduler(guild);
-		ReactionsHandler handler = new PagedTracksHandler(scheduler, true)
+		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler, true)
 				.handle(0x23EF, reaction -> scheduler.togglePause())
 				.handle(0x23EE, reaction -> scheduler.previousTrack())
 				.handle(0x23ED, reaction -> scheduler.nextTrack())
