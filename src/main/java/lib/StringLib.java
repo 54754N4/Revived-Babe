@@ -2,6 +2,7 @@ package lib;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -9,9 +10,9 @@ public final class StringLib {
 	public static final int NOT_FOUND = -1;
 	public static final String MUSIC_PATH = "D:\\Users\\Satsana\\Desktop\\Media\\Sounds\\Music";
 
-	@SuppressWarnings("unused")
 	public static void main(String[] args) {
-		System.out.println(millisToTime(1606146691));
+//		System.out.println(millisToTime(1606146691));
+		System.out.println(Arrays.toString(split("..e hi;..e hello", ';')));
 //		String works = "~\\Audio\\Songs\\Backstreet Boys\\Millennium\\Show Me the Meaning of Being Lonely.mp3",
 //				url = "www.google.com",
 //				url1 = "https://www.google.com/1234qwerqw4";

@@ -79,10 +79,9 @@ public class ReplyListener extends ListenerAdapter {
 	
 	public void consume(Message message) {
 		String content = message.getContentDisplay();
-    	if (!StringLib.startsWithPrefix(content, bot.getPrefixes())) 
-    		return;
-    	for (String input : StringLib.split(content, COMMAND_SEPARATOR)) 
-    		treatInput(message, input.trim());
+    	for (String input : StringLib.split(content, COMMAND_SEPARATOR))
+    		if (StringLib.startsWithPrefix(input.trim(), bot.getPrefixes())) 
+        		treatInput(message, input.trim());
 	}
     	
     private void treatInput(Message message, String input) {
@@ -92,7 +91,7 @@ public class ReplyListener extends ListenerAdapter {
     		return;
     	Invoker.Reflector.Type type = isOwner(message) ? 
     			Invoker.Reflector.Type.ADMIN : Invoker.Reflector.Type.NORMAL;
-    	input = StringLib.consumePrefix(message.getContentDisplay(), bot.getPrefixes());		// remove bot prefix
+    	input = StringLib.consumePrefix(input, bot.getPrefixes());		// remove bot prefix
         if (!input.trim().equals(""))
         	Invoker.invoke(bot, message, input, type);
     	else message.getChannel()
