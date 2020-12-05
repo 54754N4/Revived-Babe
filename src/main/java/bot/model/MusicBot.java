@@ -62,19 +62,27 @@ public abstract class MusicBot extends UserBot {
 		return null;
 	}
 	
-	private MusicBot setupAudio(Guild guild) {	// pays cost once, further calls cost 0
+	// pays cost once, further calls cost 0
+	private MusicBot setupAudio(Guild guild) {
 		long id = guild.getIdLong();
 		AudioManager am = guild.getAudioManager();
-		if (playerManagers.get(id) == null)
+		if (playerManagers.get(id) == null) {
 			playerManagers.put(id, initializeManager());
-		if (players.get(id) == null)
+			logger.info("Initialised new AudioPlayerManager");
+		}
+		if (players.get(id) == null) {
 			players.put(id, playerManagers.get(id).createPlayer());
+			logger.info("Initialised new AudioPlayer");
+		}
 		AudioPlayer player = players.get(id);
 		if (managers.get(id) == null) {
 			managers.put(id, am);
+			logger.info("Initialised new AudioManager");
 			AudioSendHandler handler = getAudioSendHandler(); 
-			if (handler == null && senders.get(id) == null)
+			if (handler == null && senders.get(id) == null) {
 				senders.put(id, handler = new MirroredSendHandler(player));
+				logger.info("Initialised new MirroredSendHandler");
+			}
 			am.setSendingHandler(handler);
 			am.setReceivingHandler(getAudioReceiveHandler());
 			am.setSelfDeafened(true);		// saves resources
@@ -82,6 +90,7 @@ public abstract class MusicBot extends UserBot {
 		if (schedulers.get(id) == null) {
 			schedulers.put(id, new TrackScheduler(player));
 			player.addListener(schedulers.get(id));
+			logger.info("Initialised new TrackScheduler");
 		}
 		return this;
 	}

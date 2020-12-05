@@ -2,8 +2,8 @@ package bot;
 
 import bot.model.Bot;
 import bot.model.MusicBot;
+import commands.model.TypingWatchdog;
 import lib.Emoji;
-import lib.messages.ReactionsTracker;
 
 public class BabeBot extends MusicBot {
 	public static String FAST_PREFIX = "..", BOT_PREFIX = "hey babe ";
@@ -29,7 +29,8 @@ public class BabeBot extends MusicBot {
 
 	@Override 
 	protected void preKill(boolean now) throws Exception {
-		ReactionsTracker.INSTANCE.stopTracking();
+		getReactionsTracker().stopTracking();
+		TypingWatchdog.kill();
 		Bot.Slaves.killSlaves(now);
 		super.preKill(now);
 	}

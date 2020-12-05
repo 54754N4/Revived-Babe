@@ -42,6 +42,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	private IAudioSendFactory audioSendFactory;
 	private List<OnLoadListener> loadListeners;
 	private Object[] eventListeners;
+	private ReactionsTracker reactionsTracker;
 	
 	public UserBot(Bot bot) {
 		this.bot = bot;
@@ -51,6 +52,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 		loadListeners = new ArrayList<>();
 		logger = LoggerFactory.getLogger(name);
 		logger.debug("Created %s.", name);
+		reactionsTracker = new ReactionsTracker();
 	}
 
 	public abstract String[] getPrefixes();
@@ -94,7 +96,11 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	}
 	
 	public Object[] createListeners() {
-		return eventListeners = new Object[] { this, new ReplyListener(this), ReactionsTracker.INSTANCE };
+		return eventListeners = new Object[] { this, new ReplyListener(this), reactionsTracker };
+	}
+	
+	public ReactionsTracker getReactionsTracker() {
+		return reactionsTracker;
 	}
 
 	public Activity getActivity() {
