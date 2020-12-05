@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class ReactionsTracker extends ListenerAdapter {
-	public static final ReactionsTracker INSTANCE = new ReactionsTracker();
 	private List<ReactionConsumer> consumers = new ArrayList<>();
 	
 	@Override
