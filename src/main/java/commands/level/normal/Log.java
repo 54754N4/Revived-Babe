@@ -12,8 +12,8 @@ import lib.LineShiftBuffer;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Log extends DiscordCommand {
-	private static final String LOG_FILE = ".\\logs\\current-babe.log",
-			BUILD_LOG = ".\\logs\\shadowjar-build.log";
+	private static final String LOG_FILE = "./logs/current-babe.log",
+			BUILD_LOG = "./logs/shadowjar-build.log";
 	private static final int DEFAULT_TAIL = 5;
 
 	public Log(UserBot bot, Message message) {
