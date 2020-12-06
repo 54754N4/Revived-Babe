@@ -1,4 +1,7 @@
-import static org.junit.jupiter.api.Assertions.assertTrue;
+package lib;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Scanner;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -12,19 +15,28 @@ class TestJsonGenerator {
 	@Tag("slow")
     @Test
     public void generateJsonFromRequest() throws Exception {
-		RequestBuilder builder = new RequestBuilder("https://api.bintray.com/packages/sedmelluq/com.sedmelluq/jda-nas/");
-		ResponseHandler handler = new ResponseHandler(builder.build());
-        JsonGenerator generator = new JsonGenerator("NASResult", handler.getResponse());
-        StringBuilder result = generator.interpret();
-        assertTrue(Constants.JSON_OUT_NAS.trim().equals(result.toString().trim()));
-        builder.close();
-        handler.close();
+		try (
+			RequestBuilder builder = new RequestBuilder("https://api.bintray.com/packages/sedmelluq/com.sedmelluq/jda-nas/");
+			ResponseHandler handler = new ResponseHandler(builder.build());
+		) {
+	        JsonGenerator generator = new JsonGenerator("NASResult", handler.getResponse());
+	        String result = trimTrailing(generator.interpret().toString());
+	        assertEquals(Constants.JSON_OUT_NAS, result);
+		}
     }
 	
+	public static String trimTrailing(String input) {
+		StringBuilder sb = new StringBuilder();
+		try (Scanner sc = new Scanner(input.trim())) {
+			while (sc.hasNextLine()) 
+				sb.append(sc.nextLine() + System.lineSeparator());
+			return sb.toString();
+		}
+	}
 }
 
 final class Constants {
-	public static final String JSON_OUT_NAS = "import java.io.Serializable;\r\n"
+	public static final String JSON_OUT_NAS = TestJsonGenerator.trimTrailing("import java.io.Serializable;\r\n"
 			+ "\r\n"
 			+ "\r\n"
 			+ "public final class NASResult implements Serializable {\r\n"
@@ -404,5 +416,8 @@ final class Constants {
 			+ "		}\r\n"
 			+ "	}\r\n"
 			+ "}\r\n"
-			+ "\r\n";
+			+ "\r\n"
+			+ "\r\n"
+			+ ""
+		);
 }

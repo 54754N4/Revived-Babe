@@ -2,33 +2,12 @@ package lib;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public final class StringLib {
 	public static final int NOT_FOUND = -1;
 	public static final String MUSIC_PATH = "D:\\Users\\Satsana\\Desktop\\Media\\Sounds\\Music";
-
-	public static void main(String[] args) {
-//		System.out.println(millisToTime(1606146691));
-		System.out.println(Arrays.toString(split("..e hi;..e hello", ';')));
-//		String works = "~\\Audio\\Songs\\Backstreet Boys\\Millennium\\Show Me the Meaning of Being Lonely.mp3",
-//				url = "www.google.com",
-//				url1 = "https://www.google.com/1234qwerqw4";
-//		System.out.println(consumePrefix("..e hello", new String[] {".."}));
-//		System.out.println(deobfuscatePath(works));
-//		System.out.println(deobfuscatePath(url));
-//		System.out.println(deobfuscatePath(url1));
-//		String test = "..alias --name=current --value=\"..schedule --every=2 \\\"..queue --current\\\"\"",
-//				test1 = "..schedule --every=2 \\\"..queue --current\\\"";
-//		System.out.println(unQuote(test1));
-		
-//		for (String token : split(unQuote(test1), ' ')) System.out.println(token);
-//		String spaced = "..test @[DCN] Xentorno and @Satsana  werqe \\\"@[DCN] Xentorno\\\" qwer  asfd @Satsana";
-//		System.out.println(replaceAll(spaced, "@Satsana", "REPLACED", true));
-//		System.out.println(replaceAll(spaced, "@[DCN] xentorno", "REPLACED", true));
-	}
 
 	public static String fromUnicode(int unicode) {
 		return new String(Character.toChars(unicode));
