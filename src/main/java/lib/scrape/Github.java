@@ -9,14 +9,15 @@ import java.util.List;
 import org.openqa.selenium.By;
 
 public abstract class Github {
-	public static final Browser browser = new Browser();
+	public static final Browser browser = new Browser(false);
 	
 	public static enum Dependency {
 		LAVAPLAYER(Github::latestLavaplayer), 
 		JDA(Github::latestJDA), 
 		NAS(Github::latestNAS),
 		REFLECTIONS(Github::latestReflections), 
-		GSON(Github::latestGson);
+		GSON(Github::latestGson),
+		JDBC_SQLITE(Github::latestSqlite);
 		
 		public final VersionFetcher latest;
 		
@@ -71,19 +72,27 @@ public abstract class Github {
 				.split(":")[2];
 	}
 	
+	public static String latestSqlite() {
+		return browser.visit("https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc")
+				.waitFor(By.cssSelector(".grid.versions > tbody > tr > td:nth-child(2) > a"))
+				.getText();
+	}
+	
 	public static void main(String[] args) throws IOException {
 		String gradle = Files.readString(Paths.get("build.gradle"));
 		List<Dependency> updateable = new ArrayList<>();
 		String version;
-		for (Dependency dependency : Github.Dependency.values()) {
-			version = dependency.latest.fetch();
-			System.out.printf("Checking %s with version %s.. ", dependency.name(), version);
-			if (!gradle.contains(version)) {
-				updateable.add(dependency);
-				System.out.println("Need to update : "+dependency);
-			} else
-				System.out.println("Up to date.");
+		try {
+			for (Dependency dependency : Github.Dependency.values()) {
+				version = dependency.latest.fetch();
+				System.out.printf("Checking %s with version %s.. ", dependency.name(), version);
+				if (!gradle.contains(version)) {
+					updateable.add(dependency);
+					System.out.println("Need to update : "+dependency);
+				} else
+					System.out.println("Up to date.");
+			}
 		}
-		browser.close();
+		finally { browser.close(); }
 	}
 }

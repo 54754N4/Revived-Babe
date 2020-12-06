@@ -35,10 +35,14 @@ public class Browser {
 	}
 	
 	public Browser() {
+		this(false);
+	}
+	
+	public Browser(boolean headless) {
 		driver = new FirefoxDriver(
 				new FirefoxOptions()
 					.addArguments(	// comment as needed
-							"--headless", 
+							headless ? "--headless" : "", 
 							"--disable-gpu", 
 							"--window-size=1920,1200",
 							"--ignore-certificate-errors"

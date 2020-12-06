@@ -30,8 +30,9 @@ dependencies {
   implementation 'com.google.code.gson:gson:2.8.6'				// json parsing
   implementation 'org.seleniumhq.selenium:selenium-java:3.+'	// selenium browser automation
   implementation 'io.github.bonigarcia:webdrivermanager:3.+'	// driver
+  implementation 'org.xerial:sqlite-jdbc:3.32.3.2'				// sqlite jdbc
   
-  // JUnit 5 for testing
+  // Testing
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
