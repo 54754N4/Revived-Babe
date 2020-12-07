@@ -18,6 +18,14 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 	private final TrackScheduler scheduler;
 	private StatusUpdater callback;
 	
+	public TrackLoadHandler(TrackScheduler scheduler) {
+		this(scheduler, null);
+	}
+	
+	public TrackLoadHandler(TrackScheduler scheduler, StatusUpdater callback) {
+		this(false, false, 1, false, scheduler, callback);
+	}
+	
 	public TrackLoadHandler(boolean top, boolean next, int count, boolean playlist, TrackScheduler scheduler, StatusUpdater callback) {
 		this.top = top;
 		this.next = next;

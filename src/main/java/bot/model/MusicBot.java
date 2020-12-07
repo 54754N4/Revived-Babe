@@ -34,6 +34,9 @@ import net.dv8tion.jda.api.managers.AudioManager;
  * all the different audio managers, players etc which are unique to each one. 
  * This class does that while also offering convenience methods for simple 
  * music/voice handling from commands.
+ * Note:
+ * - setupAudio only pays a cost once, then further calls cost nothing (except
+ * for call-stack allocation etc)
  */
 public abstract class MusicBot extends UserBot {
 	public static int MAX_LOADER_THREAD_POOL = 20, 
@@ -54,6 +57,28 @@ public abstract class MusicBot extends UserBot {
 		schedulers = new ConcurrentHashMap<>();
 	}
 	
+	public Map<Long, AudioPlayer> getPlayers() {
+		return players;
+	}
+	
+	public Map<Long, AudioManager> getManagers() {
+		return managers;
+	}
+	
+	public Map<Long, AudioPlayerManager> getPlayerManagers() {
+		return playerManagers;
+	}
+	
+	public Map<Long, AudioSendHandler> getSenders() {
+		return senders;
+	}
+	
+	public Map<Long, TrackScheduler> getSchedulers() {
+		return schedulers;
+	}
+	
+	/* Child classes can override defaults */ 
+	
 	protected AudioSendHandler getAudioSendHandler() {
 		return null;
 	}
@@ -64,6 +89,8 @@ public abstract class MusicBot extends UserBot {
 	
 	// pays cost once, further calls cost 0
 	private MusicBot setupAudio(Guild guild) {
+		if (guild == null)
+			return this;
 		long id = guild.getIdLong();
 		AudioManager am = guild.getAudioManager();
 		if (playerManagers.get(id) == null) {
@@ -93,6 +120,10 @@ public abstract class MusicBot extends UserBot {
 			logger.info("Initialised new TrackScheduler");
 		}
 		return this;
+	}
+	
+	public MusicBot setupAudio(long id) {
+		return setupAudio(jda.getGuildById(id));
 	}
 	
 	private final AudioPlayerManager initializeManager() {
@@ -138,62 +169,55 @@ public abstract class MusicBot extends UserBot {
 	/* Convenience accessors */
 	
 	public boolean isConnected(Guild guild) {
-		setupAudio(guild);
-		return getManager(guild).isConnected();
+		return setupAudio(guild).getManager(guild).isConnected();
 	}
 
 	public CircularDeque getPlaylist(Guild guild) {
-		setupAudio(guild);
-		return getScheduler(guild).getQueue();
+		return setupAudio(guild).getScheduler(guild).getQueue();
 	}
 	
 	public AudioPlayer getPlayer(Guild guild) {
-		setupAudio(guild);
-		return players.get(guild.getIdLong());
+		return setupAudio(guild).players.get(guild.getIdLong());
 	}
 	
 	public AudioManager getManager(Guild guild) {
-		setupAudio(guild);
-		return managers.get(guild.getIdLong());
+		return setupAudio(guild).managers.get(guild.getIdLong());
 	}
 	
 	public AudioPlayerManager getPlayerManager(Guild guild) {
-		setupAudio(guild);
-		return playerManagers.get(guild.getIdLong());
+		return setupAudio(guild).playerManagers.get(guild.getIdLong());
 	}
 	
 	public AudioSendHandler getAudioSendHandler(Guild guild) {
-		setupAudio(guild);
-		return senders.get(guild.getIdLong());
+		return setupAudio(guild).senders.get(guild.getIdLong());
 	}
 	
 	public TrackScheduler getScheduler(Guild guild) {
-		setupAudio(guild);
-		return schedulers.get(guild.getIdLong());
+		return setupAudio(guild).schedulers.get(guild.getIdLong());
 	}
 	
 	public AudioPlayer getPlayer(long guildID) {
-		return players.get(guildID);
+		return setupAudio(guildID).players.get(guildID);
 	}
 	
 	public AudioManager getManager(long guildID) {
-		return managers.get(guildID);
+		return setupAudio(guildID).managers.get(guildID);
 	}
 	
 	public AudioPlayerManager getPlayerManager(long guildID) {
-		return playerManagers.get(guildID);
+		return setupAudio(guildID).playerManagers.get(guildID);
 	}
 	
 	public AudioSendHandler getAudioSendHandler(long guildID) {
-		return senders.get(guildID);
+		return setupAudio(guildID).senders.get(guildID);
 	}
 	
 	public TrackScheduler getScheduler(long guildID) {
-		return schedulers.get(guildID);
+		return setupAudio(guildID).schedulers.get(guildID);
 	}
 	
 	public CircularDeque getPlaylist(long guildID) {
-		return getScheduler(guildID).getQueue();
+		return setupAudio(guildID).getScheduler(guildID).getQueue();
 	}
 	
 	/* Music methods */
@@ -221,14 +245,12 @@ public abstract class MusicBot extends UserBot {
 	/* Deafening */
 	
 	public MusicBot deafen(Guild guild) {
-		setupAudio(guild);
-		getManager(guild).setSelfDeafened(true);
+		setupAudio(guild).getManager(guild).setSelfDeafened(true);
 		return this;
 	}
 	
 	public MusicBot undeafen(Guild guild) {
-		setupAudio(guild);
-		getManager(guild).setSelfDeafened(false);
+		setupAudio(guild).getManager(guild).setSelfDeafened(false);
 		return this;
 	}
 	
@@ -240,8 +262,7 @@ public abstract class MusicBot extends UserBot {
 	}
 
 	public boolean isDeafened(Guild guild) {
-		setupAudio(guild);
-		return getManager(guild).isSelfDeafened();
+		return setupAudio(guild).getManager(guild).isSelfDeafened();
 	}
 	
 	public MusicBot deafen(Member member) {
@@ -273,14 +294,12 @@ public abstract class MusicBot extends UserBot {
 	/* Muting */
 	
 	public MusicBot mute(Guild guild) {
-		setupAudio(guild);
-		getManager(guild).setSelfMuted(true);
+		setupAudio(guild).getManager(guild).setSelfMuted(true);
 		return this;
 	}
 	
 	public MusicBot unmute(Guild guild) {
-		setupAudio(guild);
-		getManager(guild).setSelfMuted(false);
+		setupAudio(guild).getManager(guild).setSelfMuted(false);
 		return this;
 	}
 	
@@ -292,8 +311,7 @@ public abstract class MusicBot extends UserBot {
 	}
 	
 	public boolean isMuted(Guild guild) {
-		setupAudio(guild);
-		return getManager(guild).isSelfMuted();
+		return setupAudio(guild).getManager(guild).isSelfMuted();
 	}
 	
 	public MusicBot mute(Member member) {
@@ -322,76 +340,64 @@ public abstract class MusicBot extends UserBot {
 	/* Pausing */
 	
 	public MusicBot pause(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).setPause(true);
+		setupAudio(guild).getScheduler(guild).setPause(true);
 		return this;
 	}
 	
 	public MusicBot unpause(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).setPause(false);
+		setupAudio(guild).getScheduler(guild).setPause(false);
 		return this;
 	}
 	
 	public MusicBot togglePause(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).togglePause();
+		setupAudio(guild).getScheduler(guild).togglePause();
 		return this;
 	}
 	
 	public boolean isPaused(Guild guild) {
-		setupAudio(guild);
-		return getScheduler(guild).isPaused();
+		return setupAudio(guild).getScheduler(guild).isPaused();
 	}
 	
 	/* Repeating */
 	
 	public MusicBot repeat(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).setRepeating(true);
+		setupAudio(guild).getScheduler(guild).setRepeating(true);
 		return this;
 	}
 	
 	public MusicBot stopRepeat(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).setRepeating(false);
+		setupAudio(guild).getScheduler(guild).setRepeating(false);
 		return this;
 	}
 	
 	public MusicBot toggleRepeating(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).toggleRepeating();
+		setupAudio(guild).getScheduler(guild).toggleRepeating();
 		return this;
 	}
 	
 	public boolean isRepeating(Guild guild) {
-		setupAudio(guild);
-		return getScheduler(guild).isRepeating();
+		return setupAudio(guild).getScheduler(guild).isRepeating();
 	}
 	
 	/* Looping */
 	
 	public MusicBot looping(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).setLooping(true);
+		setupAudio(guild).getScheduler(guild).setLooping(true);
 		return this;
 	}
 	
 	public MusicBot stopLooping(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).setLooping(false);
+		setupAudio(guild).getScheduler(guild).setLooping(false);
 		return this;
 	}
 	
 	public MusicBot toggleLooping(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).toggleLooping();
+		setupAudio(guild).getScheduler(guild).toggleLooping();
 		return this;
 	}
 	
 	public boolean isLooping(Guild guild) {
-		setupAudio(guild);
-		return getScheduler(guild).isLooping();
+		return setupAudio(guild).getScheduler(guild).isLooping();
 	}
 	
 	/* Volume */
@@ -411,57 +417,50 @@ public abstract class MusicBot extends UserBot {
 	}
 	
 	public int increaseVolume(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).increaseVolume();
+		setupAudio(guild).getScheduler(guild).increaseVolume();
 		return getPlayer(guild).getVolume();
 	}
 	
 	public int decreaseVolume(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).decreaseVolume();
+		setupAudio(guild).getScheduler(guild).decreaseVolume();
 		return getPlayer(guild).getVolume();
 	}
 	
 	/* Track handling */
 	
 	public MusicBot stop(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).stop();
+		setupAudio(guild).getScheduler(guild).stop();
 		return this;
 	}
 	
 	public MusicBot seekTo(Guild guild, long position) {
-		setupAudio(guild);
-		getScheduler(guild).seekTo(position);
+		setupAudio(guild).getScheduler(guild).seekTo(position);
 		return this;
 	}
 	
 	public MusicBot clear(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).clear();
+		setupAudio(guild).getScheduler(guild).clear();
 		return this;
 	}
 	
 	public MusicBot next(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).nextTrack();
+		setupAudio(guild).getScheduler(guild).nextTrack();
 		return this;
 	}
 	
 	public MusicBot previous(Guild guild) {
-		setupAudio(guild);
-		getScheduler(guild).previousTrack();
+		setupAudio(guild).getScheduler(guild).previousTrack();
 		return this;
 	}
 	
 	public AudioTrack getCurrentTrack(Guild guild) {
-		setupAudio(guild);
-		return getPlayer(guild).getPlayingTrack();
+		return setupAudio(guild).getPlayer(guild).getPlayingTrack();
 	}
 	
 	/* TTS */
 	
 	public MusicBot speak(Guild guild, String voice, String text) throws InterruptedException, IOException {
+		setupAudio(guild);
 		play(
 			guild, 
 			Balabolka.buildWav(voice, text).toAbsolutePath().toString(), 
@@ -472,20 +471,18 @@ public abstract class MusicBot extends UserBot {
 	/* Play */
 	
 	public int play(Guild guild, int index) {
-		setupAudio(guild);
-		getScheduler(guild).play(index);
+		setupAudio(guild).getScheduler(guild).play(index);
 		return index;
 	}
 	
 	public Future<Void> play(Guild guild, String identifier, AudioLoadResultHandler handler) {
-		setupAudio(guild);
-		return playerManagers.get(guild.getIdLong()).loadItem(identifier, handler);
+		return setupAudio(guild).playerManagers.get(guild.getIdLong()).loadItem(identifier, handler);
 	}
 	
 	public Future<Void> play(Guild guild, String identifier, boolean top, boolean next, int count, boolean playlist, StatusUpdater callback) {
 		long id = guild.getIdLong();
-		setupAudio(guild);
-		return playerManagers.get(id)
+		return setupAudio(guild)
+			.playerManagers.get(id)
 			.loadItemOrdered(
 					getPlayerManager(guild), 
 					identifier, 

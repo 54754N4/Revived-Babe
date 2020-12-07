@@ -26,6 +26,7 @@ import commands.level.admin.Exit;
 import commands.level.admin.Test;
 import commands.level.normal.Echo;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import spelling.SpellingCorrector;
 
 /* Finds the appropriate command based on string command */
@@ -50,17 +51,19 @@ public class Invoker {
         else 
         	name = input;
         logger.info("Checking command : "+name);
+        MessageChannel channel = message.getChannel();
         Class<? extends Command> command = Reflector.find(name, type);
         Command created;
-        if (command != null && (created = instantiate(bot, message, command)) != null)
-			return created.start(input);
-		else {
-			String correction = corrector.correct(name), postfix = "";
-			if (!correction.equals(name))
-				postfix = String.format("%nDid you mean `%s` ?", correction);
-			message.getChannel().sendMessage("Unrecognized command verb `"+name+"`"+postfix).queue();
-			return null;
-		}
+        if (command != null) {
+        	created = instantiate(bot, message, command);
+        	if (created != null)
+        		return created.start(input);
+        }
+		String correction = corrector.correct(name), postfix = "";
+		if (command == null && !correction.equals(name))
+			postfix = String.format("%nDid you mean `%s` ?", correction);
+		channel.sendMessage("Unrecognized command verb `"+name+"`"+postfix).queue();
+		return null;
 	}
 	
 	private static Command instantiate(UserBot bot, Message message, Class<? extends Command> cls) {

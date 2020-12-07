@@ -1,6 +1,7 @@
 package commands.hierarchy;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +13,8 @@ import com.google.gson.Gson;
 
 import bot.model.MusicBot;
 import bot.model.UserBot;
+import database.DBManager;
+import database.TableManager;
 import lib.HTTP.Method;
 import lib.HTTP.MultipartRequestBuilder;
 import lib.HTTP.RequestBuilder;
@@ -131,6 +134,12 @@ public abstract class DiscordCommand extends PrintCommand {
 			sb.append(output+"\n");
 		}
 		return markdown(sb.toString());
+	}
+	
+	/* DB tables */
+	
+	protected TableManager database(String name) throws SQLException {
+		return DBManager.INSTANCE.manage(name);
 	}
 	
 	@Override

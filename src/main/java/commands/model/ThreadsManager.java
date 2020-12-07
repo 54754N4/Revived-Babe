@@ -17,7 +17,7 @@ public abstract class ThreadsManager {
 		
 		@Override
 		public Thread newThread(Runnable runnable) {
-			Thread t = new Thread(runnable, String.format("Thread-%d", ++counter));
+			Thread t = new Thread(runnable, String.format("%s-%d", runnable.getClass(), ++counter));
 			t.setDaemon(true);
 			return t;
 		}

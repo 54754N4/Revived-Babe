@@ -1,10 +1,6 @@
 package database;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,70 +11,44 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TableManager implements Closeable {
+public class TableManager {
 	private static final Logger logger = LoggerFactory.getLogger(TableManager.class);
-	public static final String BABE_DATABASE = "bot-data.db";
-	public static final String DB_URL_ACCESS_FORMAT = "jdbc:sqlite:.\\database\\%s";
-	
-	private final String table;
 	private final Connection connection;
-
-	public static void main(String[] args) throws SQLException, IOException {
-		TableManager mgr = new TableManager("Config");
-		mgr.insertOrUpdate(new String[] {"DEFAULT_VOLUME", "DEFAULT_REPEAT_QUEUE", "DEFAULT_REPEAT_SONG"}, new Object[] {50, true, false});
-		System.out.println(mgr.selectAll());
-		mgr.close();
+	private final String table;
+	
+	protected TableManager(Connection connection, String table) throws SQLException {
+		this(connection, DBManager.BABE_DATABASE, table);
 	}
 	
-	protected TableManager(String table) throws SQLException {
-		this(BABE_DATABASE, table);
-	}
-	
-	protected TableManager(String database, String table) throws SQLException {
+	protected TableManager(Connection connection, String database, String table) throws SQLException {
 		this.table = table;
-		connection = DriverManager.getConnection(String.format(DB_URL_ACCESS_FORMAT, database));
+		this.connection = connection;
 		try { createTableIfNotExists(); }
 		catch (SQLException databaseNonExistant) {
 			try { // and now try again after creating database
-				createNewDatabase(database);
+				DBManager.createNewDatabase(database);
 				createTableIfNotExists(); 	
 			} catch (SQLException e) { 
-				logger.error("Could not create new database: "+database+" and table: "+table, e); 
+				logger.error("Could not create new database: "+database+" for table: "+table, e); 
 			}
 		}
 	}
 	
-	@Override
-	public void close() throws IOException {
-		try {
-			connection.close();
-		} catch (SQLException e) {
-			logger.error("Could not close "+getClass()+"'s connection.", e);
+	private TableManager execute(String sql) throws SQLException {
+		try (Statement statement = connection.createStatement()) { 
+			statement.execute(sql); 
 		}
+		return this;
 	}
-	
-	public static void createNewDatabase(String fileName) throws SQLException {
-	    String url = "jdbc:sqlite:" + fileName;
-        try (
-        	Connection connection = DriverManager.getConnection(url);
-        	Statement statement = connection.createStatement()
-        ) {
-        	statement.execute("PRAGMA auto_vacuum = FULL");
-            DatabaseMetaData meta = connection.getMetaData();
-            logger.info("The driver name is " + meta.getDriverName());
-            logger.info("New database '"+fileName+"' has been created.");
-        }
-    }
 	
 	public TableManager createTableIfNotExists() throws SQLException {
 		String sql = String.format("CREATE TABLE IF NOT EXISTS %s (key TEXT UNIQUE, value TEXT)", table);
-		try (Statement statement = connection.createStatement()) { statement.execute(sql); }
-		return this;
+		return execute(sql);
 	}
 
 	public Map<String, String> selectAll() throws SQLException {
 		return select("");
-	} 
+	}
 	
 	public Map<String, String> select(Object condition) throws SQLException {
 		String sql = "SELECT key, value FROM "+table;
@@ -96,8 +66,34 @@ public class TableManager implements Closeable {
 		return pairs;
 	}
 	
+	// Retrieves a type, and if it doesnt exist, inserts a default value
+	public <T> String retrieve(String key, T onError) throws SQLException {
+		String value = select(key).get(key); 
+		if (value == null) {
+			value = onError.toString();
+			insert(key, value);
+		}
+		return value;
+	}
+	
+	public int retrieveInt(String key, int onError) throws NumberFormatException, SQLException {
+		return Integer.parseInt(retrieve(key, onError));
+	}
+	
+	public long retrieveLong(String key, long onError) throws NumberFormatException, SQLException {
+		return Long.parseLong(retrieve(key, onError));
+	}
+	
+	public boolean retrieveBool(String key, boolean onError) throws SQLException {
+		return Boolean.parseBoolean(retrieve(key, onError));
+	}
+	
 	public TableManager insert(String key, Object value) throws SQLException {
 		return insert(new String[] {key}, new Object[] {value});
+	}
+	
+	public TableManager insert(Map<String, Object> values) throws SQLException {
+		return insert(values.keySet().toArray(new String[0]), values.values().toArray());
 	}
 	
 	public TableManager insert(String[] keys, Object[] values) throws SQLException {
@@ -123,7 +119,6 @@ public class TableManager implements Closeable {
 		try { 
 			insert(keys, values); 
 		} catch (SQLException keyAlreadyExists) {
-			logger.info("Couldn't insert, updating instead.");
 			update(keys, values); 
 		}
 		return this;
@@ -156,53 +151,37 @@ public class TableManager implements Closeable {
 		}
 	}
 	
-	// Retrieves a type, and if it doesnt exist, inserts a default value
-	public <T> String retrieve(String key, T onError) throws SQLException {
-		String value = select(key).get(key); 
-		if (value == null) {
-			value = onError.toString();
-			insert(key, value);
-		}
-		return value;
-	}
-	
-	public int retrieveInt(String key, int onError) throws NumberFormatException, SQLException {
-		return Integer.parseInt(retrieve(key, onError));
-	}
-	
-	public long retrieveLong(String key, long onError) throws NumberFormatException, SQLException {
-		return Long.parseLong(retrieve(key, onError));
-	}
-	
-	public boolean retrieveBool(String key, boolean onError) throws SQLException {
-		return Boolean.parseBoolean(retrieve(key, onError));
-	}
-	
-	public long delete(String pattern) throws SQLException {
-		long before = count();
+	public int delete(String pattern) throws SQLException {
 		String sql = "DELETE from "+table+" WHERE key LIKE ?;";
 		try (PreparedStatement statement = connection.prepareStatement(sql)) { 
 			statement.setString(1,  pattern);
-			statement.executeUpdate();
-			return before - count();
+			return statement.executeUpdate();
 		}
 	}
 	
 	public TableManager drop() throws SQLException {
 		String sql = "DROP TABLE "+table;
-		try (Statement statement = connection.createStatement()) { statement.execute(sql); }
-		return this;
+		return execute(sql);
 	}
 	
 	public TableManager vacuum() throws SQLException {
 		String sql = "VACUUM";
-		try (Statement statement = connection.createStatement()) { statement.execute(sql); }
-		return this;
+		return execute(sql);
 	}
 	
 	public TableManager reset() throws SQLException {
 		drop();
 		createTableIfNotExists();
 		return this;
+	}
+	
+	public String max(String pattern) throws SQLException {
+		String sql = "SELECT MAX(?) FROM "+table;
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setString(1, pattern);
+			try (ResultSet rs = statement.executeQuery()) {
+				return rs.getString(1);
+			}
+		}
 	}
 }
