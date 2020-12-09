@@ -32,9 +32,6 @@ import net.dv8tion.jda.api.managers.AudioManager;
  * all the different audio managers, players etc which are unique to each one. 
  * This class does that while also offering convenience methods for simple 
  * music/voice handling from commands.
- * Note:
- * - setupAudio only pays a cost once, then further calls cost nothing (except
- * for call-stack allocation etc)
  */
 public abstract class MusicBot extends UserBot {
 	private static final long DEFAULT_TIMEOUT = 5*1000, 

@@ -51,10 +51,7 @@ public abstract class DiscordCommand extends PrintCommand {
 			long id = message.getGuild().getIdLong();
 			if (!guildsVisited.contains(id)) {
 				guildsVisited.add(id);
-				try { MusicState.restore(bot); }
-				catch (Exception e) {
-					logger.error("Error restoring tracks for guild "+message.getGuild(), e);
-				}
+				MusicState.restore(bot);
 			}
 		}
 	}
