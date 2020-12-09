@@ -1,7 +1,7 @@
 package commands.level.normal;
 
-import bot.model.Bot;
-import bot.model.UserBot;
+import bot.hierarchy.Bot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;

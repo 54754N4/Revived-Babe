@@ -1,7 +1,7 @@
 package commands.level.normal;
 
-import bot.model.MusicBot;
-import bot.model.UserBot;
+import bot.hierarchy.MusicBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
@@ -23,12 +23,20 @@ public class Volume extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		if (input.trim().equals(""))
 			printCurrentVolume();
+		else if (input.startsWith("+") || input.startsWith("-"))
+			handleRelative(input);
 		else if (!StringLib.isInteger(input)) 
 			handleText(input);
 		else 
 			handleInt(Integer.parseInt(input));
 	}
 	
+	private void handleRelative(String input) {
+		int volume = getMusicBot().getVolume(guild),
+			dv = Integer.parseInt(input.substring(1));
+		getMusicBot().setVolume(guild, volume + dv);
+	}
+
 	private void printCurrentVolume() {
 		println("Current volume is %d", getMusicBot().getVolume(guild));
 	}

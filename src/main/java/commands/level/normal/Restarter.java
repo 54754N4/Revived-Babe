@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;
@@ -32,6 +32,7 @@ public class Restarter extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
+		backup();
 		if (hasArgs("-l", "--log")) {
 			println(getUpdateLog());
 			return;
@@ -53,7 +54,7 @@ public class Restarter extends DiscordCommand {
 	
 	public static String getUpdateLog() throws IOException {
 		String root = FileSystems.getDefault().getPath(".").toAbsolutePath().toString();
-		Path log = Paths.get(root+"\\shadowjar-build.log").normalize();
+		Path log = Paths.get(root+"\\logs\\shadowjar-build.log").normalize();
 		StringBuilder sb = new StringBuilder();
 		Files.lines(log)
 			.map((line) -> sb.append(line+System.lineSeparator()));

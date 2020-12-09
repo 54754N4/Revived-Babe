@@ -1,6 +1,6 @@
 package commands.level.normal;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;

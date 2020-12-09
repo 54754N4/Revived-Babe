@@ -1,7 +1,7 @@
 package bot;
 
-import bot.model.Bot;
-import bot.model.MusicBot;
+import bot.hierarchy.Bot;
+import bot.hierarchy.MusicBot;
 import commands.model.TypingWatchdog;
 import lib.Emoji;
 

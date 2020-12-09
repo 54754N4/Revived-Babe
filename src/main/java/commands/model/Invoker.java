@@ -18,7 +18,7 @@ import org.reflections.util.FilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.Command;
 import commands.hierarchy.DiscordCommand;
 import commands.level.All;

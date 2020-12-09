@@ -9,7 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
 import audio.TrackScheduler;
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import lib.StringLib;
 
 public class PagedTracksHandler extends PagedHandler<AudioTrack> implements AudioLoadResultHandler {

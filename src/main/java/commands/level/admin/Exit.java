@@ -1,6 +1,6 @@
 package commands.level.admin;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;
@@ -19,6 +19,7 @@ public class Exit extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
+		backup();
 		printlnIndependently("Farewell!");
 		Thread.sleep(2000);
 		bot.kill(hasArgs("-n", "--now"));

@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand.Global;
 import commands.model.Mentions;
 import commands.model.Params;

@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import lib.Emoji;
-import lib.messages.ReactionsTracker.CustomEmojiConsumer;
-import lib.messages.ReactionsTracker.NativeEmojiConsumer;
-import lib.messages.ReactionsTracker.NativeExtendedEmojiConsumer;
-import lib.messages.ReactionsTracker.ReactionConsumer;
+import lib.messages.ReactionsDispatcher.CustomEmojiConsumer;
+import lib.messages.ReactionsDispatcher.NativeEmojiConsumer;
+import lib.messages.ReactionsDispatcher.NativeExtendedEmojiConsumer;
+import lib.messages.ReactionsDispatcher.ReactionConsumer;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
 

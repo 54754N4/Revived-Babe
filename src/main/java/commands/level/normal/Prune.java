@@ -2,7 +2,7 @@ package commands.level.normal;
 
 import java.util.List;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;

@@ -26,7 +26,7 @@ public class TableManager {
 		try { createTableIfNotExists(); }
 		catch (SQLException databaseNonExistant) {
 			try { // and now try again after creating database
-				DBManager.createNewDatabase(database);
+				Query.createNewDatabase(database);
 				createTableIfNotExists(); 	
 			} catch (SQLException e) { 
 				logger.error("Could not create new database: "+database+" for table: "+table, e); 
@@ -97,10 +97,13 @@ public class TableManager {
 	}
 	
 	public TableManager insert(String[] keys, Object[] values) throws SQLException {
+		if (keys.length == 0 && values.length == 0)
+			return this;
 		StringBuilder sb = new StringBuilder().append("INSERT INTO "+table+" (key,value) VALUES ");
 		for (int i=0; i<keys.length; i++) 
 			sb.append("(?,?),");
 		String sql = sb.deleteCharAt(sb.length()-1).append(";").toString();
+		logger.info(sql);
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			for (int i=0, count=1; i<keys.length; i++, count+=2) {
 				statement.setString(count, keys[i]);
@@ -109,6 +112,10 @@ public class TableManager {
 			statement.executeUpdate();
 		}
 		return this;
+	}
+	
+	public TableManager insertOrUpdate(Map<String, Object> map) throws SQLException {
+		return insertOrUpdate(map.keySet().toArray(new String[0]), map.values().toArray());
 	}
 	
 	public TableManager insertOrUpdate(String key, Object value) throws SQLException {

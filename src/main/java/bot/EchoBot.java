@@ -1,8 +1,8 @@
 package bot;
 
 import audio.handlers.EchoHandler;
-import bot.model.Bot;
-import bot.model.MusicBot;
+import bot.hierarchy.Bot;
+import bot.hierarchy.MusicBot;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 
@@ -25,12 +25,12 @@ public class EchoBot extends MusicBot {
 	}
 	
 	@Override
-	protected AudioSendHandler getAudioSendHandler() {
+	public AudioSendHandler getAudioSendHandler() {
 		return handler;
 	}
 	
 	@Override
-	protected AudioReceiveHandler getAudioReceiveHandler() {
+	public AudioReceiveHandler getAudioReceiveHandler() {
 		return handler;
 	}
 

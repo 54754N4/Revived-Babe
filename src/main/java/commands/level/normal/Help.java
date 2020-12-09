@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.Command;
 import commands.hierarchy.DiscordCommand;
 import commands.model.Invoker.Reflector;

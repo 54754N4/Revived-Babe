@@ -3,7 +3,7 @@ package commands.level.normal;
 import java.util.HashMap;
 import java.util.Map;
 
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.ExchangeRatesResult;

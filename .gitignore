@@ -31,3 +31,8 @@ speak
 # Ignore all download files
 download/*
 download
+
+# Ignore all db files
+database
+*.db
+database/*

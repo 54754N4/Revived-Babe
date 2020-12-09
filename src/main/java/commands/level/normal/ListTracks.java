@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
 import audio.TrackScheduler;
-import bot.model.UserBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
@@ -23,6 +23,7 @@ public class ListTracks extends DiscordCommand {
 	public String helpMessage() {
 		return helpBuilder("", 
 				"# Args",
+				"-c or --current\tmakes me show currently playing song",
 				"-p or --paged\tmakes me list tracks as paged results",
 				"List tracks in current queue.");
 	}
@@ -35,6 +36,8 @@ public class ListTracks extends DiscordCommand {
 			println("No songs queued.");
 		else if (hasArgs("-p", "--paged")) 
 			createPlayer();
+		else if (hasArgs("-c", "--current"))
+			createCurrent();
 		else 
 			for (AudioTrack track : queue)
 				println(String.format(
@@ -45,10 +48,6 @@ public class ListTracks extends DiscordCommand {
 	}
 	
 	private void createPlayer() {
-		createPlayer(null); // because Void param is required for Consumer<? super Void>..
-	}
-	
-	private void createPlayer(Void v) {
 		final CircularDeque queue = getMusicBot().getPlaylist(guild);
 		final TrackScheduler scheduler = getMusicBot().getScheduler(guild);
 		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler, true)
@@ -66,9 +65,31 @@ public class ListTracks extends DiscordCommand {
 			.queue(handler);
 	}
 	
+	private void createPlayer(Void v) {
+		createPlayer(); // because Void param is required for Consumer<? super Void>..
+	}
+	
 	private void moveBottom(MessageReaction reaction) {
 		reaction.getChannel()
 			.deleteMessageById(reaction.getMessageId())
 			.queue(this::createPlayer);
+	}
+	
+	private String printCurrent() {
+		CircularDeque queue = getMusicBot().getPlaylist(guild);
+		AudioTrack track = queue.get(queue.getCurrent());
+		return String.format("%d. %s (`%s`/%s)", 
+				queue.getCurrent(),
+				track.getInfo().title, 
+				StringLib.millisToTime(track.getPosition()), 
+				StringLib.millisToTime(track.getDuration()));
+	}
+	
+	private void createCurrent() {
+		channel.sendMessage(printCurrent())
+				.queue(message -> 
+					new ReactionsHandler(bot)
+							.handle(0x2747, reaction -> message.editMessage(printCurrent()).queue())
+							.accept(message));
 	}
 }

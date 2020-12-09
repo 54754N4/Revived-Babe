@@ -1,7 +1,7 @@
 package bot;
 
-import bot.model.Bot;
-import bot.model.MusicBot;
+import bot.hierarchy.Bot;
+import bot.hierarchy.MusicBot;
 
 public class SlaveBot extends MusicBot {
 	private String[] prefixes;

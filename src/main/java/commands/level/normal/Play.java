@@ -2,8 +2,8 @@ package commands.level.normal;
 
 import java.util.concurrent.ExecutionException;
 
-import bot.model.MusicBot;
-import bot.model.UserBot;
+import bot.hierarchy.MusicBot;
+import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;

@@ -5,16 +5,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.google.gson.Gson;
 
-import bot.model.MusicBot;
-import bot.model.UserBot;
-import database.DBManager;
-import database.TableManager;
+import backup.MusicState;
+import bot.hierarchy.MusicBot;
+import bot.hierarchy.UserBot;
 import lib.HTTP.Method;
 import lib.HTTP.MultipartRequestBuilder;
 import lib.HTTP.RequestBuilder;
@@ -28,6 +29,7 @@ import net.dv8tion.jda.api.entities.Role;
 public abstract class DiscordCommand extends PrintCommand {
 	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
+	private static final Set<Long> guildsVisited = new HashSet<>();
 	
 	public static enum Global {
 		DELETE_USER_MESSAGE("-d", "--delete"), 
@@ -45,6 +47,16 @@ public abstract class DiscordCommand extends PrintCommand {
 	
 	public DiscordCommand(UserBot bot, Message message, String...names) {
 		super(bot, message, names);
+		if (bot != null) {	// since commands can be instantiated using dummy data
+			long id = message.getGuild().getIdLong();
+			if (!guildsVisited.contains(id)) {
+				guildsVisited.add(id);
+				try { MusicState.restore(bot); }
+				catch (Exception e) {
+					logger.error("Error restoring tracks for guild "+message.getGuild(), e);
+				}
+			}
+		}
 	}
 	
 	public boolean fromMusicBot() {
@@ -53,6 +65,18 @@ public abstract class DiscordCommand extends PrintCommand {
 	
 	public MusicBot getMusicBot() {
 		return MusicBot.class.cast(bot);
+	}
+	
+	protected DiscordCommand backup() throws SQLException {
+		if (fromMusicBot())
+			MusicState.backup(getMusicBot());
+		return this;
+	}
+	
+	protected DiscordCommand clearBackup() throws SQLException {
+		if (fromMusicBot())
+			MusicState.clear(getMusicBot(), guild.getIdLong());
+		return this;
 	}
 	
 	/* Convenience methods */
@@ -134,12 +158,6 @@ public abstract class DiscordCommand extends PrintCommand {
 			sb.append(output+"\n");
 		}
 		return markdown(sb.toString());
-	}
-	
-	/* DB tables */
-	
-	protected TableManager database(String name) throws SQLException {
-		return DBManager.INSTANCE.manage(name);
 	}
 	
 	@Override
