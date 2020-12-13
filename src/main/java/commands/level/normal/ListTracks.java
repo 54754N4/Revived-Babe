@@ -65,14 +65,10 @@ public class ListTracks extends DiscordCommand {
 			.queue(handler);
 	}
 	
-	private void createPlayer(Void v) {
-		createPlayer(); // because Void param is required for Consumer<? super Void>..
-	}
-	
 	private void moveBottom(MessageReaction reaction) {
 		reaction.getChannel()
 			.deleteMessageById(reaction.getMessageId())
-			.queue(this::createPlayer);
+			.queue(message -> createPlayer());
 	}
 	
 	private String printCurrent() {

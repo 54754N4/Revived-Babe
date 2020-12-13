@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 public class ListUtil {
 	public static <R, T extends Collection<R>> List<R> subset(T elements, int start, int count) {
@@ -39,6 +40,18 @@ public class ListUtil {
 				return -i1.compareTo(i2);	// reverse order
 			}
 		};
+	}
+	
+	public static <T> int max(List<T> elements, Function<T, Integer> mapper) {
+		int max = 0, pos = -1;
+		for (int i=0, current; i<elements.size(); i++) {
+			current = mapper.apply(elements.get(i));
+			if (current > max) {
+				max = current;
+				pos = i;
+			}
+		}
+		return pos;
 	}
 	
 	public static void main(String[] args) {

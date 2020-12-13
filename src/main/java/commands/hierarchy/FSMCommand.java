@@ -25,6 +25,7 @@ public abstract class FSMCommand extends DiscordCommand {
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
 		if (event.getAuthor().getIdLong() != issuer)
 			return;
+		message = event.getMessage();	// overrides every new reply
 		state = state.check(event);
 		if (state == end)
 			bot.getJDA().removeEventListener(this);

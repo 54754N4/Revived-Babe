@@ -4,10 +4,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ import commands.level.All;
 import commands.level.admin.Exit;
 import commands.level.admin.Test;
 import commands.level.normal.Echo;
+import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import spelling.SpellingCorrector;
@@ -59,10 +61,13 @@ public class Invoker {
         	if (created != null)
         		return created.start(input);
         }
-		String correction = corrector.correct(name), postfix = "";
-		if (command == null && !correction.equals(name))
-			postfix = String.format("%nDid you mean `%s` ?", correction);
-		channel.sendMessage("Unrecognized command verb `"+name+"`"+postfix).queue();
+		String correction = corrector.correct(name);
+		channel.sendMessage("Unrecognized command verb `"+name+"`")
+			.queue();
+		if (!correction.equals(name))
+			channel.sendMessage(String.format("Did you mean `%s` ?", correction))
+				.reference(message)
+				.queue();
 		return null;
 	}
 	
@@ -103,6 +108,15 @@ public class Invoker {
 			}
 		}
 		
+		public static class NamesComparator implements Comparator<List<String>> {
+			@Override
+			public int compare(List<String> o1, List<String> o2) {
+				int biggest1 = ListUtil.max(o1, String::length),
+					biggest2 = ListUtil.max(o2, String::length);
+				return o1.get(biggest1).compareTo(o2.get(biggest2));
+			}
+		}
+		
 		/* Reflection methods */ 
 		
 		private static Reflections createReflections(String packageName, Class<?>[] include, Class<?>[] exclude) {
@@ -122,7 +136,7 @@ public class Invoker {
 		}
 		
 		private static Map<List<String>, Class<? extends Command>> buildDictionary(Type type) {
-			Map<List<String>, Class<? extends Command>> map = new HashMap<>();
+			Map<List<String>, Class<? extends Command>> map = new TreeMap<>(new NamesComparator());
 			Class<?>[] empty = pack();
 			Reflections reflections = type == Type.ALL ?
 					createReflections(type.name, pack(All.class), empty) :

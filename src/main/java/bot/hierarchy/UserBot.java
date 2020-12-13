@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 
 import commands.level.normal.Restarter;
+import commands.model.ThreadsManager;
 import lib.messages.ReactionsDispatcher;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -39,7 +40,6 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	protected final String name;
 	protected final Logger logger;
 	protected boolean exitOnKill;
-	private IAudioSendFactory audioSendFactory;
 	private List<OnLoadListener> loadListeners;
 	private Object[] eventListeners;
 	private ReactionsDispatcher reactionsTracker;
@@ -48,7 +48,6 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 		this.bot = bot;
 		exitOnKill = false;
 		name = getClass().getName();
-		audioSendFactory = new NativeAudioSendFactory(); 		// By default uses JDA-NAS
 		loadListeners = new ArrayList<>();
 		logger = LoggerFactory.getLogger(name);
 		logger.debug("Created %s.", name);
@@ -57,6 +56,11 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 
 	public abstract String[] getPrefixes();
 	public abstract String prefixHelp();
+	
+	public UserBot start() {
+		ThreadsManager.newNativeThread(this).start();
+		return this;
+	}
 	
 	@Override
 	public void run() {
@@ -75,7 +79,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	private JDABuilder buildJDA() {
 		return JDABuilder.create(bot.getToken(), EnumSet.allOf(GatewayIntent.class))
 				.enableCache(EnumSet.allOf(CacheFlag.class))
-				.setAudioSendFactory(getAudioSendFactory())
+				.setAudioSendFactory(getAudioSendFactory())	// By default uses JDA-NAS
 				.setCompression(getCompression())
                 .setChunkingFilter(getChunkingFilter())
                 .setActivity(getActivity())
@@ -84,9 +88,9 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
                 .setAutoReconnect(true);
 	}
 	
-	// children can override and: return super.attachListeners(builder.addEventListeers(...))
+	// children can override and: return super.attachListeners(builder.addEventListeners(...))
 	protected JDABuilder attachListeners(JDABuilder builder) {
-		return builder.addEventListeners(createListeners());
+		return builder.addEventListeners(setListeners(getListeners()));
 	}
 	
 	public UserBot addOnLoadListener(OnLoadListener...listeners) {
@@ -94,8 +98,12 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 		return this;
 	}
 	
-	public Object[] createListeners() {
-		return eventListeners = new Object[] { this, new ReplyListener(this), reactionsTracker };
+	public Object[] getListeners() {
+		return new Object[] {this, new ReplyListener(this), reactionsTracker};
+	}
+	
+	public Object[] setListeners(Object...objects) {	// keep track for deletions
+		return eventListeners = objects;
 	}
 	
 	public ReactionsDispatcher getReactionsTracker() {
@@ -107,7 +115,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	}
 	
 	protected @Nullable IAudioSendFactory getAudioSendFactory() {
-		return audioSendFactory;
+		return new NativeAudioSendFactory();
 	}
 	
 	protected Compression getCompression() {	// to disable, children override+return Compression.None

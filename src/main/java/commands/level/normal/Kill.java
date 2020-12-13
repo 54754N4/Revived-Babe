@@ -15,18 +15,23 @@ public class Kill extends DiscordCommand {
 
 	@Override
 	public String helpMessage() {
-		return helpBuilder("<number>", 
-			"Kill bot specified with number.");
+		return helpBuilder("<number or name>",
+			"# Args",
+			"-n or --now\tmakes the bot shutdown faster",
+			"Kill bot specified with number or name.");
 	}
 
 	@Override
 	protected void execute(String input) throws Exception {
+		boolean now = hasArgs("-n", "--now");
 		if (StringLib.isInteger(input)) {
 			Bot slave = Bot.Slaves.get(Integer.parseInt(input.trim())-1);
 			getLogger().info("Killing {} ..", slave);
-			Bot.Slaves.killSlave(slave);
-		} else {
-			println("I need an integer.");
+			Bot.Slaves.killSlave(slave, now);
+		} else if (input.startsWith("echo")) 
+			Bot.killEcho(now);
+		else {
+			println("I need an integer or name.");
 		}
 	}
 

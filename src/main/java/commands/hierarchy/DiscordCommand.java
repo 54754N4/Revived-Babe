@@ -187,6 +187,7 @@ public abstract class DiscordCommand extends PrintCommand {
 		String[] tokens = PrintBooster.splitForDiscord(stdout.toString())
 				.toArray(new String[0]);
 		for (String token : tokens) 
-			channel.sendMessage(token).queue();
+			channel.sendMessage(token)
+				.queue();
 	}
 }

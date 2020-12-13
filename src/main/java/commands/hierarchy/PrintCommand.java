@@ -59,7 +59,8 @@ public abstract class PrintCommand extends Command {
 	
 	public void printIndependently(String format, Object... args) {
 		if (format.equals("")) return;
-		channel.sendMessage(returnOrFormat(format, args)).queue();
+		channel.sendMessage(returnOrFormat(format, args))
+			.queue();
 	}
 	
 	public void printlnIndependently(String format, Object... args) {

@@ -7,33 +7,24 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.audio.CombinedAudio;
-import net.dv8tion.jda.api.audio.UserAudio;
 
 public class EchoHandler implements AudioSendHandler, AudioReceiveHandler {
+	private static final int BUFFER_LIMIT = 20;
     private final Queue<byte[]> queue = new ConcurrentLinkedQueue<>();
-
+    private float volume = 1.0f;
+    
     /* Receive Handling */
 
     @Override
-    public boolean canReceiveUser() {
-    	return true;
-    }
-    
-    @Override
-    public void handleUserAudio(UserAudio userAudio) {
-    	byte[] data = userAudio.getAudioData(1.0f);
-    	if (data != null) queue.offer(data);
-    }
-    
-    @Override
     public boolean canReceiveCombined() {
-        return true;
+        return queue.size() < BUFFER_LIMIT;
     }
 
     @Override
     public void handleCombinedAudio(CombinedAudio combinedAudio) {
-//        if (combinedAudio.getUsers().isEmpty()) return;
-        byte[] data = combinedAudio.getAudioData(1.0f); 
+        if (combinedAudio.getUsers().isEmpty()) 
+        	return;
+        byte[] data = combinedAudio.getAudioData(volume); 
         if (data != null) queue.offer(data);
     }
 

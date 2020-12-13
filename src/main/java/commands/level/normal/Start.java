@@ -15,7 +15,7 @@ public class Start extends DiscordCommand {
 	@Override
 	public String helpMessage() {
 		return helpBuilder("<name>", 
-			"Say slave if you want a new slave");
+			"Say 'slave' if you want a new slave or 'echo' for voice test bot.");
 //			+ "otherwise `echo` or `mirror`.");
 	}
 
@@ -23,7 +23,10 @@ public class Start extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		if (input.startsWith("slave"))
 			Bot.Slaves.newSlave();
-		else println("Cannot find bot with that name.");
+		else if (input.startsWith("echo"))
+			Bot.startEcho();
+		else 
+			println("Cannot find bot with that name.");
 	}
 
 }

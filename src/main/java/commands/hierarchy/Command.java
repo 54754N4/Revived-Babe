@@ -106,7 +106,7 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 				: message.getChannel();
 		thread = ThreadsManager.POOL.submit(this);
 		TypingWatchdog.handle(this);
-		getLogger().info("Started command "+getClass()+" thread");
+		getLogger().info("Started command {} thread", getClass());
 		return this;
 	}
 	

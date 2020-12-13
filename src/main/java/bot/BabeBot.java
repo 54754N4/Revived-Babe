@@ -31,7 +31,7 @@ public class BabeBot extends MusicBot {
 	protected void preKill(boolean now) throws Exception {
 		getReactionsTracker().stopTracking();
 		TypingWatchdog.kill();
-		Bot.Slaves.killSlaves(now);
+		Bot.killAllBots(now);
 		super.preKill(now);
 	}
 }

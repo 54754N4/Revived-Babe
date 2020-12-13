@@ -7,13 +7,14 @@ import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import bot.EchoBot;
 import bot.SlaveBot;
 import bot.SlaveBot.NoMoreSlavesException;
-import commands.model.ThreadsManager;
 
 public enum Bot {
 	BABE, ECHO, MIRROR, SLAVE_1, SLAVE_2, SLAVE_3, SLAVE_4, SLAVE_5, SLAVE_6, SLAVE_7, SLAVE_8, SLAVE_9;
 	
+	public static EchoBot echo;
 	public final String key;
 	
 	private Bot() {
@@ -22,6 +23,24 @@ public enum Bot {
 	
 	public String getToken() {
 		return System.getenv(key);
+	}
+	
+	public static EchoBot startEcho() {
+		if (echo == null) {
+			echo = new EchoBot();
+			echo.start();
+		}
+		return echo;
+	}
+	
+	public static void killEcho(boolean now) {
+		if (echo != null)
+			echo.kill(now);
+	}
+	
+	public static void killAllBots(boolean now) {
+		killEcho(now);
+		Slaves.killSlaves(now);
 	}
 	
 	public static final class Slaves {
@@ -35,18 +54,22 @@ public enum Bot {
 		public static SlaveBot newSlave() throws NoMoreSlavesException {
 			SlaveBot slave = new SlaveBot();
 			alive.add(slave);
-			ThreadsManager.newNativeThread(slave).start();
+			slave.start();
 			return slave;
 		}
 		
 		public static void killSlave(Bot bot) {
+			killSlave(bot, false);
+		}
+		
+		public static void killSlave(Bot bot, boolean now) {
 			SlaveBot killed = null;
 			for (SlaveBot slave : alive)
 				if (slave.bot == bot)
 					killed = slave;
 			alive.remove(killed);
 			queue.offer(killed.bot);
-			killed.kill();
+			killed.kill(now);
 		}
 		
 		public static void killSlaves(boolean now) {
