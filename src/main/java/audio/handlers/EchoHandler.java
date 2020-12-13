@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.audio.CombinedAudio;
+import net.dv8tion.jda.api.entities.User;
 
 public class EchoHandler implements AudioSendHandler, AudioReceiveHandler {
 	private static final int BUFFER_LIMIT = 20;
@@ -15,6 +16,11 @@ public class EchoHandler implements AudioSendHandler, AudioReceiveHandler {
     
     /* Receive Handling */
 
+    @Override
+    public boolean includeUserInCombinedAudio(User user) {
+    	return !user.isBot();
+    }
+    
     @Override
     public boolean canReceiveCombined() {
         return queue.size() < BUFFER_LIMIT;
