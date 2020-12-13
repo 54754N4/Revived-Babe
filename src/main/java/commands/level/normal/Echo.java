@@ -15,16 +15,18 @@ public class Echo extends DiscordCommand {
 	@Override
 	public String helpMessage() {
 		return helpBuilder("<text>",
+			"-n or --no\tMakes me print not inside a codeblock",
 			"Makes me repeat after you, Happy ?");
 	}
 	
 	@Override
 	public void execute(String command) {
+		String output = hasArgs("-n", "--no") ? command : codeBlock(command);
 		if (mentioned.users.size() == 0)
-			print(codeBlock(command));
+			print(output);
 		else for (User user : mentioned.users)
 			user.openPrivateChannel()
-				.queue(channel -> channel.sendMessage(codeBlock(command)));
+				.queue(channel -> channel.sendMessage(output).queue());
 	}
 	
 }
