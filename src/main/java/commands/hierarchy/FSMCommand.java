@@ -84,7 +84,7 @@ public abstract class FSMCommand extends DiscordCommand {
 		return StringLib.simpleMatch(event.getMessage().getContentDisplay(), match);
 	}
 	
-	protected static class State {
+	protected static class State implements Cloneable {
 		private Collection<Transition> transitions;
 		
 		private State(Collection<Transition> transitions) {
@@ -103,7 +103,12 @@ public abstract class FSMCommand extends DiscordCommand {
 			return this;
 		}
 		
-		public static class Builder {
+		@Override
+		public State clone() {
+			return new State(transitions);
+		}
+		
+		public static class Builder implements Cloneable {
 			private List<Transition> transitions = new ArrayList<>();
 			
 			public Builder addTransition(Transition transition) {
@@ -114,10 +119,18 @@ public abstract class FSMCommand extends DiscordCommand {
 			public State build() {
 				return new State(transitions);
 			}
+			
+			@Override
+			public Builder clone() {
+				Builder builder = new Builder();
+				for (Transition transition : transitions)
+					builder.addTransition(transition);
+				return builder;
+			}
 		}
 	}
 	
-	protected static class Transition {
+	protected static class Transition implements Cloneable {
 		private final Predicate<GuildMessageReceivedEvent> predicate;
 		private final State nextState;
 		private final Consumer<GuildMessageReceivedEvent> action;
@@ -137,7 +150,12 @@ public abstract class FSMCommand extends DiscordCommand {
 			return nextState;
 		}
 		
-		public static class Builder {
+		@Override
+		public Transition clone() {
+			return new Transition(predicate, nextState, action);
+		}
+		
+		public static class Builder implements Cloneable {
 			private Predicate<GuildMessageReceivedEvent> predicate;
 			private State nextState;
 			private Consumer<GuildMessageReceivedEvent> action = event -> {};		// by default no action
@@ -178,6 +196,14 @@ public abstract class FSMCommand extends DiscordCommand {
 				if (nextState == null)
 					throw new IllegalArgumentException("How can a FSM transition to a null state ? =v");
 				return new Transition(predicate, nextState, action);
+			}
+			
+			@Override
+			public Builder clone() {
+				return new Builder()
+						.setCondition(predicate)
+						.setAction(action)
+						.setNextState(nextState);
 			}
 		}
 	}
