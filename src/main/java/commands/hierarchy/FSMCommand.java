@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import bot.hierarchy.UserBot;
+import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
@@ -23,16 +24,13 @@ public abstract class FSMCommand extends DiscordCommand {
 	
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-		if (event.getAuthor().getIdLong() != issuer)
+		if (!shouldHandleEvent(event))
 			return;
 		message = event.getMessage();	// overrides every new reply
 		state = state.check(event);
 		if (state == end)
-			bot.getJDA().removeEventListener(this);
+			dispose();
 	}
-	
-	// FSM don't need execute so replace with
-	protected void setup() {}
 	
 	@Override
 	protected void execute(String input) throws Exception {
@@ -40,9 +38,20 @@ public abstract class FSMCommand extends DiscordCommand {
 		issuer = message.getAuthor().getIdLong();
 		setup();
 	}
+	
+	// FSM don't need execute so replace with
+	protected abstract void setup(); 
+	
+	protected boolean shouldHandleEvent(GuildMessageReceivedEvent event) {
+		return event.getAuthor().getIdLong() == issuer;
+	}
+	
+	public void dispose() {
+		bot.getJDA().removeEventListener(this);	// stop listening for replies
+	}
 
 	/* Since thread would have died, override to print independently and
-	 * not use default print-on-command-death  */
+	 * not use default print-on-command-death behaviour */
 	@Override
 	public void println() {
 		printlnIndependently();
@@ -56,6 +65,23 @@ public abstract class FSMCommand extends DiscordCommand {
 	@Override
 	public void println(String format, Object... args) {
 		printlnIndependently(format, args);
+	}
+	
+	/* Helper condition methods for children */
+	
+	protected static boolean isNotExit(GuildMessageReceivedEvent event) {
+		return !isExit(event);
+	}
+	
+	protected static boolean isExit(GuildMessageReceivedEvent event) {
+		return event.getMessage()
+				.getContentDisplay()
+				.toLowerCase()
+				.startsWith("exit");
+	}
+	
+	protected static boolean matches(GuildMessageReceivedEvent event, String match) {
+		return StringLib.simpleMatch(event.getMessage().getContentDisplay(), match);
 	}
 	
 	protected static class State {

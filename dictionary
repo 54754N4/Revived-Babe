@@ -9,6 +9,7 @@ del
 echo
 loop
 leave
+tic tac toe
 join
 res
 test
@@ -51,6 +52,7 @@ get
 repeat
 speak
 unmute
+tictactoe
 st
 previous
 restart
@@ -77,6 +79,7 @@ what
 s
 cats
 t
+ttt
 prune
 v
 le
