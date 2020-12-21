@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 
 import commands.level.normal.Restarter;
-import commands.model.ThreadsManager;
+import lib.ThreadsManager;
 import lib.messages.ReactionsDispatcher;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;

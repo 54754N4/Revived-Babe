@@ -7,6 +7,7 @@ ls
 prev
 del
 echo
+cmdline
 loop
 leave
 tic tac toe
@@ -31,6 +32,7 @@ stop
 unmu
 ne
 vo
+cmd
 unpause
 chuck
 next
@@ -68,6 +70,7 @@ say
 j
 k
 kill
+command
 food
 deafen
 praise

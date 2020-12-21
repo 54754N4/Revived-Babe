@@ -13,9 +13,9 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand.Global;
 import commands.model.Mentions;
 import commands.model.Params;
-import commands.model.ThreadsManager;
 import commands.model.TypingWatchdog;
 import lib.StringLib;
+import lib.ThreadsManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -35,7 +35,7 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 	protected String input;
 	protected Params params;				// named + unnamed parameters
 	protected Mentions mentioned;			// mentioned users/channels
-	protected Future<Void> thread;			// future of current thread
+	protected Future<?> thread;			// future of current thread
 	
 	public Command(UserBot bot, Message message, String...names) {
 		this.bot = bot;
@@ -64,7 +64,7 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		return guild;
 	}
 	
-	public Future<Void> getThread() {
+	public Future<?> getThread() {
 		return thread;
 	}
 	
@@ -98,14 +98,24 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		return nonArgs.toArray(new String[nonArgs.size()]);
 	}
 	
-	public Command start(String command) { 
+	public void attachListener() {
+		logger.info("Attached listener to FSM {}", getClass());
+		bot.getJDA().addEventListener(this);
+	}
+	
+	public void removeListener() {
+		logger.info("Unattach FSM {} listener", getClass());
+		bot.getJDA().removeEventListener(this);	// stop listening for replies
+	}
+	
+	public Command start(String command) {
 		mentioned = new Mentions(message, command);				// filter mentions from input first
 		input = StringLib.consumeName(StringLib.join(setParams(mentioned.filteredMessage)), names); 	// then args + name
 		channel = hasArgs(Global.PRIVATE_MESSAGE_REPLY.params) ? 
 				message.getAuthor().openPrivateChannel().complete()
 				: message.getChannel();
-		thread = ThreadsManager.POOL.submit(this);
 		TypingWatchdog.handle(this);
+		thread = ThreadsManager.POOL.submit(this);
 		getLogger().info("Started command {} thread", getClass());
 		return this;
 	}

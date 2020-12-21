@@ -5,10 +5,14 @@ import java.util.function.Consumer;
 public final class Game {
 	public static final String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 	public final int size;
-	public final Type[][] map;
+	public Type[][] map;
 	
 	public Game(int size) {
 		this.size = size;
+		reset();
+	}
+	
+	public void reset() {
 		map = new Type[size][size];
 		for (int i=0; i<size; ++i)
 			for (int j=0; j<size; ++j)
@@ -16,7 +20,7 @@ public final class Game {
 	}
 	
 	public int row(String x) {
-		return ALPHABET.indexOf(x);
+		return ALPHABET.indexOf(x.toLowerCase());
 	}
 	
 	private String extractPrefix(String coords) {
@@ -28,14 +32,39 @@ public final class Game {
 	}
 	
 	public boolean isValid(String coords) {
-		return coords.matches("[a-zA-Z]+[0-9]+");
+		if (!coords.matches("[a-zA-Z]+[0-9]+"))
+			return false;
+		try {
+			Point p = convert(coords);
+			return !(p.x == -1 || p.y<0 || p.y>size-1 || map[p.x][p.y] != Type.NONE);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	public Point convert(String coords) {
+		return new Point(row(extractPrefix(coords)), extractPostfix(coords));
+	}
+	
+	public Type get(String coords) {
+		Point p = convert(coords);
+		return (p.x == -1 || p.y<0 || p.y>size-1) ? null : map[p.x][p.y];
 	}
 	
 	public boolean set(String coords, Type type) {
-		int x = row(extractPrefix(coords)), y = extractPostfix(coords);
-		if (x == -1 || y<0 || y>size-1)
+		Type cell = get(coords);
+		if (cell != Type.NONE)
 			return false;
-		map[x][y] = type;
+		Point p = convert(coords);
+		map[p.x][p.y] = type;
+		return true;
+	}
+	
+	public boolean checkFull() {
+		for (Type[] row : map)
+			for (Type type : row)
+				if (type == Type.NONE)
+					return false;
 		return true;
 	}
 	
@@ -91,5 +120,14 @@ public final class Game {
 				rowEndConsumer.accept(null);
 		}
 		return this;
+	}
+	
+	public static class Point {
+		public final int x, y;
+		
+		public Point(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
 	}
 }

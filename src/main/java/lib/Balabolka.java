@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 public final class Balabolka {
 	private static final String DIR =  ".\\speak\\balcon\\",
@@ -34,10 +35,11 @@ public final class Balabolka {
 		execute(String.format(SPEAK_FORMAT, string)).waitFor();
 	}
 	
-	public static String listVoices() throws InterruptedException, IOException {
+	public static String listVoices() throws InterruptedException, IOException, ExecutionException {
 		Process p = execute(LIST_VOICES);
 		p.waitFor();
-		return new ProcOut(p).merge();
+		ThreadOutput out = ThreadsManager.read(p);
+		return out.getOutput() + out.getError();
 	}
 	
 	public static Path buildWav(String voice, String string) throws InterruptedException, IOException {
@@ -53,12 +55,8 @@ public final class Balabolka {
 		return pb.start();
 	}
 	
-	public static void main(String[] args) {
-		try {
-			System.out.println(Arrays.toString(Arrays.asList("David", "Hazel", "Helena", "Hortense", "Zira").toArray()));
-			System.out.println(listVoices());
-		} catch (InterruptedException | IOException e) {
-			e.printStackTrace();
-		}
+	public static void main(String[] args) throws InterruptedException, IOException, ExecutionException {
+		System.out.println(Arrays.toString(Arrays.asList("David", "Hazel", "Helena", "Hortense", "Zira").toArray()));
+		System.out.println(listVoices());
 	}
 }

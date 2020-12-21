@@ -48,7 +48,8 @@ public enum Command {
 	RATES("rates", "ra"), 
 	TRACE("trace", "what"), 
 	TEST_FSM("fsm"),
-	TIC_TAC_TOE("tic tac toe", "tictactoe", "ttt");
+	TIC_TAC_TOE("tic tac toe", "tictactoe", "ttt"), 
+	COMMAND_LINE("command", "cmdline", "cmd");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;

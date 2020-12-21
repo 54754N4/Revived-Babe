@@ -3,7 +3,7 @@ package game.tictactoe;
 import lib.Emoji;
 
 public enum Type { 
-	CROSS(Emoji.CROSS_MARK), CIRCLE(Emoji.RED_CIRCLE), NONE("_"); 
+	CROSS(Emoji.CROSS_MARK), CIRCLE(Emoji.HOLLOW_RED_CIRCLE), NONE("_"); 
 
 	public final String string;
 	

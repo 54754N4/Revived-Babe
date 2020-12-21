@@ -30,13 +30,16 @@ public abstract class DiscordCommand extends PrintCommand {
 	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
 	private static final Set<Long> guildsVisited = new HashSet<>();
+	private boolean keepAlive;
 	
 	public static enum Global {
 		DELETE_USER_MESSAGE("-d", "--delete"), 
 		DISPLAY_HELP_MESSAGE("--help", "-h"),
 		PRIVATE_MESSAGE_REPLY("-rep", "--reply"),
 		SHOW_EXECUTION_TIME("--timed"),
-		HIDE_ALL_OUTPUT("-s", "--silent");
+		HIDE_ALL_OUTPUT("-s", "--silent"),
+		DELAYED("--after"),
+		SCHEDULED("--every");
 		
 		public String[] params;
 		
@@ -47,6 +50,7 @@ public abstract class DiscordCommand extends PrintCommand {
 	
 	public DiscordCommand(UserBot bot, Message message, String...names) {
 		super(bot, message, names);
+		keepAlive = false;
 		if (bot != null) {	// since commands can be instantiated using dummy data
 			long id = message.getGuild().getIdLong();
 			if (!guildsVisited.contains(id)) {
@@ -54,6 +58,11 @@ public abstract class DiscordCommand extends PrintCommand {
 				MusicState.restore(bot);
 			}
 		}
+	}
+	
+	protected DiscordCommand keepAlive() {
+		keepAlive = true;
+		return this;
 	}
 	
 	public boolean fromMusicBot() {
@@ -163,6 +172,19 @@ public abstract class DiscordCommand extends PrintCommand {
 			long time = 0;
 			if (hasArgs(Global.DELETE_USER_MESSAGE.params)) 
 				removeUserMessage();
+			if (hasArgs(Global.DELAYED.params)) {
+				String delay = params.named.get("--after");
+				if (!delay.matches("[0-9]+"))
+					println("Invalid delay %s", delay);
+				else {
+					long l = Long.parseLong(delay);
+					try {
+						Thread.sleep(l*1000); // convert to seconds
+					} catch (Exception e) {
+						logger.error("Could not delay for "+l+"s", e);
+					}
+				}
+			} 
 			if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params)) 
 				print(helpMessage());
 			else {
@@ -181,7 +203,8 @@ public abstract class DiscordCommand extends PrintCommand {
 	}
 	
 	private void finalise() {
-		finished.set(true);
+		if (!keepAlive)
+			finished.set(true);
 		if (hasArgs(Global.HIDE_ALL_OUTPUT.params)) 
 			return;
 		String[] tokens = PrintBooster.splitForDiscord(stdout.toString())

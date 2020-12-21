@@ -1,5 +1,6 @@
 package commands.hierarchy;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,6 +9,7 @@ import audio.track.handlers.TrackLoadHandler.StatusUpdater;
 import bot.hierarchy.UserBot;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.requests.RestAction;
 
 public abstract class PrintCommand extends Command {
 	public static final int CODEBLOCK_LINE_MAX = 70, DEFAULT_PREV_MSGS = 2;
@@ -93,6 +95,16 @@ public abstract class PrintCommand extends Command {
 		println("```");
 		lines.forEach(this::println);
 		println("```");
+	}
+	
+	protected RestAction<Void> destructibleMessage(String message) {
+		return destructibleMessage(message, 5);
+	}
+	
+	protected RestAction<Void> destructibleMessage(String message, long seconds) {
+		return channel.sendMessage(message)
+				.delay(Duration.ofSeconds(seconds))
+				.flatMap(Message::delete);
 	}
 
 	protected StatusUpdater getPrinter() {
