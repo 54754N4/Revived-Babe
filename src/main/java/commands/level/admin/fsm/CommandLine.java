@@ -51,6 +51,7 @@ public class CommandLine extends FSMCommand {
 					out.getOutput().trim(), 
 					out.getError().trim(), 
 					process.waitFor());
+			process.destroy();
 		} catch (IOException | InterruptedException | ExecutionException e) {
 			println("Error: %s", e.getMessage());
 		}
