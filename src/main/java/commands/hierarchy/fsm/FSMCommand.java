@@ -1,16 +1,20 @@
 package commands.hierarchy.fsm;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
+import lib.FSMVisualizer;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public abstract class FSMCommand extends DiscordCommand {
+	private static final String DEFAULT_SCALING = "2";
 	protected Transition.Builder EXIT_TRANSITION;
 	protected final State start, end;
 	private List<Long> issuers;
@@ -18,13 +22,21 @@ public abstract class FSMCommand extends DiscordCommand {
 	
 	public FSMCommand(UserBot bot, Message message, String[] names) {
 		super(bot, message, names);
-		state = start = new State.Builder().build();
-		end = new State.Builder().build();
+		state = start = new State.Builder("START").build();
+		end = new State.Builder("END").build();
 		EXIT_TRANSITION = new Transition.Builder()
 			.setCondition(Conditions.EXIT)
 			.setNextState(end);
 		// DEFAULT_EXIT priority and action are to be set by child classes
 		issuers = new ArrayList<>();
+	}
+	
+	public State getStart() {
+		return start;
+	}
+	
+	public State getEnd() {
+		return end;
 	}
 	
 	@Override
@@ -38,7 +50,11 @@ public abstract class FSMCommand extends DiscordCommand {
 	}
 	
 	@Override
-	protected void execute(String input) throws Exception {	
+	protected void execute(String input) throws Exception {
+		if (hasArgs("--test")) {
+			printDiagram();
+			return;
+		}
 		// FSM entry-point
 		keepAlive();		// to keep sending typing action 
 		attachListener();	// listens for new replies
@@ -83,5 +99,21 @@ public abstract class FSMCommand extends DiscordCommand {
 
 	protected static boolean matches(GuildMessageReceivedEvent event, String match) {
 		return StringLib.simpleMatch(event.getMessage().getContentDisplay(), match);
+	}
+	
+	// For testing and printing FSMs
+	private void printDiagram() throws NumberFormatException, IOException {
+		String scaling = DEFAULT_SCALING; 
+		// Parse 3 different ways based on user preference
+		scaling = params.named.get("--test").length() != 0 ? params.named.get("--test") : scaling;
+		scaling = hasArgs("--scale") ? params.named.get("--scale") : scaling;
+		scaling = hasArgs("--scaling") ? params.named.get("--scaling") : scaling; 
+		if (!StringLib.isInteger(scaling)) {
+			println("Invalid integer scaling given =v.");
+			return;
+		}
+		File diagram = FSMVisualizer.visualise(this, Integer.parseInt(scaling));
+		channel.sendMessage("This command's FSM :").addFile(diagram).queue();
+		diagram.delete();
 	}
 }

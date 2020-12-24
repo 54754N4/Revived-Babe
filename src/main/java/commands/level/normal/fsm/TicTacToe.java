@@ -21,6 +21,7 @@ public class TicTacToe extends FSMCommand {
 	
 	public TicTacToe(UserBot bot, Message message) {
 		super(bot, message, Command.TIC_TAC_TOE.names);
+		createFSM();
 	}
 
 	@Override
@@ -37,7 +38,6 @@ public class TicTacToe extends FSMCommand {
 			return;
 		}
 		initialise();
-		createFSM();
 		printState();
 	}
 	
@@ -68,10 +68,10 @@ public class TicTacToe extends FSMCommand {
 			second = message.getAuthor();
 		}
 		printable = channel.sendMessage(String.format("%s vs %s", first.getName(), second.getName())).complete();
-		secondTurn = new State.Builder().build();
 	}
 	
 	private void createFSM() {
+		secondTurn = new State.Builder("2ND").build();
 		Transition reset = new Transition.Builder()
 				.setPriority(1)
 				.setCondition(this::isReset)

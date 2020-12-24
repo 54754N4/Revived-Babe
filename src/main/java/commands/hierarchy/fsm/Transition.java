@@ -11,7 +11,7 @@ public class Transition implements Cloneable, Comparable<Transition> {
 	private final Predicate<GuildMessageReceivedEvent> predicate;
 	private final State nextState;
 	private final Consumer<GuildMessageReceivedEvent> action;
-	
+
 	private Transition(int priority, Predicate<GuildMessageReceivedEvent> predicate, State nextState, Consumer<GuildMessageReceivedEvent> action) {
 		this.priority = priority;
 		this.predicate = predicate;
@@ -19,9 +19,25 @@ public class Transition implements Cloneable, Comparable<Transition> {
 		this.action = action;
 	}
 	
+	// Accessors
+	
 	public int getPriority() {
 		return priority;
 	}
+	
+	public Predicate<GuildMessageReceivedEvent> getPredicate() {
+		return predicate;
+	}
+
+	public State getNextState() {
+		return nextState;
+	}
+
+	public Consumer<GuildMessageReceivedEvent> getAction() {
+		return action;
+	}
+	
+	// Transition methods
 	
 	boolean occured(GuildMessageReceivedEvent event) {
 		return predicate.test(event);

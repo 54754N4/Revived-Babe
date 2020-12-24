@@ -31,19 +31,15 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import spelling.SpellingCorrector;
 
-/* Finds the appropriate command based on string command */
+/* Finds the appropriate command based on string command 
+ * and appropriate role based on package names			 */
 public class Invoker {
+	private static final String NORMAL_NAME = Echo.class.getPackageName(),
+			ADMIN_NAME = Exit.class.getPackageName(),
+			ALL_NAME = All.class.getPackageName();
+	
 	private static final SpellingCorrector corrector = new SpellingCorrector();
 	private static final Logger logger = LoggerFactory.getLogger(Invoker.class);
-	
-	public static void main(String[] args) throws Exception {
-		String term = "exit";
-		System.out.println(
-				Arrays.toString(
-						Reflector.find(term, Reflector.Type.ADMIN)
-							.getConstructor(UserBot.class, Message.class)
-							.newInstance(null, null).names));
-	}
 	
 	public static Command invoke(UserBot bot, Message message, String input, Reflector.Type type) {
 		String name;
@@ -90,13 +86,13 @@ public class Invoker {
 		
 		public static enum Type { 
 			NORMAL(
-				Echo.class.getPackage().getName(),
-				cls -> cls.getPackage().getName().equals(Echo.class.getPackage().getName())),
+				NORMAL_NAME,
+				cls -> cls.getPackageName().startsWith(NORMAL_NAME)),
 			ADMIN(
-				Exit.class.getPackage().getName(),
-				cls -> cls.getPackage().getName().equals(Exit.class.getPackage().getName())),
+				ADMIN_NAME,
+				cls -> cls.getPackageName().startsWith(ADMIN_NAME)),
 			ALL(
-				All.class.getPackage().getName(),
+				ALL_NAME,
 				cls -> true);
 			
 			public final String name;
@@ -160,9 +156,18 @@ public class Invoker {
 			return map;
 		}
 		
+		public static Map<List<String>, Class<? extends Command>> getDictionary(Type type) {
+			switch (type) {
+				case ALL:
+				case ADMIN: return admin;
+				case NORMAL: return normal;
+				default: return null;
+			}
+		}
+		
 		public static Class<? extends Command> find(String input, Type type) {
 			logger.debug("Looking for : {}", input);
-			Map<List<String>, Class<? extends Command>> dict = (type == Type.ADMIN) ? admin : normal;
+			Map<List<String>, Class<? extends Command>> dict = getDictionary(type);
 			for (List<String> names : dict.keySet())
 				for (String name : names)
 					if (name.equals(input))

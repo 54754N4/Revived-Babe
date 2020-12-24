@@ -7,14 +7,16 @@ import java.util.List;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public class State implements Cloneable {
+	private String name;
 	private List<Transition> transitions;
 	private boolean sort;
 	
-	private State(List<Transition> transitions) {
-		this(transitions, true);
+	private State(String name, List<Transition> transitions) {
+		this(name, transitions, true);
 	}
 	
-	private State(List<Transition> transitions, boolean sort) {
+	private State(String name, List<Transition> transitions, boolean sort) {
+		this.name = name;
 		this.transitions = transitions;
 		this.sort = sort;
 	}
@@ -23,6 +25,10 @@ public class State implements Cloneable {
 		transitions.add(transition);
 		sort = true;
 		return this;
+	}
+	
+	public List<Transition> getTransitions() {
+		return transitions;
 	}
 	
 	public State check(GuildMessageReceivedEvent event) {
@@ -38,24 +44,39 @@ public class State implements Cloneable {
 	
 	@Override
 	public State clone() {
-		return new State(transitions, sort);
+		return new State(name, transitions, sort);
+	}
+	
+	@Override
+	public String toString() {
+		return name;
 	}
 	
 	public static class Builder implements Cloneable {
+		private String name;
 		private List<Transition> transitions = new ArrayList<>();
+
+		public Builder(String stateName) {
+			setName(stateName);
+		}
 		
-		public State.Builder addTransition(Transition transition) {
+		public Builder setName(String name) {
+			this.name = name;
+			return this;
+		}
+		
+		public Builder addTransition(Transition transition) {
 			transitions.add(transition);
 			return this;
 		}
 		
 		public State build() {
-			return new State(transitions);
+			return new State(name, transitions);
 		}
 		
 		@Override
 		public State.Builder clone() {
-			State.Builder builder = new Builder();
+			State.Builder builder = new Builder(name);
 			for (Transition transition : transitions)
 				builder.addTransition(transition);
 			return builder;
