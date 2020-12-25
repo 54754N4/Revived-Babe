@@ -17,9 +17,12 @@ repositories {
 test {
   useJUnitPlatform {
   	includeTags 'fast', 'slow'
-	//excludeTags 'slow'
+	excludeTags 'template'
   }
-  
+  reports {
+    //junitXml.enabled = false
+    html.enabled = true
+  }  
   maxHeapSize = '1G'
   maxParallelForks = 10
 }
