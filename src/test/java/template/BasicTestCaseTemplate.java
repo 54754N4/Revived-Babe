@@ -6,8 +6,10 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+
+import annotations.Fast;
+import annotations.Slow;
+import annotations.TemplateTest;
 
 public class BasicTestCaseTemplate {
 
@@ -31,14 +33,14 @@ public class BasicTestCaseTemplate {
 		// do shit AFTER all tests
 	}
 
-	@Tag("slow")
-    @Test
+	@Slow
+    @TemplateTest
     public void testAddMaxInteger() {
         assertEquals(2147483646, Integer.sum(2147183646, 300000));
     }
  
-    @Tag("fast")
-    @Test
+    @Fast
+    @TemplateTest
     public void testDivide() {
         assertThrows(ArithmeticException.class, () -> {
             Integer.divideUnsigned(42, 0);
