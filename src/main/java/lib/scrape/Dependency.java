@@ -2,9 +2,9 @@ package lib.scrape;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
+
+import javax.annotation.Nullable;
 
 import org.openqa.selenium.By;
 import org.slf4j.Logger;
@@ -97,8 +97,7 @@ public enum Dependency {
 	}
 	
 	// Returns a dictionary that maps each dependency to an isUpdated boolean 
-	public static Map<String, Version> checkUpdates() throws Exception {
-		Map<String, Version> updates = new HashMap<>();
+	public static void checkUpdates(@Nullable LatestVersionCallback callback) throws Exception {
 		String gradle = Files.readString(Paths.get("build.gradle")),
 			version, message;
 		boolean isUpdated;
@@ -107,27 +106,22 @@ public enum Dependency {
 			message = String.format("Checking %s for version %s... ", dependency.name(), version);
 			isUpdated = gradle.contains(version);
 			message += isUpdated ? "Up to date." : "NEEDS UPDATE.";
-			updates.put(dependency.name(), new Version(version, isUpdated));
+			if (callback != null) callback.handle(dependency.name(), version, isUpdated);
 			logger.info(message);
 		}
-		return updates;
 	}
 	
-	public static class Version {
-		public final boolean updated;
-		public final String latest;
-		
-		public Version(String latest, boolean isUpdated) {
-			this.latest = latest;
-			this.updated = isUpdated;
-		}
+	public static void checkUpdates() throws Exception {
+		checkUpdates(null);
 	}
 	
+	@FunctionalInterface
+	public static interface LatestVersionCallback {
+		void handle(String name, String latest, boolean isUpdated);
+	}
+
 	public static void main(String[] args) throws Exception {
-		try {
-			Map<String, Version> updates = checkUpdates();
-			System.out.println(updates);
-		}
+		try { checkUpdates(); }
 		finally { browser.close(); }
 	}
 }

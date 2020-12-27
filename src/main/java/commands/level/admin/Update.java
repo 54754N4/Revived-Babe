@@ -3,7 +3,6 @@ package commands.level.admin;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -15,7 +14,6 @@ import commands.hierarchy.DiscordCommand;
 import commands.model.Invoker;
 import commands.name.Command;
 import lib.scrape.Dependency;
-import lib.scrape.Dependency.Version;
 import lib.xml.TestReportsParser;
 import lib.xml.XMLHandler;
 import lib.xml.XMLHandler.Action;
@@ -52,14 +50,8 @@ public class Update extends DiscordCommand {
 	}
 
 	private void handleGradle() throws Exception {
-		Map<String, Version> updates = Dependency.checkUpdates();
-		if (updates.values().stream().allMatch(version -> version.updated))
-			println("All dependencies are up-to-date.");
-		else 
-			updates.forEach((name, version) -> {
-				if (!version.updated)
-					println("%s needs to be updated to version : %s", name, version.latest);
-			});
+		Dependency.checkUpdates((name, latest, updated) -> 
+			printlnIndependently(updated ? "%s already updated." : "%s needs to be updated to version : `%s`", name, latest));
 	}
 	
 	private void handleTests() throws ParserConfigurationException, SAXException, IOException {
