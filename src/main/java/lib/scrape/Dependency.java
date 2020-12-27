@@ -1,42 +1,35 @@
 package lib.scrape;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.openqa.selenium.By;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class Github {
-	private static final Logger logger = LoggerFactory.getLogger(Github.class);
+public enum Dependency {
+	LAVAPLAYER(Dependency::latestLavaplayer), 
+	JDA(Dependency::latestJDA), 
+	NAS(Dependency::latestNAS),
+	LOGBACK(Dependency::latestLogback),
+	REFLECTIONS(Dependency::latestReflections), 
+	GSON(Dependency::latestGson),
+	SELENIUM(Dependency::latestSelenium),
+	WEB_DRIVER(Dependency::latestWebDriver),
+	JDBC_SQLITE(Dependency::latestSqlite),
+	JGRAPHT(Dependency::latestJGraphT),
+	JS_ENGINE(Dependency::latestJSEngine);
+	
+	private static final Logger logger = LoggerFactory.getLogger(Dependency.class);
 	public static final Browser browser = new Browser(true);
 	
-	public static enum Dependency {
-		LAVAPLAYER(Github::latestLavaplayer), 
-		JDA(Github::latestJDA), 
-		NAS(Github::latestNAS),
-		LOGBACK(Github::latestLogback),
-		REFLECTIONS(Github::latestReflections), 
-		GSON(Github::latestGson),
-		SELENIUM(Github::latestSelenium),
-		WEB_DRIVER(Github::latestWebDriver),
-		JDBC_SQLITE(Github::latestSqlite),
-		JGRAPHT(Github::latestJGraphT),
-		JS_ENGINE(Github::latestJSEngine);
-		
-		public final VersionFetcher latest;
-		
-		private Dependency(VersionFetcher latest) {
-			this.latest = latest;
-		}
-		
-		@FunctionalInterface
-		public static interface VersionFetcher {
-			String fetch();
-		}
+	public final Callable<String> latest;
+	
+	private Dependency(Callable<String> latest) {
+		this.latest = latest;
 	}
 	
 	public static String latestLavaplayer() {
@@ -104,25 +97,35 @@ public abstract class Github {
 	}
 	
 	// Returns a dictionary that maps each dependency to an isUpdated boolean 
-	public static Map<String, Boolean> checkUpdates() throws IOException {
-		Map<String, Boolean> updates = new HashMap<>();
+	public static Map<String, Version> checkUpdates() throws Exception {
+		Map<String, Version> updates = new HashMap<>();
 		String gradle = Files.readString(Paths.get("build.gradle")),
 			version, message;
 		boolean isUpdated;
-		for (Dependency dependency : Github.Dependency.values()) {
-			version = dependency.latest.fetch();
+		for (Dependency dependency : Dependency.values()) {
+			version = dependency.latest.call();
 			message = String.format("Checking %s for version %s... ", dependency.name(), version);
 			isUpdated = gradle.contains(version);
 			message += isUpdated ? "Up to date." : "NEEDS UPDATE.";
-			updates.put(dependency.name(), isUpdated);
+			updates.put(dependency.name(), new Version(version, isUpdated));
 			logger.info(message);
 		}
 		return updates;
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static class Version {
+		public final boolean updated;
+		public final String latest;
+		
+		public Version(String latest, boolean isUpdated) {
+			this.latest = latest;
+			this.updated = isUpdated;
+		}
+	}
+	
+	public static void main(String[] args) throws Exception {
 		try {
-			Map<String, Boolean> updates = checkUpdates();
+			Map<String, Version> updates = checkUpdates();
 			System.out.println(updates);
 		}
 		finally { browser.close(); }

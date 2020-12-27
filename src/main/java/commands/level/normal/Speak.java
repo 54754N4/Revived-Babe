@@ -14,7 +14,7 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.HTTP.ResponseHandler;
-import lib.scrape.Github;
+import lib.scrape.Dependency;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Speak extends DiscordCommand {
@@ -68,7 +68,7 @@ public class Speak extends DiscordCommand {
 	private void languages() {
 		if (languages == null) {	// lazy loading
 			Map<String, String> map = new TreeMap<>();
-			WebElement table = Github.browser.visit(API)
+			WebElement table = Dependency.browser.visit(API)
 				.waitFor(By.cssSelector(".api-content > section:nth-child(6) > div.table"));
 			List<String> names = table.findElements(By.cssSelector(".table-row > .table-cell:nth-child(1)"))
 					.stream()
@@ -88,7 +88,7 @@ public class Speak extends DiscordCommand {
 	private void voices() {
 		if (voices == null) {
 			Map<String, String> map = new TreeMap<>();
-			WebElement table = Github.browser.visit("http://www.voicerss.org/api/")
+			WebElement table = Dependency.browser.visit("http://www.voicerss.org/api/")
 					.waitFor(By.cssSelector(".api-content > section:nth-child(7) > div.table"));
 			int size = table.findElements(By.cssSelector(".table-row")).size();
 			String tableCellAccessor = ".table-row:nth-child(%d) > .table-cell:nth-child(%d)",

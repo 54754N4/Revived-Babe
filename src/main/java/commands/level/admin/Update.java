@@ -2,13 +2,8 @@ package commands.level.admin;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -19,8 +14,8 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.model.Invoker;
 import commands.name.Command;
-import lib.scrape.Github;
-import lib.scrape.Github.Dependency;
+import lib.scrape.Dependency;
+import lib.scrape.Dependency.Version;
 import lib.xml.TestReportsParser;
 import lib.xml.XMLHandler;
 import lib.xml.XMLHandler.Action;
@@ -56,26 +51,15 @@ public class Update extends DiscordCommand {
 			println("Please give me a parameter.");
 	}
 
-	private void handleGradle() throws IOException {
-		String gradle = Files.readString(Paths.get("build.gradle"));
-		Map<Dependency, String> versions = new ConcurrentHashMap<>();
-		List<Dependency> updateable = new ArrayList<>();
-		for (Dependency dependency : Github.Dependency.values()) {
-			versions.put(dependency, dependency.latest.fetch());
-			logger.info("Got version {} for {}", versions.get(dependency), dependency.name());
-		}
-		for (Entry<Dependency, String> entry : versions.entrySet())
-			if (!gradle.contains(entry.getValue()))
-				updateable.add(entry.getKey());
-		if (updateable.size() == 0) {
-			printlnIndependently("All up to date.");
-			return;
-		}
-		final StringBuilder sb = new StringBuilder("You have to update : ");
-		updateable.stream()
-			.map(Dependency::name)
-			.forEach(d -> sb.append(d+", "));
-		printlnIndependently(sb.delete(sb.length()-2, sb.length()).toString());
+	private void handleGradle() throws Exception {
+		Map<String, Version> updates = Dependency.checkUpdates();
+		if (updates.values().stream().allMatch(version -> version.updated))
+			println("All dependencies are up-to-date.");
+		else 
+			updates.forEach((name, version) -> {
+				if (!version.updated)
+					println("%s needs to be updated to version : %s", name, version.latest);
+			});
 	}
 	
 	private void handleTests() throws ParserConfigurationException, SAXException, IOException {
