@@ -601,12 +601,9 @@ public final class HTTP {
 				BufferedInputStream in = new BufferedInputStream(connection.getInputStream());
 				BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file));
 			) {
-				byte[] buffer = new byte[1024];
-				int read = -1, offset = 0;
-				while ((read = in.read(buffer)) != -1) {
-					out.write(buffer, offset, read);
-					offset += read;
-				}
+				int read;
+				while ((read = in.read()) != -1)
+					out.write(read);
 			}
 			return file;
 		}

@@ -1,6 +1,6 @@
 package bot.hierarchy;
 
-import java.io.IOException;
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -16,7 +16,6 @@ import audio.TrackScheduler;
 import audio.track.handlers.SpeakTrackHandler;
 import audio.track.handlers.TrackLoadHandler;
 import audio.track.handlers.TrackLoadHandler.StatusUpdater;
-import lib.Balabolka;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
@@ -495,17 +494,6 @@ public abstract class MusicBot extends UserBot {
 				.getPlayingTrack();
 	}
 	
-	/* TTS */
-	
-	public MusicBot speak(Guild guild, String voice, String text) throws InterruptedException, IOException {
-		setupAudio(guild);
-		play(
-			guild, 
-			Balabolka.buildWav(voice, text).toAbsolutePath().toString(), 
-			new SpeakTrackHandler(getScheduler(guild)));
-		return this;
-	}
-	
 	/* Play */
 	
 	public int play(Guild guild, int index) {
@@ -513,6 +501,16 @@ public abstract class MusicBot extends UserBot {
 			.getScheduler(guild)
 			.play(index);
 		return index;
+	}
+	
+	// also for TTS through wav files
+	public MusicBot play(Guild guild, File file) {
+		setupAudio(guild);
+		play(
+			guild, 
+			file.getAbsolutePath(), 
+			new SpeakTrackHandler(getScheduler(guild)));
+		return this;
 	}
 	
 	public Future<Void> play(Guild guild, String identifier, AudioLoadResultHandler handler) {

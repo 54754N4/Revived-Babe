@@ -25,8 +25,7 @@ public class XMLHandler extends DefaultHandler {
 			.filter(entry -> attributes.getIndex(entry.getKey()) != -1)
 			.forEach(entry -> 
 				entry.getValue()
-					.forEach(consumer -> 
-						consumer.accept(attributes.getValue(entry.getKey()))));
+					.forEach(consumer -> consumer.accept(attributes.getValue(entry.getKey()))));
 	}
 	
 	public static final class Builder {

@@ -21,12 +21,16 @@ public class PagedHandler<T> extends ReactionsHandler {
 	protected Message tracked;
 	
 	public PagedHandler(UserBot bot, List<T> data) {
+		this(bot, data, 10);
+	}
+	
+	public PagedHandler(UserBot bot, List<T> data, int count) {
 		super(bot);
 		this.data = data;
 		handlerButtons = false;
 		defaultBehaviour = true;
 		page = 0;
-		count = 10;	// code block + digit reactions can't handle more
+		this.count = count;	// code block + digit reactions can't handle more
 	}
 	
 	public PagedHandler<T> disableDefault() {

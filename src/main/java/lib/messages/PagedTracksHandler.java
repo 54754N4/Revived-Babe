@@ -11,7 +11,7 @@ import audio.CircularDeque;
 import audio.TrackScheduler;
 import bot.hierarchy.UserBot;
 import lib.StringLib;
-
+//create a NumberedHandler class for digits only
 public class PagedTracksHandler extends PagedHandler<AudioTrack> implements AudioLoadResultHandler {
 	private final boolean listTracks;
 	private TrackScheduler scheduler;
