@@ -77,9 +77,11 @@ public enum Command {
 			StringLib.millisToTime(System.currentTimeMillis() - duration));
 	}
 	
-	Command(final String...names) {
+	private Command(final String...names) {
 		this.names = names;
 	}
 	
-	public static void main(String[] args) {} // just let static verification check run
+	public String[] getNames() {
+		return names;
+	}
 }
