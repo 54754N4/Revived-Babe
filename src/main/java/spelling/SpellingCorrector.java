@@ -1,6 +1,5 @@
 package spelling;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,18 +12,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.JsonIOException;
 
 import commands.name.Command;
 import lib.debug.Duration;
 
 public class SpellingCorrector {
-	private static final Logger logger = LoggerFactory.getLogger(SpellingCorrector.class);
-	private static final String FILEPATH = "dictionary", 
-			alphabet = "abcdefghijklmnopqrstuvwxyz";
+	private static final String alphabet = "abcdefghijklmnopqrstuvwxyz";
 	
 	private final Map<String,Integer> dict;
 	
@@ -40,12 +34,6 @@ public class SpellingCorrector {
 		dict = new ConcurrentHashMap<>();
 		BiFunction<String, Integer, Integer> incrementor = (k, v) -> v == null ? 1 : v + 1;
 		language.forEach(word -> dict.compute(word, incrementor));
-		try (FileWriter writer = new FileWriter(FILEPATH)) {
-			for (String name : dict.keySet())
-				writer.append(name + System.lineSeparator());
-		} catch (IOException e) {
-			logger.error("Could not write to dictionary file", e);
-		}
 	}
 	
 	public Comparator<? super String> comparator() {
