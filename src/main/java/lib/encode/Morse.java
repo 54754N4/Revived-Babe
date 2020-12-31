@@ -20,7 +20,8 @@ public class Morse {
 	
 	public static String encode(String english) {
 		StringBuilder sb = new StringBuilder();
-		for (char c : english.toLowerCase().toCharArray()) sb.append((c == ' ') ? "  " : TABLE.get(c) + ' ');
+		for (char c : english.toLowerCase().toCharArray()) 
+			sb.append((c == ' ') ? "  " : TABLE.get(c) + ' ');
 		return sb.toString().trim();
 	}
 	
@@ -32,11 +33,11 @@ public class Morse {
 				sb.append(REVERSE_TABLE.get(character));
 			sb.append(" ");
 		}
-		return sb.toString();
+		return sb.toString().trim();
 	}
 	
 	public static void main(String[] args) {
-		String text = "Hello, World!",
+		String text = "The greatest glory in living lies not in never falling, but in rising every time we fall",
 				morse = encode(text),
 				english = decode(morse);
 		System.out.println(text);

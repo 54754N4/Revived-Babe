@@ -4,33 +4,20 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Base64;
+import java.util.function.Function;
 
 public abstract class Encoder {
-	public static enum Type {MORSE, BASE64, CHUCK_NORRIS, URL}
-	
-	public static String encode(String input, Type type) {
-		return handle(input, type, true);
-	}
-	
-	public static String decode(String input, Type type) {
-		return handle(input, type, false);
-	}
-	
-	public static String handle(String input, Type type, boolean encode) {
-		switch (type) {
-			case BASE64:
-				if (encode) return encodeBase64(input);
-				else return decodeBase64(input);
-			case CHUCK_NORRIS:
-				if (encode) return encodeCN(input);
-				else return decodeCN(input);
-			case MORSE:
-				if (encode) return encodeMorse(input);
-				else return decodeMorse(input);
-			case URL:
-				if (encode) return encodeURL(input);
-				else return decodeURL(input);
-			default: throw new IllegalArgumentException("Type can't be null.");
+	public static enum Type {
+		MORSE(Encoder::encodeMorse, Encoder::decodeMorse), 
+		BASE64(Encoder::encodeBase64, Encoder::decodeBase64),
+		CHUCK_NORRIS(Encoder::encodeCN, Encoder::decodeCN),
+		URL(Encoder::encodeURL, Encoder::decodeURL);
+		
+		public final Function<String, String> encoder, decoder;
+		
+		private Type(Function<String, String> encoder, Function<String, String> decoder) {
+			this.encoder = encoder;
+			this.decoder = decoder;
 		}
 	}
 	
@@ -38,17 +25,18 @@ public abstract class Encoder {
 		try { 
 			String encodeURL = URLEncoder.encode(url, "UTF-8"); 
 			return encodeURL; 
-		} catch (UnsupportedEncodingException e) { return "Issue while encoding" +e.getMessage(); } 
+		} catch (UnsupportedEncodingException e) { 
+			return "Issue while encoding" +e.getMessage(); 
+		} 
 	}
 	
 	public static String decodeURL(String url) { 
 		try { 
-			String prevURL=""; 
-			String decodeURL=url; 
+			String prevURL = "", decodeURL = url; 
 			while(!prevURL.equals(decodeURL)) { 
 				prevURL = decodeURL; 
 				decodeURL = URLDecoder.decode(decodeURL, "UTF-8"); 
-			} 
+			}
 			return decodeURL; 
 		} catch (UnsupportedEncodingException e) { return "Issue while decoding" +e.getMessage(); } 
 	} 
@@ -75,13 +63,5 @@ public abstract class Encoder {
 	
 	public static String decodeBase64(String encoded) {
 		return new String(Base64.getDecoder().decode(encoded));
-	}
-	
-	public static void main(String[] args) {
-		Type type = Type.URL;
-		String text =  "Hello Gunter",
-			encoded = handle(text, type, true),
-			decoded = handle(encoded, type, false);
-		System.out.println(text+"\n"+encoded+"\n"+decoded);
 	}
 }
