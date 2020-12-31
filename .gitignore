@@ -19,6 +19,8 @@ logs
 *.class
 bin
 out.java
+*.jar
+bin/*
 
 # Ignore batch files
 bat
