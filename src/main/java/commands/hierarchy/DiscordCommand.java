@@ -75,7 +75,7 @@ public abstract class DiscordCommand extends PrintCommand {
 		return MusicBot.class.cast(bot);
 	}
 	
-	protected DiscordCommand backup() throws SQLException {
+	protected DiscordCommand backup() {
 		if (fromMusicBot())
 			MusicState.backup(getMusicBot());
 		return this;

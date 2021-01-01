@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+
 import audio.CircularDeque;
 import audio.MusicController;
 import audio.TrackScheduler;
@@ -23,46 +25,19 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
-public class MusicState {
+public abstract class MusicState {
 	private static final String LAST_CHANNEL = "lastVoiceChannel",
-			CURRENT = "current", POSITION = "position";
-	
+			CURRENT = "current", POSITION = "position", 
+			VOLUME = "lastVolume", PAUSED = "wasPaused";
 	private static final Logger logger = LoggerFactory.getLogger(MusicState.class);
 	
-	public static void backup(MusicBot bot) throws SQLException {
-		for (Entry<Long, MusicController> entry : bot.getControllers().entrySet())
-			handle(bot, entry.getKey(), entry.getValue().getScheduler());
+	private static String getName(UserBot bot) {
+		return bot.getClass().getSimpleName();
 	}
 	
-	private static void handle(MusicBot bot, long guild, TrackScheduler scheduler) {
-		TableManager table = null;
-		try {
-			table = DBManager.INSTANCE.manage("Backup"+getName(bot)+guild);
-			Map<String, Object> playlist = new HashMap<>();
-			CircularDeque queue = scheduler.getQueue(); 
-			queue.forEachIndexed((i, track) -> 
-				playlist.put(i+"", track.getInfo().uri));
-			if (playlist.size() == 0)
-				return;
-			clear(bot, guild);
-			table.insertOrUpdate(playlist);
-			AudioManager manager = bot.getManager(guild);
-			if (manager == null) 
-				return;
-			VoiceChannel channel = manager.getConnectedChannel();
-			if (channel == null)
-				return;
-			logger.info("Setting last voice channel to {}", channel.getId());
-			table.insertOrUpdate(LAST_CHANNEL, channel.getIdLong());
-			int current = queue.getCurrent();
-			if (current == CircularDeque.UNINITIALISED)
-				return;
-			long position = queue.get(current).getPosition();
-			table.insertOrUpdate(CURRENT, current);
-			table.insertOrUpdate(POSITION, position);
-		} catch (SQLException e) {
-			logger.error("Backup: Could not connect to database", e);
-		}
+	public static void backup(MusicBot bot) {
+		for (Entry<Long, MusicController> entry : bot.getControllers().entrySet())
+			backup(bot, entry.getKey(), entry.getValue().getScheduler());
 	}
 	
 	public static void clear(MusicBot bot, long id) {
@@ -88,24 +63,117 @@ public class MusicState {
 			for (String name : tables) 
 				restore(bot, name.substring(size), DBManager.INSTANCE.manage(name));
 		} catch (SQLException e) {
-			logger.error("Restore: Could not connect to database", e);
+			logger.error("Restore: Could not restore from database", e);
 		}
 	}
 	
-	private static void restore(MusicBot bot, String idLong, TableManager table) {
+	private static void backup(MusicBot bot, long guild, TrackScheduler scheduler) {
+		TableManager table = null;
 		try {
-			Map<String, String> urls = table.selectAll();
+			// Get table manager for current guild
+			table = DBManager.INSTANCE.manage("Backup"+getName(bot)+guild);
+		} catch (SQLException e) {
+			logger.error("Backup: Could not connect to database", e);
+		}
+		CircularDeque queue = scheduler.getQueue();
+		backupPlaylist(table, queue);
+		backupSongAndPosition(table, queue);
+		backupVoiceChannel(table, bot, guild);
+		backupVolumeAndPause(table, bot, guild);
+	}
+	
+	private static void restore(MusicBot bot, String idLong, TableManager table) {
+		final long guildID = Long.parseLong(idLong);
+		Guild guild = bot.getJDA().getGuildById(guildID);
+		logger.info("Guild is {}", guild);
+		if (guild == null) 
+			return;
+		bot.setupAudio(guildID);
+		restorePlaylist(table, bot, guildID);
+		restoreVoiceChannel(table, bot);
+		restoreSongAndPosition(table, bot, guild);
+		restoreVolumeAndPause(table, bot, guild);
+	}
+	
+	private static void backupPlaylist(TableManager table, CircularDeque queue) {
+		if (queue.size() == 0)
+			return;
+		Map<String, Object> playlist = new HashMap<>();
+		queue.forEachIndexed((i, track) -> playlist.put(i+"", track.getInfo().uri));
+		try {
+			table.insertOrUpdate(playlist);
+		} catch (SQLException e) {
+			logger.error("Could not backup playlist", e);
+		}
+	}
+	
+	private static void restorePlaylist(TableManager table, MusicBot bot, long guild) {
+		Map<String, String> urls;
+		try {
+			urls = table.selectAll();
 			if (urls.size() == 0)
 				return;
-			logger.info("Restoring tracks for guild : {}", idLong);
-			final long id = Long.parseLong(idLong);
-			Guild guild = bot.getJDA().getGuildById(id);
-			logger.info("Guild is {}", guild);
-			if (guild == null) 
+		} catch (SQLException e) {
+			logger.error("Could not retrieve playlist from backup", e);
+			return;
+		}
+		final TrackLoadHandler handler = new TrackLoadHandler(bot.getScheduler(guild));
+		urls.forEach((name, value) -> bot.getPlayerManager(guild).loadItem(value, handler));
+	}
+	
+	private static void backupSongAndPosition(TableManager table, CircularDeque queue) {
+		int current = queue.getCurrent();
+		if (current == CircularDeque.UNINITIALISED)
+			return;
+		try {
+			table.insertOrUpdate(CURRENT, current);
+			table.insertOrUpdate(POSITION, queue.get(current).getPosition());
+		} catch (SQLException e) {
+			logger.error("Could not backup current track index + position", e);
+		}
+	}
+	
+	private static void restoreSongAndPosition(TableManager table, MusicBot bot, Guild guild) {
+		try {
+			int current = table.retrieveInt(CURRENT, -1);
+			if (current == -1) 
 				return;
-			bot.setupAudio(id);
-			final TrackLoadHandler handler = new TrackLoadHandler(bot.getScheduler(id));
-			urls.forEach((name, value) -> bot.getPlayerManager(id).loadItem(value, handler));
+			bot.play(guild, current);
+			bot.getScheduler(guild)
+				.getQueue()
+				.setCurrent(current);
+		} catch (NumberFormatException | SQLException e) {
+			logger.error("Could not retrieve last song index", e);
+			return;
+		}
+		try {
+			long position = table.retrieveLong(POSITION, -1);
+			if (position == -1)
+				return;
+			bot.waitForTrack(guild)
+				.seekTo(guild,  position);
+		} catch (NumberFormatException | SQLException | InterruptedException e) {
+			logger.error("Could not retrieve last song's position", e);
+		}
+	}
+	
+	private static void backupVoiceChannel(TableManager table, MusicBot bot, long guild) {
+		AudioManager manager = bot.getManager(guild);
+		if (manager == null) 
+			return;
+		VoiceChannel channel = manager.getConnectedChannel();
+		if (channel == null)
+			return;
+		logger.info("Setting last voice channel to {}", channel.getId());
+		try {
+			table.insertOrUpdate(LAST_CHANNEL, channel.getIdLong());
+		} catch (SQLException e) {
+			logger.error("Could not backup voice channel", e);
+		}
+	}
+	
+	private static void restoreVoiceChannel(TableManager table, MusicBot bot) {
+		try {
 			long channelID = table.retrieveLong(LAST_CHANNEL, -1);
 			if (channelID == -1)
 				return;
@@ -113,21 +181,36 @@ public class MusicState {
 			if (channel == null)
 				return;
 			bot.connectTo(channel);
-			int current = table.retrieveInt(CURRENT, -1);
-			if (current == -1) 
-				return;
-			bot.play(guild, current);
-			long position = table.retrieveLong(POSITION, -1);
-			if (position == -1)
-				return;
-			bot.waitForTrack(guild)
-				.seekTo(guild,  position);
-		} catch (Exception e) {
-			logger.error("Restore: Couldn't restore tracks for guild "+idLong, e);
+		} catch (NumberFormatException | SQLException e) {
+			logger.error("Could not retrieve last channel ID", e);
 		}
 	}
 	
-	private static String getName(UserBot bot) {
-		return bot.getClass().getSimpleName();
+	private static void backupVolumeAndPause(TableManager table, MusicBot bot, long guild) {
+		AudioPlayer player = bot.getPlayer(guild);
+		try {
+			table.insertOrUpdate(VOLUME, player.getVolume());
+			table.insertOrUpdate(PAUSED, player.isPaused());
+		} catch (SQLException e) {
+			logger.error("Could not backup volume and pause state", e);
+		}
+	}
+	
+	private static void restoreVolumeAndPause(TableManager table, MusicBot bot, Guild guild) {
+		try {
+			int volume = table.retrieveInt(VOLUME, -1);
+			if (volume == -1)
+				return;
+			bot.setVolume(guild, volume);
+		} catch (NumberFormatException | SQLException e) {
+			logger.error("Could not retrieve last volume", e);
+		}
+		try {
+			boolean paused = table.retrieveBool(PAUSED, false);
+			if (paused)
+				bot.pause(guild);
+		} catch (NumberFormatException | SQLException e) {
+			logger.error("Could not retrieve last pause state", e);
+		}
 	}
 }
