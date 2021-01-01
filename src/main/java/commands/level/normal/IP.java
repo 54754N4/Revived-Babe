@@ -26,11 +26,11 @@ public class IP extends DiscordCommand {
 	@Override
 	protected void execute(String input) throws Exception {
 		if (isOwner() && hasArgs("-me"))
-			println("Your IP is: ", restRequest(BABE_IP_API_CALL, BabeIPResult.class).ip);
+			println("Your IP is: ", restRequest(BabeIPResult.class, BABE_IP_API_CALL).ip);
 		if (input.equals("")) 
 			return;
 		if (input.matches(IP_FORMAT)) {
-			GeolocateResult geolocation = restRequest(API_FORMAT, GeolocateResult.class, input);
+			GeolocateResult geolocation = restRequest(GeolocateResult.class, API_FORMAT, input);
 			channel.sendMessage(buildEmbed(geolocation).build()).queue();
 		} else 
 			println("Invalid ip format..");

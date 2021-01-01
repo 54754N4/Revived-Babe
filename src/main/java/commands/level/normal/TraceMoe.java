@@ -45,9 +45,9 @@ public class TraceMoe extends DiscordCommand {
 			Attachment attachment = message.getAttachments().get(0);
 			String filename = ".\\download\\trace\\"+attachment.getFileName();
 			final File image = attachment.downloadToFile(filename).get();
-			result = formRequest(API_FORMAT, TraceMoeResult.class, builder -> builder.addFile("image", image), "");	// empty string because of %s
+			result = formRequest(TraceMoeResult.class, builder -> builder.addFile("image", image), API_FORMAT, "");	 // empty string because of %s
 		} else 
-			result = restRequest(API_FORMAT, TraceMoeResult.class, "?url=" + Encoder.encodeURL(input));
+			result = restRequest(TraceMoeResult.class, API_FORMAT, "?url=" + Encoder.encodeURL(input));
 		List<Package> packages = buildEmbed(result);
 		for (Package pkg : packages)
 			channel.sendMessage(pkg.builder.build())

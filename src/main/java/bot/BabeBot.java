@@ -4,6 +4,7 @@ import bot.hierarchy.Bot;
 import bot.hierarchy.MusicBot;
 import commands.model.TypingWatchdog;
 import lib.Emoji;
+import lib.scrape.Browser;
 
 public class BabeBot extends MusicBot {
 	public static String FAST_PREFIX = "..", BOT_PREFIX = "hey babe ";
@@ -32,6 +33,7 @@ public class BabeBot extends MusicBot {
 		getReactionsTracker().stopTracking();
 		TypingWatchdog.kill();
 		Bot.killAllBots(now);
+		Browser.getInstance().kill();
 		super.preKill(now);
 	}
 }

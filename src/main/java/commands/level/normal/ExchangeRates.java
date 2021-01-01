@@ -41,8 +41,8 @@ public class ExchangeRates extends DiscordCommand {
 				params.named.get("--date") : 
 				"latest";
 		ExchangeRatesResult result = restRequest(
-				API_FORMAT, 
 				ExchangeRatesResult.class,
+				API_FORMAT,
 				target, 
 				HTTP.getParamsString(dict, "&", true));
 		channel.sendMessage(buildEmbed(result).build()).queue();;

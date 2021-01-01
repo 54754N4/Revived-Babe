@@ -4,8 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
-import javax.annotation.Nullable;
-
 import org.openqa.selenium.By;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +22,6 @@ public enum Dependency {
 	JS_ENGINE(Dependency::latestJSEngine);
 	
 	private static final Logger logger = LoggerFactory.getLogger(Dependency.class);
-	public static final Browser browser = new Browser(true);
 	
 	public final Callable<String> latest;
 	
@@ -32,15 +29,25 @@ public enum Dependency {
 		this.latest = latest;
 	}
 	
+	// retrieves newest release version from Maven url
+	public static String latestMaven(String url) {	
+		return Browser.getInstance()
+				.visit(url)
+				.waitFor(By.cssSelector(".vbtn.release"))
+				.getText();
+	}
+	
 	public static String latestLavaplayer() {
-		return browser.visit("https://github.com/sedmelluq/lavaplayer/tags")
+		return Browser.getInstance()
+			.visit("https://github.com/sedmelluq/lavaplayer/tags")
 			.waitFor(By.cssSelector(".Box-row:nth-child(2) > .flex-auto > .commit > .d-flex > .flex-auto > a"))
 			.getText()
 			.trim();
 	}
 	
 	public static String latestJDA() {
-		return browser.visit("https://ci.dv8tion.net/job/JDA/lastSuccessfulBuild")
+		return Browser.getInstance()
+			.visit("https://ci.dv8tion.net/job/JDA/lastSuccessfulBuild")
 			.waitFor(By.cssSelector(".fileList > tbody > tr:nth-child(6) > td:nth-child(2) > a"))
 			.getText()
 			.trim()
@@ -49,7 +56,8 @@ public enum Dependency {
 	}
 	
 	public static String latestNAS() {
-		return browser.visit("https://api.bintray.com/packages/sedmelluq/com.sedmelluq/jda-nas")
+		return Browser.getInstance()
+			.visit("https://api.bintray.com/packages/sedmelluq/com.sedmelluq/jda-nas")
 			.waitFor(By.cssSelector("tbody > tr.treeRow.stringRow.opened:nth-child(23) > .treeValueCell.stringCell > span > .objectBox.objectBox-string"))
 			.getText()
 			.replace('"', ' ')
@@ -87,41 +95,29 @@ public enum Dependency {
 	public static String latestJSEngine() {
 		return latestMaven("https://mvnrepository.com/artifact/org.graalvm.js/js-scriptengine");
 	}
-	
-	// Helper method
-	
-	public static String latestMaven(String url) {	// retrieves newest release version
-		return browser.visit(url)
-				.waitFor(By.cssSelector(".vbtn.release"))
-				.getText();
+
+	public static void checkUpdates(VersionCheckHandler callback) throws Exception {
+		if (callback == null)
+			return;
+		String gradle = Files.readString(Paths.get("build.gradle")), version;
+		for (Dependency dependency : Dependency.values()) 
+			callback.handle(
+					dependency.name(), 
+					version = dependency.latest.call(), 
+					gradle.contains(version));
 	}
 	
-	// Returns a dictionary that maps each dependency to an isUpdated boolean 
-	public static void checkUpdates(@Nullable LatestVersionCallback callback) throws Exception {
-		String gradle = Files.readString(Paths.get("build.gradle")),
-			version, message;
-		boolean isUpdated;
-		for (Dependency dependency : Dependency.values()) {
-			version = dependency.latest.call();
-			message = String.format("Checking %s for version %s... ", dependency.name(), version);
-			isUpdated = gradle.contains(version);
-			message += isUpdated ? "Up to date." : "NEEDS UPDATE.";
-			if (callback != null) callback.handle(dependency.name(), version, isUpdated);
-			logger.info(message);
-		}
-	}
-	
-	public static void checkUpdates() throws Exception {
-		checkUpdates(null);
+	public static void defaultVersionHandler(String name, String latest, boolean isUpdated) {
+		logger.info("Fetched {} for {}: {}.", latest, name, isUpdated ? "updated" : "NEEDS UPDATE");
 	}
 	
 	@FunctionalInterface
-	public static interface LatestVersionCallback {
+	public static interface VersionCheckHandler {
 		void handle(String name, String latest, boolean isUpdated);
 	}
-
+	
 	public static void main(String[] args) throws Exception {
-		try { checkUpdates(); }
-		finally { browser.close(); }
+		try { checkUpdates(Dependency::defaultVersionHandler); }
+		finally { Browser.getInstance().close(); }
 	}
 }

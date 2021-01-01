@@ -1,6 +1,8 @@
 package commands.hierarchy;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,16 +123,20 @@ public abstract class DiscordCommand extends PrintCommand {
 		message.delete().queue();
 	}
 	
-	/* Rest + multipart/form requests */
+	/* Rest + multipart/form requests convenience methods */
 	
-	public static <T> T restRequest(String apiFormat, Class<T> cls, Object... args) throws IOException {
+	protected String urlEncode(String input) {
+		return URLEncoder.encode(input, StandardCharsets.UTF_8);
+	}
+	
+	public static <T> T restRequest(Class<T> cls, String apiFormat, Object... args) throws IOException {
 		try (ResponseHandler handler = restRequest(apiFormat, args)) {
 			return gson.fromJson(handler.getResponse(), cls);
 		}
 	}
 	
-	public static <T> T formRequest(String apiFormat, Class<T> cls, Consumer<MultipartRequestBuilder> setup, Object...args) throws IOException {
-		try (ResponseHandler handler = formRequest(apiFormat, setup, args)) {
+	public static <T> T formRequest(Class<T> cls, Consumer<MultipartRequestBuilder> setup, String apiFormat, Object...args) throws IOException {
+		try (ResponseHandler handler = formRequest(setup, apiFormat, args)) {
 			return gson.fromJson(handler.getResponse(), cls);
 		}
 	}
@@ -141,7 +147,7 @@ public abstract class DiscordCommand extends PrintCommand {
 		}
 	}
 	
-	public static ResponseHandler formRequest(String apiFormat, Consumer<MultipartRequestBuilder> setup, Object...args) throws IOException {
+	public static ResponseHandler formRequest(Consumer<MultipartRequestBuilder> setup, String apiFormat, Object...args) throws IOException {
 		try (MultipartRequestBuilder builder = new MultipartRequestBuilder(String.format(apiFormat, args))) {
 			builder.setMethod(Method.POST);
 			setup.accept(builder);

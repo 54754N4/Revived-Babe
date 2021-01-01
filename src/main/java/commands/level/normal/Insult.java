@@ -24,8 +24,8 @@ public class Insult extends DiscordCommand {
 	@Override
 	protected void execute(String input) throws Exception {
 		InsultsResult result = restRequest(
-				API_FORMAT, 
 				InsultsResult.class, 
+				API_FORMAT, 
 				hasArgs("--lang") ? params.named.get("--lang") : DEFAULT_LANG, 
 				DEFAULT_TYPE);
 		println(result.insult);

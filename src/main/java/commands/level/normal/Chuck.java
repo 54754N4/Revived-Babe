@@ -20,7 +20,7 @@ public class Chuck extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		ChuckNorrisResult result = restRequest(API_CALL, ChuckNorrisResult.class);
+		ChuckNorrisResult result = restRequest(ChuckNorrisResult.class, API_CALL);
 		println(result.value);
 	}
 }

@@ -1,5 +1,6 @@
 package lib.scrape;
 
+import java.io.Closeable;
 import java.io.File;
 import java.time.Duration;
 import java.util.Arrays;
@@ -21,35 +22,45 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
-/* Creates a browser using selenium that follows the builder pattern.
- * 
+/* Creates a browser using Selenium that follows the builder pattern
+ * to ease with chained calls/actions. Also uses singleton pattern 
+ * to reuse default instance, but still allows further browsers to be
+ * created (e.g. public constructors).
  * Docs: https://www.selenium.dev/documentation/en/webdriver/   
  */
-public class Browser {
+public class Browser implements Closeable {
 	private static final long DEFAULT_TIMEOUT = 15, DEFAULT_POLLING = 5;	// in seconds
-	
+	private static final boolean DEFAULT_HEADLESS = true;
+	private static Browser INSTANCE;
+	static {
+		// Makes sure firefox driver exists or downloads it
+		WebDriverManager.firefoxdriver().arch64().setup();
+		INSTANCE = new Browser();
+	}
+
 	private WebDriver driver;
 	
-	static {
-		WebDriverManager.firefoxdriver().arch64().setup();	// Makes sure firefox driver exists or downloads it
-	}
-	
 	public Browser() {
-		this(false);
+		this(DEFAULT_HEADLESS);
 	}
 	
 	public Browser(boolean headless) {
 		driver = new FirefoxDriver(
 				new FirefoxOptions()
-					.addArguments(	// comment as needed
-							headless ? "--headless" : "", 
+					.setHeadless(headless)
+					.setAcceptInsecureCerts(true)
+					.addArguments( 
 							"--disable-gpu", 
-							"--window-size=1920,1200",
-							"--ignore-certificate-errors"
+							"--window-size=1920,1200"
 					));
 	}
 	
+	@Override
 	public void close() {
+		kill();
+	}
+	
+	public void kill() {
 		driver.quit();
 	}
 	
@@ -99,8 +110,29 @@ public class Browser {
 		return this;
 	}
 	
-	public File screenshot() {
-		return ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+	public <T> T screenshotFullAs(OutputType<T> type) {
+		return screenshotOf(By.tagName("body"), type);
+	}
+	
+	public File screenshotAsFile() {
+		return screenshotAs(OutputType.FILE);
+	}
+	
+	public File screenshotFullAsFile() {
+		return screenshotFullAs(OutputType.FILE);
+	}
+	
+	public File screenshotFileOf(By by) {
+		return screenshotOf(by, OutputType.FILE);
+	}
+	
+	public <T> T screenshotAs(OutputType<T> type) {
+		return ((TakesScreenshot) driver).getScreenshotAs(type);
+	}
+	
+	public <T> T screenshotOf(By by, OutputType<T> type) {
+		return ((TakesScreenshot) waitFor(by))
+				.getScreenshotAs(type);
 	}
 	
 	public WebElement waitFor(By by, long timeout) {
@@ -116,10 +148,6 @@ public class Browser {
 				.until(driver -> driver.findElement(by));
 	}
 	
-	public WebElement waitFor(By by) {
-		return waitFor(by, DEFAULT_TIMEOUT);
-	}
-	
 	public WebElement waitFor(By by, long timeout, long polling, Class<? extends Throwable> exception) {
 		return waitFor(by, timeout, polling, Arrays.asList(exception));
 	}
@@ -128,7 +156,19 @@ public class Browser {
 		return waitFor(by, timeout, polling, NoSuchElementException.class);
 	}
 	
-	public WebElement waitForFluent(By by) {
+	public WebElement waitFor(By by) {
 		return waitFor(by, DEFAULT_TIMEOUT, DEFAULT_POLLING);
+	}
+	
+	/* Static methods to act on default singleton instance */
+	
+	public static Browser restartBrowser() {
+		if (INSTANCE != null) 
+			INSTANCE.kill();
+		return INSTANCE = new Browser();
+	}
+	
+	public static Browser getInstance() {
+		return INSTANCE;
 	}
 }

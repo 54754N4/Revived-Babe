@@ -51,7 +51,9 @@ public enum Command {
 	TIC_TAC_TOE("tic tac toe", "tictactoe", "ttt"), 
 	COMMAND_LINE("command", "cmdline", "cmd"), 
 	JAVASCRIPT("javascript", "js"), 
-	POLL("poll", "po");
+	POLL("poll", "po"), 
+	SCREENSHOT("screenshot", "sc"), 
+	LYRICS("lyrics", "lr");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;

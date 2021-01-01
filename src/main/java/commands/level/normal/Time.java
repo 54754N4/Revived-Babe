@@ -64,7 +64,7 @@ public class Time extends DiscordCommand {
 	
 	public static TimeResult getTime(String timezone) {
 		try {
-			return restRequest(API_FORMAT, TimeResult.class, "timezone/"+timezone);
+			return restRequest(TimeResult.class, API_FORMAT, "timezone/"+timezone);
 		} catch (IOException e) {
 			logger.error("Couldn't get time for "+timezone, e);
 			return null;

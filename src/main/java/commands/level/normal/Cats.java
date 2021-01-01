@@ -20,7 +20,7 @@ public class Cats extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		CatFactsResults results = restRequest(FACTS_API, CatFactsResults.class);
+		CatFactsResults results = restRequest(CatFactsResults.class, FACTS_API);
 		int total = results.all.length;
 		println(results.all[rand.nextInt(total)].text);
 	}

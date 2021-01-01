@@ -39,12 +39,30 @@ public class SpellingCorrector {
 	public Comparator<? super String> comparator() {
 		return (a,b) -> dict.get(a) - dict.get(b);	// sorts based on occurrences count in initial language
 	}
-
-	private Stream<String> known(Stream<String> words){
-		return words.filter(dict::containsKey);
+	
+	public String correct(String word) {
+		return correct(word, 2);
 	}
 	
-	private Stream<String> edits1(final String word){
+	public String correct(String word, int corrections) {
+		if (dict.containsKey(word))
+			return word;
+		Stream<String> editsn;
+		for (int distance=1; distance<=corrections; distance++) {
+			editsn = edits1(word);
+			for (int i=0; i<distance; i++)
+				editsn = editsn.map(SpellingCorrector::edits1)
+					.flatMap(x -> x);
+			Optional<String> correction = editsn.filter(dict::containsKey)
+					.max(comparator()); 
+			if (correction.isPresent())
+				return correction.get();
+			editsn.close();
+		}
+		return word;
+	}
+	
+	private static Stream<String> edits1(final String word){
 		Stream<String> deletes = deletes(word),
 			replaces = replaces(word),
 			inserts = inserts(word),
@@ -53,18 +71,6 @@ public class SpellingCorrector {
 				.flatMap(x -> x);
 	}
 	
-	public String correct(String word){
-		Optional<String> edits1 = known(edits1(word))
-				.max(comparator());
-		Optional<String> edits2 = known(edits1(word)
-					.map(w2 -> edits1(w2))
-					.flatMap(x -> x))
-				.max(comparator());
-		return dict.containsKey(word) ? 
-				word : 
-				(edits1.isPresent() ? edits1.get() : 
-						(edits2.isPresent() ? edits2.get() : word));
-	}
 	
 	public static Stream<String> deletes(final String word) {
 		return IntStream.range(0, word.length())
@@ -92,7 +98,7 @@ public class SpellingCorrector {
 	
 	public static void main(String[] args) throws JsonIOException, IOException {
 		SpellingCorrector corrector = new SpellingCorrector();
-		System.out.println(Duration.of(corrector::correct, "echia"));
+		System.out.println(Duration.of(corrector::correct, "echiwa", 4));
 	}
 }
 
