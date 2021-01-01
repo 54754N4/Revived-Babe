@@ -70,10 +70,9 @@ public abstract class MusicState {
 	private static void backup(MusicBot bot, long guild, TrackScheduler scheduler) {
 		TableManager table = null;
 		try {
-			// Get table manager for current guild
 			table = DBManager.INSTANCE.manage("Backup"+getName(bot)+guild);
 		} catch (SQLException e) {
-			logger.error("Backup: Could not connect to database", e);
+			logger.error("Backup: Could not connect to database for guild "+guild+" with bot "+bot, e);
 		}
 		CircularDeque queue = scheduler.getQueue();
 		backupPlaylist(table, queue);
@@ -94,6 +93,8 @@ public abstract class MusicState {
 		restoreSongAndPosition(table, bot, guild);
 		restoreVolumeAndPause(table, bot, guild);
 	}
+	
+	/* Backup/restore: Playlists */
 	
 	private static void backupPlaylist(TableManager table, CircularDeque queue) {
 		if (queue.size() == 0)
@@ -120,6 +121,8 @@ public abstract class MusicState {
 		final TrackLoadHandler handler = new TrackLoadHandler(bot.getScheduler(guild));
 		urls.forEach((name, value) -> bot.getPlayerManager(guild).loadItem(value, handler));
 	}
+	
+	/* Backup/restore: Song index + position */
 	
 	private static void backupSongAndPosition(TableManager table, CircularDeque queue) {
 		int current = queue.getCurrent();
@@ -157,6 +160,8 @@ public abstract class MusicState {
 		}
 	}
 	
+	/* Backup/restore: Voice channel */
+	
 	private static void backupVoiceChannel(TableManager table, MusicBot bot, long guild) {
 		AudioManager manager = bot.getManager(guild);
 		if (manager == null) 
@@ -185,6 +190,8 @@ public abstract class MusicState {
 			logger.error("Could not retrieve last channel ID", e);
 		}
 	}
+	
+	/* Backup/restore: Volume + Pause */
 	
 	private static void backupVolumeAndPause(TableManager table, MusicBot bot, long guild) {
 		AudioPlayer player = bot.getPlayer(guild);
