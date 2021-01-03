@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import commands.hierarchy.Command;
-import lib.ThreadsManager;
 
 public class TypingWatchdog implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(TypingWatchdog.class);

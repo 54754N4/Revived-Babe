@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 
 import audio.CircularDeque;
 import audio.MusicController;
@@ -71,14 +72,15 @@ public abstract class MusicState {
 		TableManager table = null;
 		try {
 			table = DBManager.INSTANCE.manage("Backup"+getName(bot)+guild);
+			table.deleteAll();
 		} catch (SQLException e) {
-			logger.error("Backup: Could not connect to database for guild "+guild+" with bot "+bot, e);
+			logger.error("Backup: Could not connect and clear database for guild "+guild+" with bot "+bot, e);
 		}
 		CircularDeque queue = scheduler.getQueue();
 		backupPlaylist(table, queue);
-		backupSongAndPosition(table, queue);
 		backupVoiceChannel(table, bot, guild);
 		backupVolumeAndPause(table, bot, guild);
+		backupSongAndPosition(table, queue);
 	}
 	
 	private static void restore(MusicBot bot, String idLong, TableManager table) {
@@ -90,8 +92,8 @@ public abstract class MusicState {
 		bot.setupAudio(guildID);
 		restorePlaylist(table, bot, guildID);
 		restoreVoiceChannel(table, bot);
-		restoreSongAndPosition(table, bot, guild);
 		restoreVolumeAndPause(table, bot, guild);
+		restoreSongAndPosition(table, bot, guild);
 	}
 	
 	/* Backup/restore: Playlists */
@@ -119,7 +121,8 @@ public abstract class MusicState {
 			return;
 		}
 		final TrackLoadHandler handler = new TrackLoadHandler(bot.getScheduler(guild));
-		urls.forEach((name, value) -> bot.getPlayerManager(guild).loadItem(value, handler));
+		final AudioPlayerManager playerManager = bot.getPlayerManager(guild);
+		urls.forEach((name, value) -> playerManager.loadItemOrdered(playerManager, value, handler));
 	}
 	
 	/* Backup/restore: Song index + position */

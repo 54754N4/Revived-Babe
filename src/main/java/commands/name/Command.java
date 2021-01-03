@@ -53,7 +53,8 @@ public enum Command {
 	JAVASCRIPT("javascript", "js"), 
 	POLL("poll", "po"), 
 	SCREENSHOT("screenshot", "sc"), 
-	LYRICS("lyrics", "lr");
+	LYRICS("lyrics", "lr"), 
+	REMINDER("reminder", "remind", "rem");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;

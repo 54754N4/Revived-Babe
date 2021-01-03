@@ -5,6 +5,8 @@ import java.util.Collections;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import lambda.IndexedConsumer;
+
 public class CircularDeque extends ArrayList<AudioTrack> {
 	private static final long serialVersionUID = 1221847728186248254L;
 	public static final int UNINITIALISED = -1;
@@ -164,11 +166,7 @@ public class CircularDeque extends ArrayList<AudioTrack> {
 	}
 	
 	public void forEachIndexed(IndexedConsumer<? super AudioTrack> indexedAction) {
-		for (int i=0; i<size(); i++) indexedAction.accept(i, get(i));
-	}
-	
-	@FunctionalInterface
-	public static interface IndexedConsumer<E> {
-		void accept(int i, E item);
+		for (int i=0,size=size(); i<size; i++) 
+			indexedAction.accept(i, get(i));
 	}
 }

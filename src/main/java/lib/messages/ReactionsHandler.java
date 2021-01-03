@@ -20,6 +20,7 @@ public class ReactionsHandler implements Consumer<Message> {
 	private int count;
 	private final Map<Integer, Object> keys;
 	private final List<Consumer<MessageReaction>> consumers;
+	private final List<Consumer<Message>> onCloseConsumers;
 	private final List<ReactionConsumer> handlers;
 	private final UserBot bot;
 	
@@ -29,6 +30,12 @@ public class ReactionsHandler implements Consumer<Message> {
 		keys = new ConcurrentHashMap<>();
 		consumers = new ArrayList<>();
 		handlers = new ArrayList<>();
+		onCloseConsumers = new ArrayList<>();
+	}
+	
+	public ReactionsHandler addOnCloseHandler(Consumer<Message> consumer) {
+		onCloseConsumers.add(consumer);
+		return this;
 	}
 	
 	public ReactionsHandler handle(String name, Consumer<MessageReaction> consumer) {
@@ -44,7 +51,7 @@ public class ReactionsHandler implements Consumer<Message> {
 	}
 	
 	@Override
-	public void accept(Message message) {
+	public void accept(final Message message) {
 		handle(UNICODE_CLOSE, reaction -> onDelete(message));	// always close button last
 		ReactionConsumer consumer;
 		Object value;
@@ -64,8 +71,11 @@ public class ReactionsHandler implements Consumer<Message> {
 	}
 
 	protected void onDelete(Message message) {
-		if (message != null) message.delete().queue();
 		handlers.forEach(bot.getReactionsTracker()::unsubscribe);
+		if (message == null)
+			return;
+		onCloseConsumers.forEach(consumer -> consumer.accept(message));
+		message.delete().queue();
 	}
 	
 	private ReactionConsumer handleCustom(Message message, String name, int key) {

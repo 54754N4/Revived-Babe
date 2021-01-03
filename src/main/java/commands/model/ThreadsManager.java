@@ -1,4 +1,4 @@
-package lib;
+package commands.model;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,15 @@ public abstract class ThreadsManager {
 	
 	public static ThreadOutput read(Process process) throws InterruptedException, ExecutionException {
 		return new ThreadOutput(process);
+	}
+	
+	public static void kill(boolean now) {
+		if (POOL.isShutdown())
+			return;
+		else if (now)
+			POOL.shutdownNow();
+		else 
+			POOL.shutdown();
 	}
 	
 	/* Convenience methods */

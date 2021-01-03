@@ -78,7 +78,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 	}
 	
 	private void onNext(MessageReaction reaction) {
-		if (page + 1 > data.size()/count) return;
+		if (page + 1 > (data.size()-1)/count) return;
 		page++;
 	}
 	
@@ -113,11 +113,11 @@ public class PagedHandler<T> extends ReactionsHandler {
 	}
 	
 	private String parsePage(int page) {
-		String NEW_LINE = "\n", CODE_BLOCK = "```";
+		String NEW_LINE = "\n", CODE_BLOCK = "```", CODE_BLOCK_START = CODE_BLOCK + "md";
 		List<T> elements = getPage(page);
-		StringBuilder sb = new StringBuilder(CODE_BLOCK+NEW_LINE);
+		StringBuilder sb = new StringBuilder(CODE_BLOCK_START+NEW_LINE);
 		sb.append("#Page "+(page+1)+"/"+totalPages()+" ("+data.size()+" results)"+NEW_LINE);
-		for (int i=0; i<elements.size(); i++) 
+		for (int i=0; i<elements.size(); i++)
 			sb.append(parseElement(i, i+page*count, elements.get(i))+NEW_LINE);
 		return sb.append(CODE_BLOCK).toString();
 	}

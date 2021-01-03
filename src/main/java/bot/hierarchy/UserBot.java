@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 
 import commands.level.normal.Restarter;
-import lib.ThreadsManager;
+import commands.model.ThreadsManager;
+import lambda.OnLoadListener;
 import lib.messages.ReactionsDispatcher;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -158,8 +159,9 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	}
 	
 	protected void exit() {
-		logger.info(Restarter.FLAG.get() ? "Restarting program" : "Exiting program..");
-		System.exit(Restarter.FLAG.get() ? RESTART_CODE : EXIT_SUCCESS);
+		boolean flag = Restarter.FLAG.get(); 
+		logger.info(flag ? "Restarting program" : "Exiting program..");
+		System.exit(flag ? RESTART_CODE : EXIT_SUCCESS);
 	}
 	
 	/* Utility methods */
@@ -264,12 +266,5 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	@Override
 	public int getFlagsRaw() {
 		return getAccount().getFlagsRaw();
-	}
-	
-	/* Interfaces */
-	
-	@FunctionalInterface
-	public static interface OnLoadListener {
-		void onLoad(UserBot bot);
 	}
 }

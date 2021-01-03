@@ -6,10 +6,10 @@ import java.util.concurrent.ExecutionException;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.fsm.FSMCommand;
 import commands.hierarchy.fsm.Transition;
+import commands.model.ThreadOutput;
+import commands.model.ThreadsManager;
 import commands.name.Command;
 import lib.StringLib;
-import lib.ThreadOutput;
-import lib.ThreadsManager;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 

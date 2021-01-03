@@ -1,7 +1,9 @@
 package bot;
 
+import backup.Reminders;
 import bot.hierarchy.Bot;
 import bot.hierarchy.MusicBot;
+import commands.model.ThreadsManager;
 import commands.model.TypingWatchdog;
 import lib.Emoji;
 import lib.scrape.Browser;
@@ -13,6 +15,7 @@ public class BabeBot extends MusicBot {
 	public BabeBot() {
 		super(Bot.BABE);
 		exitOnKill = true;
+		addOnLoadListener(Reminders::restoreAll);
 	}
 
 	@Override
@@ -30,7 +33,9 @@ public class BabeBot extends MusicBot {
 
 	@Override 
 	protected void preKill(boolean now) throws Exception {
+		Reminders.backup();
 		getReactionsTracker().stopTracking();
+		ThreadsManager.kill(now);
 		TypingWatchdog.kill();
 		Bot.killAllBots(now);
 		Browser.getInstance().kill();
