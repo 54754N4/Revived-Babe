@@ -1,39 +1,69 @@
-package spelling;
+package backup;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.JsonIOException;
 
 import commands.name.Command;
+import database.DBManager;
+import database.TableManager;
 import lib.debug.Duration;
 
 public class SpellingCorrector {
+	private static final Logger logger = LoggerFactory.getLogger(SpellingCorrector.class);
 	private static final String alphabet = "abcdefghijklmnopqrstuvwxyz";
 	
-	private final Map<String,Integer> dict;
+	private final Map<String, Integer> dict;
 	
 	public SpellingCorrector() {
-		this(Arrays.asList(Command.values())
-				.stream()
-				.map(Command::getNames)
-				.flatMap(Stream::of)
-				.collect(Collectors.toList()));
+		this(generateDefaults());
 	}
 	
 	public SpellingCorrector(Collection<String> language) {
-		dict = new ConcurrentHashMap<>();
+		dict = createFrom(language);
+	}
+	
+	private SpellingCorrector(Map<String, Integer> restored) {
+		dict = restored.isEmpty() ? createFrom(generateDefaults()) : restored;
+	}
+	
+	public static Collection<String> generateDefaults() {
+		return Arrays.asList(Command.values())
+			.stream()
+			.map(Command::getNames)
+			.flatMap(Stream::of)
+			.collect(Collectors.toList());
+	}
+	
+	public static Map<String, Integer> createFrom(Collection<String> language) {
+		Map<String, Integer> dict = new ConcurrentHashMap<>();
 		BiFunction<String, Integer, Integer> incrementor = (k, v) -> v == null ? 1 : v + 1;
 		language.forEach(word -> dict.compute(word, incrementor));
+		return dict;
+	}
+	
+	public Map<String, Integer> getDictionary() {
+		return dict;
+	}
+	
+	public int increment(String name) {
+		dict.putIfAbsent(name, 0);
+		return dict.put(name, dict.get(name) + 1);	// increment usage count
 	}
 	
 	public Comparator<? super String> comparator() {
@@ -53,10 +83,10 @@ public class SpellingCorrector {
 			for (int i=0; i<distance; i++)
 				editsn = editsn.map(SpellingCorrector::edits1)
 					.flatMap(x -> x);
-			Optional<String> correction = editsn.filter(dict::containsKey)
-					.max(comparator()); 
-			if (correction.isPresent())
-				return correction.get();
+			Optional<String> result = editsn.filter(dict::containsKey)
+					.max(comparator());
+			if (result.isPresent())
+				return result.get();
 			editsn.close();
 		}
 		return word;
@@ -70,7 +100,6 @@ public class SpellingCorrector {
 		return Stream.of(deletes, replaces, inserts, transposes)
 				.flatMap(x -> x);
 	}
-	
 	
 	public static Stream<String> deletes(final String word) {
 		return IntStream.range(0, word.length())
@@ -96,16 +125,46 @@ public class SpellingCorrector {
 				.mapToObj(i-> word.substring(0, i) + word.substring(i+1, i+2) + word.charAt(i) + word.substring(i+2));
 	}
 	
+	/* Serialization */
+	
+	public static TableManager getTable() throws SQLException {
+		return DBManager.INSTANCE.manage("Spelling");
+	}
+	
+	public static void serialize(SpellingCorrector corrector) throws SQLException {
+		String[] keys = corrector.dict.keySet().toArray(new String[0]);
+		Object[] values = corrector.dict.values().toArray(new Integer[0]);
+		getTable().reset().insertOrUpdate(keys, values);
+	}
+	
+	public static SpellingCorrector deserialize() {
+		try {
+			Map<String, Integer> dict = new ConcurrentHashMap<>();
+			BiConsumer<String, String> convertThenPut = (k, v) -> dict.put(k, Integer.parseInt(v));
+			getTable().selectAll().forEach(convertThenPut);
+			return new SpellingCorrector(dict);
+		} catch (SQLException e) {
+			logger.error("Could not deserialize spelling corrector dictionary: "+e.getMessage());
+			return new SpellingCorrector();
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return dict.toString();
+	}
+	
 	public static void main(String[] args) throws JsonIOException, IOException {
 		SpellingCorrector corrector = new SpellingCorrector();
-		System.out.println(Duration.of(corrector::correct, "echiwa", 4));
+		System.out.println(Duration.of(corrector::correct, "echiw", 3));
+		System.out.println(corrector);
 	}
 }
 
 
-/*
-
-	public static Stream<String> edits1(final String word) {
+/*  
+ 	public static Stream<String> edits1(final String word) {
+ 
 		List<Function<String, Stream<String>>> operations = Arrays.asList(
 			SpellingCorrector::deletes,
 			SpellingCorrector::replaces,
