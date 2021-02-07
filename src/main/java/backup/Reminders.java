@@ -74,7 +74,7 @@ public abstract class Reminders {
 		
 	}
 	
-	public static class Reminder implements Runnable, Serializable {
+	public class Reminder implements Runnable, Serializable {
 		private static final long serialVersionUID = -2320313003235843084L;
 		private final LocalDateTime time;
 		
@@ -85,6 +85,7 @@ public abstract class Reminders {
 		@Override
 		public void run() {
 			System.out.println("I RAN AT "+time);
+			reminders.remove(time, this);
 		}
 	}
 }

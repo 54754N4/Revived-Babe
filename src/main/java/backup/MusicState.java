@@ -43,7 +43,9 @@ public abstract class MusicState {
 	
 	public static void clear(MusicBot bot, long id) {
 		try {
-			Query.clearTable("Backup"+getName(bot)+id);
+			DBManager.INSTANCE
+				.manage("Backup"+getName(bot)+id)
+				.clear();
 		} catch (SQLException e) {
 			logger.error("Could not clear table", e);
 		}
