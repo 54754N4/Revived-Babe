@@ -54,7 +54,8 @@ public enum Command {
 	POLL("poll", "po"), 
 	SCREENSHOT("screenshot", "sc"), 
 	LYRICS("lyrics", "lr"), 
-	REMINDER("reminder", "remind", "rem");
+	REMINDER("reminder", "remind", "rem"),
+	DISCONNECT("disconnect", "dc");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
