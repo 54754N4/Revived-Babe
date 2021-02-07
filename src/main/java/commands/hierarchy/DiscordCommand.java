@@ -67,6 +67,10 @@ public abstract class DiscordCommand extends PrintCommand {
 		return this;
 	}
 	
+	public boolean fromGuild() {
+		return message == null ? false : message.isFromGuild();
+	}
+	
 	public boolean fromMusicBot() {
 		return bot instanceof MusicBot;
 	}
@@ -155,6 +159,28 @@ public abstract class DiscordCommand extends PrintCommand {
 		}
 	}
 	
+	/* Exception handling convenience methods */
+	
+	public DiscordCommand test(Executable consumer, Consumer<Throwable> errorConsumer, String errorMessage) {
+		try {
+			consumer.invoke();
+		} catch (Exception e) {
+			if (errorConsumer != null)
+				errorConsumer.accept(e);
+			String message = errorMessage == null ? e.getMessage() : errorMessage;
+			logger.error(message, e);
+		}
+		return this;
+	}
+	
+	public DiscordCommand test(Executable consumer, String errorMessage) {
+		return test(consumer, null, errorMessage);
+	}
+	
+	public DiscordCommand test(Executable consumer) {
+		return test(consumer, null, null);
+	}
+	
 	/* help building + argument parsing*/
 	
 	protected String helpBuilder(String args, String... lines) {
@@ -183,12 +209,8 @@ public abstract class DiscordCommand extends PrintCommand {
 				if (!delay.matches("[0-9]+"))
 					println("Invalid delay %s", delay);
 				else {
-					long l = Long.parseLong(delay);
-					try {
-						Thread.sleep(l*1000); // convert to seconds
-					} catch (Exception e) {
-						logger.error("Could not delay for "+l+"s", e);
-					}
+					final long l = Long.parseLong(delay)*1000; // convert from seconds
+					test(() -> Thread.sleep(l), "Could not delay for "+l+"ms");
 				}
 			} 
 			if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params)) 
@@ -201,7 +223,7 @@ public abstract class DiscordCommand extends PrintCommand {
 			if (hasArgs(Global.SHOW_EXECUTION_TIME.params)) 
 				println(String.format("Execution time: %d ms", time));
 		} catch (Exception e) {
-			println("Error during execution, check logs: `%s`", e.getMessage());
+			println("Error during execution: `%s`", e.getMessage());
 			getLogger().error(this+" thread generated "+e+" : "+e.getMessage(), e);
 		} finally {
 			finalise();
@@ -218,5 +240,10 @@ public abstract class DiscordCommand extends PrintCommand {
 		for (String token : tokens) 
 			channel.sendMessage(token)
 				.queue();
+	}
+	
+	@FunctionalInterface
+	public static interface Executable {
+		void invoke() throws Exception;
 	}
 }
