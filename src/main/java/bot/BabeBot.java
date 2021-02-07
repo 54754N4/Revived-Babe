@@ -1,8 +1,10 @@
 package bot;
 
 import backup.Reminders;
+import backup.SpellingCorrector;
 import bot.hierarchy.Bot;
 import bot.hierarchy.MusicBot;
+import commands.model.Invoker;
 import commands.model.ThreadsManager;
 import commands.model.TypingWatchdog;
 import lib.Emoji;
@@ -39,6 +41,7 @@ public class BabeBot extends MusicBot {
 		TypingWatchdog.kill();
 		Bot.killAllBots(now);
 		Browser.getInstance().kill();
+		SpellingCorrector.serialize(Invoker.getCorrector());
 		super.preKill(now);
 	}
 }

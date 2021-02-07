@@ -19,6 +19,7 @@ import org.reflections.util.FilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import backup.SpellingCorrector;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.Command;
 import commands.hierarchy.DiscordCommand;
@@ -29,7 +30,6 @@ import commands.level.normal.Echo;
 import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import spelling.SpellingCorrector;
 
 /* Finds the appropriate command based on string command 
  * and appropriate role based on package names			 */
@@ -38,8 +38,12 @@ public class Invoker {
 			ADMIN_NAME = Exit.class.getPackageName(),
 			ALL_NAME = All.class.getPackageName();
 	
-	private static final SpellingCorrector corrector = new SpellingCorrector();
+	private static final SpellingCorrector corrector = SpellingCorrector.deserialize();
 	private static final Logger logger = LoggerFactory.getLogger(Invoker.class);
+	
+	public static SpellingCorrector getCorrector() {
+		return corrector;
+	}
 	
 	public static Command invoke(UserBot bot, Message message, String input, Reflector.Type type) {
 		String name;
@@ -53,6 +57,7 @@ public class Invoker {
         Class<? extends Command> command = Reflector.find(name, type);
         Command created;
         if (command != null) {
+        	corrector.increment(name);
         	created = instantiate(bot, message, command);
         	if (created != null)
         		return created.start(input);
