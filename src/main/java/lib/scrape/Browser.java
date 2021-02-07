@@ -29,7 +29,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
  * Docs: https://www.selenium.dev/documentation/en/webdriver/   
  */
 public class Browser implements Closeable {
-	private static final long DEFAULT_TIMEOUT = 15, DEFAULT_POLLING = 5;	// in seconds
+	public static final long DEFAULT_TIMEOUT = 15, DEFAULT_POLLING = 5;	// in seconds
 	private static final boolean DEFAULT_HEADLESS = true;
 	private static Browser INSTANCE;
 	static {
@@ -157,7 +157,7 @@ public class Browser implements Closeable {
 	}
 	
 	public WebElement waitFor(By by) {
-		return waitFor(by, DEFAULT_TIMEOUT, DEFAULT_POLLING);
+		return waitFor(by, DEFAULT_TIMEOUT);
 	}
 	
 	/* Static methods to act on default singleton instance */
