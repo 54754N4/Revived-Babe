@@ -16,6 +16,7 @@ import java.util.function.Consumer;
 import com.google.gson.Gson;
 
 import backup.MusicState;
+import backup.Reminders;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import lib.HTTP.Method;
@@ -31,7 +32,6 @@ import net.dv8tion.jda.api.entities.Role;
 public abstract class DiscordCommand extends PrintCommand {
 	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
-	private static final Set<Long> guildsVisited = new HashSet<>();
 	private boolean keepAlive;
 	
 	public static enum Global {
@@ -45,21 +45,30 @@ public abstract class DiscordCommand extends PrintCommand {
 		
 		public String[] params;
 		
-		Global(String... args) {
+		Global(String...args) {
 			this.params = args;
+		}
+	}
+	
+	public static class GuildStateInitializer {
+		private static final Set<Long> GUILDS_VISITED = new HashSet<>();
+		
+		public static void setup(UserBot bot, Message message) {
+			if (bot != null) {	// since commands can be instantiated using dummy data
+				long id = message.getGuild().getIdLong();
+				if (!GUILDS_VISITED.contains(id)) {
+					GUILDS_VISITED.add(id);
+					MusicState.restore(bot);
+					Reminders.restoreAll(message.getChannel());
+				}
+			}
 		}
 	}
 	
 	public DiscordCommand(UserBot bot, Message message, String...names) {
 		super(bot, message, names);
 		keepAlive = false;
-		if (bot != null) {	// since commands can be instantiated using dummy data
-			long id = message.getGuild().getIdLong();
-			if (!guildsVisited.contains(id)) {
-				guildsVisited.add(id);
-				MusicState.restore(bot);
-			}
-		}
+		GuildStateInitializer.setup(bot, message);
 	}
 	
 	protected DiscordCommand keepAlive() {
@@ -204,7 +213,9 @@ public abstract class DiscordCommand extends PrintCommand {
 			long time = 0;
 			if (hasArgs(Global.DELETE_USER_MESSAGE.params)) 
 				removeUserMessage();
-			if (hasArgs(Global.DELAYED.params)) {
+			if (hasArgs(Global.SCHEDULED.params)) {
+				println("Not implemented yet for `--every=T`.");
+			} else if (hasArgs(Global.DELAYED.params)) {
 				String delay = params.named.get("--after");
 				if (!delay.matches("[0-9]+"))
 					println("Invalid delay %s", delay);
