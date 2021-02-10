@@ -31,11 +31,11 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 public class Browser implements Closeable {
 	public static final long DEFAULT_TIMEOUT = 15, DEFAULT_POLLING = 5;	// in seconds
 	private static final boolean DEFAULT_HEADLESS = true;
-	private static Browser INSTANCE;
+	private static Browser INSTANCE;			// lazy-loaded through Browser::getInstance
+	
 	static {
 		// Makes sure firefox driver exists or downloads it
 		WebDriverManager.firefoxdriver().arch64().setup();
-		INSTANCE = new Browser();
 	}
 
 	private WebDriver driver;
@@ -162,13 +162,15 @@ public class Browser implements Closeable {
 	
 	/* Static methods to act on default singleton instance */
 	
-	public static Browser restartBrowser() {
+	public static Browser restart() {
 		if (INSTANCE != null) 
 			INSTANCE.kill();
 		return INSTANCE = new Browser();
 	}
 	
 	public static Browser getInstance() {
+		if (INSTANCE == null)
+			INSTANCE = new Browser();
 		return INSTANCE;
 	}
 }
