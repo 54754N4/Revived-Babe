@@ -1,91 +1,94 @@
 package backup;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bot.hierarchy.UserBot;
-import commands.model.ThreadsManager;
-import lib.DateUtil;
+import database.DBManager;
+import database.TableManager;
+import net.dv8tion.jda.api.entities.MessageChannel;
 
 public abstract class Reminders {
-	private static final String REMINDERS_FILE = "database/reminders.tasks";
-	private static final ScheduledExecutorService executor = ThreadsManager.POOL;
 	private static final Logger logger = LoggerFactory.getLogger(Reminders.class);
+	private static Map<LocalDateTime, Reminder> reminders = new ConcurrentHashMap<>();
 	
-	private static Map<LocalDateTime, Reminder> reminders;
+	public static TableManager getTable() throws SQLException {
+		return DBManager.INSTANCE.manage("Reminders");
+	}
 	
-	public static void add(Reminder reminder) {
-		if (reminders == null)
-			reminders = new ConcurrentHashMap<>();
-		reminders.put(reminder.time, reminder);
+	public static void add(LocalDateTime date, Reminder reminder, MessageChannel channel) {
+		reminders.put(date, reminder);
+		load(date, reminder, channel);
 	}
 	
 	/* Backup and restore handling */
 	 
-	public static void restoreAll(UserBot bot) {	// Matches UserBot.OnLoadListener interface
-		if (reminders == null || reminders.size() == 0) { 
-			Map<LocalDateTime, Reminder> restored = restore();
-			if (restored != null)
-				restored.forEach(Reminders::load);
-			reminders = restored;
-		}
+	public static void restoreAll(final MessageChannel channel) {
+		Map<LocalDateTime, Reminder> restored = restore();
+		restored.forEach((date, reminder) -> load(date, reminder, channel));
+		reminders = restored;
 	}
 	
-	private static void load(LocalDateTime date, Reminder reminder) {
-		long until = DateUtil.millis(date) - System.currentTimeMillis();
-		if (until < 0)
+	private static Map<LocalDateTime, Reminder> restore() {
+		Map<LocalDateTime, Reminder> deserialized = new ConcurrentHashMap<>();
+		Map<String, String> vals;
+		try {
+			vals = getTable().selectAll();	// retrieve from DB
+		} catch (Exception e) {
+			logger.error("Could not restore reminders", e);
+			return deserialized;
+		}
+		for (Entry<String, String> entry : vals.entrySet()) {
+			logger.info("Restoring ("+entry.getKey()+", "+entry.getValue()+")");
+			deserialized.put(LocalDateTime.parse(entry.getKey()), new Reminder(entry.getValue()));
+		}
+		return deserialized;
+	}
+	
+	private static void load(final LocalDateTime date, Reminder reminder, MessageChannel channel) {
+		long after = ChronoUnit.SECONDS.between(Instant.now(), date.atZone(ZoneId.systemDefault()).toInstant());
+		logger.info("Loading reminder "+date+" with ETA in sec : "+after);
+		if (after < 0)
 			reminders.remove(date);	// if concurrent modification exception then use iterator.remove()
-		else
-			executor.schedule(reminder, until, TimeUnit.MILLISECONDS);
+		else 
+			channel.sendMessage(reminder.message)
+				.queueAfter(after, TimeUnit.SECONDS, msg -> reminders.remove(date));	// remove after execution
 	}
 	
 	public static void backup() {
-		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(REMINDERS_FILE))) {
-			oos.writeObject(reminders);
-			oos.flush();
-		} catch (IOException e) {
+		String[] keys = reminders.keySet()
+				.stream()
+				.map(key -> key.toString())
+				.collect(Collectors.toList())
+				.toArray(new String[0]);
+		Object[] values = reminders.values().toArray(new Reminder[0]);
+		try {
+			getTable().reset().insertOrUpdate(keys, values);
+		} catch (Exception e) {
 			logger.error("Could not backup reminders", e);
 		}
 	}
 	
-	@SuppressWarnings("unchecked")	// If the file exists, then we're sure of the serialised type
-	public static Map<LocalDateTime, Reminder> restore() {
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(REMINDERS_FILE))) {
-			return (Map<LocalDateTime, Reminder>) ois.readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			logger.error("Could not restore reminders", e);
-			return null;
-		}
-	}
-	
-	public static void main(String[] args) {
+	public static class Reminder {
+		public final String message;
 		
-	}
-	
-	public class Reminder implements Runnable, Serializable {
-		private static final long serialVersionUID = -2320313003235843084L;
-		private final LocalDateTime time;
-		
-		public Reminder(LocalDateTime time) {
-			this.time = time;
+		public Reminder(String message) {
+			this.message = message;
 		}
 		
 		@Override
-		public void run() {
-			System.out.println("I RAN AT "+time);
-			reminders.remove(time, this);
+		public String toString() {
+			return message;
 		}
 	}
 }
