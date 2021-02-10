@@ -224,14 +224,14 @@ public abstract class DiscordCommand extends PrintCommand {
 					test(() -> Thread.sleep(l), "Could not delay for "+l+"ms");
 				}
 			} 
-			if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params)) 
+			if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params))
 				print(helpMessage());
 			else {
-				time = System.currentTimeMillis();		
+				time = System.currentTimeMillis();
 				execute(StringLib.unQuote(input.trim()).trim());
 				time = System.currentTimeMillis() - time;
 			}
-			if (hasArgs(Global.SHOW_EXECUTION_TIME.params)) 
+			if (hasArgs(Global.SHOW_EXECUTION_TIME.params))
 				println(String.format("Execution time: %d ms", time));
 		} catch (Exception e) {
 			println("Error during execution: `%s`", e.getMessage());
