@@ -131,10 +131,14 @@ public class SpellingCorrector {
 		return DBManager.INSTANCE.manage("Spelling");
 	}
 	
-	public static void serialize(SpellingCorrector corrector) throws SQLException {
+	public static void serialize(SpellingCorrector corrector) {
 		String[] keys = corrector.dict.keySet().toArray(new String[0]);
 		Object[] values = corrector.dict.values().toArray(new Integer[0]);
-		getTable().reset().insertOrUpdate(keys, values);
+		try {
+			getTable().reset().insertOrUpdate(keys, values);
+		} catch (Exception e) {
+			logger.error("Could not backup corrector", e);
+		}
 	}
 	
 	public static SpellingCorrector deserialize() {

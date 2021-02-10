@@ -74,7 +74,7 @@ public abstract class MusicState {
 		TableManager table = null;
 		try {
 			table = DBManager.INSTANCE.manage("Backup"+getName(bot)+guild);
-			table.deleteAll();
+			table.reset();
 		} catch (SQLException e) {
 			logger.error("Backup: Could not connect and clear database for guild "+guild+" with bot "+bot, e);
 		}
