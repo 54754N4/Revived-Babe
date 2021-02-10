@@ -162,8 +162,8 @@ public final class StringLib {
 		return url.matches("([A-Za-z]:\\\\)?((?>[^\\r\\n\\t\\:\\*\\?\"<>\\\\|\\/,\\.]+\\\\?))+(\\.[A-Za-z0-9]+)?");
 	}
 
-	public static String join(String... strings) {
-		return StringLib.join(" ", strings);
+	public static String join(String...strings) {
+		return join(" ", strings);
 	}
 
 	public static String join(String sep, String... strings) {
@@ -175,18 +175,18 @@ public final class StringLib {
 	}
 	
 	public static String join(int start, String... strings) {
-		return StringLib.join(" ", start, strings);
+		return join(" ", start, strings);
 	}
 
 	public static String join(String sep, int start, String... strings) {
-		return StringLib.join(sep, start, strings.length, strings);
+		return join(sep, start, strings.length, strings);
 	}
 
 	public static String join(String sep, int start, int end, String... strings) {
 		if (end < start) return "ERROR";
 		String[] words = new String[end-start];
 		for (int i=start; i<end; i++) words[i-start] = strings[i];
-		return StringLib.join(words);
+		return join(words);
 	}
 
 	public static String consumeWord(String word, String command) {
@@ -205,7 +205,7 @@ public final class StringLib {
 
 	public static long timeToSeconds(String timeStr) {
 		int[] conversions = {3600, 60, 1};
-		int[] time = StringLib.intify(StringLib.padTime(timeStr).split(":"));
+		int[] time = intify(padTime(timeStr).split(":"));
 		int duration = 0;
 		for (int i=0; i<time.length;  i++) duration += time[i] * conversions[i];
 		return duration;
@@ -213,7 +213,7 @@ public final class StringLib {
 
 	public static String padTime(String time) {
 		if (time.equals("0")) time += "0";
-		int colons = StringLib.countColons(time);
+		int colons = countColons(time);
 		while (colons++ < 2) time = "00:"+time;
 		return time;
 	}
