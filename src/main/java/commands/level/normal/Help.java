@@ -76,13 +76,19 @@ public class Help extends DiscordCommand {
 	
 	private static String helpGlobal() {
 		return helpify("**__>> Global Params__**",
-				inline("-h or --help")+"\tPrints the command's help/manual.",
-				inline("--timed")+"\t\t\tPrints how long the command took to execute.",
-				inline("-ed or --edit")+"\tPrints its output by editing its previously sent messages.",
-				inline("-rep or --reply")+"\tSends output of command as a private message reply.",
-				inline("-d or --delete")+"\tDeletes your msg that invoked the command.",
-				inline("-s or --silent")+"\tPrevents the command from outputting anything.");
+			inline("-h or --help")+"\tPrints the command's help/manual.",
+			inline("--timed")+"\t\t\tPrints how long the command took to execute.",
+			inline("-ed or --edit")+"\tPrints its output by editing its previously sent messages.",
+			inline("-rep or --reply")+"\tSends output of command as a private message reply.",
+			inline("-d or --delete")+"\tDeletes your msg that invoked the command.",
+			inline("-s or --silent")+"\tPrevents the command from outputting anything.",
+			inline("--after=<seconds>")+"\tExecutes the command after delay in seconds.");
 	}
+	
+	/*
+		DELAYED("--after"),
+		SCHEDULED("--every");
+	 */
 	
 	private static String helpRead() {
 		return helpify("**__>> Reading Help__**",
