@@ -29,14 +29,6 @@ public enum Dependency {
 		this.latest = latest;
 	}
 	
-	// retrieves newest release version from Maven url
-	public static String latestMaven(String url) {	
-		return Browser.getInstance()
-				.visit(url)
-				.waitFor(By.cssSelector(".vbtn.release"))
-				.getText();
-	}
-	
 	public static String latestLavaplayer() {
 		return Browser.getInstance()
 			.visit("https://github.com/sedmelluq/lavaplayer/tags")
@@ -96,6 +88,25 @@ public enum Dependency {
 		return latestMaven("https://mvnrepository.com/artifact/org.graalvm.js/js-scriptengine");
 	}
 
+	// retrieves newest release version from Maven url
+	public static String latestMaven(String url) {	
+		return Browser.getInstance()
+			.visit(url)
+			.waitFor(By.cssSelector(".vbtn.release"))
+			.getText();
+	}
+
+	public static String latestMaven(String groupID, String artifactID) {
+		return latestMaven(groupID, artifactID, "jcenter");
+	}
+	
+	public static String latestMaven(String groupID, String artifactID, String repo) {
+		return Browser.getInstance()
+				.visit(String.format("https://mvnrepository.com/artifact/%s/%s?repo=%s", groupID, artifactID, repo))
+				.waitFor(By.cssSelector(".vbtn.release"))
+				.getText();
+	}
+	
 	public static void checkUpdates(VersionCheckHandler callback) throws Exception {
 		if (callback == null)
 			return;
