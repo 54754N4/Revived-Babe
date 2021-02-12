@@ -76,7 +76,7 @@ public class Time extends DiscordCommand {
 			TIMEZONES = getTimezones();
 		List<String> matches = new ArrayList<>();
 		for (String timezone : TIMEZONES) 
-			if (StringLib.simpleMatch(timezone, input))
+			if (StringLib.matchSimplified(timezone, input))
 				matches.add(timezone);
 		return matches;
 	}

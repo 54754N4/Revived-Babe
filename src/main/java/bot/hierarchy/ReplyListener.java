@@ -80,7 +80,7 @@ public class ReplyListener extends ListenerAdapter {
 	public void consume(Message message) {
 		String content = message.getContentDisplay();
     	for (String input : StringLib.split(content, COMMAND_SEPARATOR))
-    		if (StringLib.startsWithPrefix(input.trim(), bot.getPrefixes())) 
+    		if (StringLib.startsWith(input.trim(), bot.getPrefixes())) 
         		treatInput(message, input.trim());
 	}
     	

@@ -98,7 +98,7 @@ public abstract class FSMCommand extends DiscordCommand {
 	}
 
 	protected static boolean matches(GuildMessageReceivedEvent event, String match) {
-		return StringLib.simpleMatch(event.getMessage().getContentDisplay(), match);
+		return StringLib.matchSimplified(event.getMessage().getContentDisplay(), match);
 	}
 	
 	// For testing and printing FSMs

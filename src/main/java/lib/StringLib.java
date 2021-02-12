@@ -4,6 +4,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 public final class StringLib {
 	public static final int NOT_FOUND = -1;
@@ -18,21 +19,14 @@ public final class StringLib {
     	return input.trim().substring(start.length()).trim();
     }
 	
-	public static boolean startsWithPrefix(String input, String... prefixes) {
-		for (String prefix : prefixes)
-			if (input.toLowerCase().startsWith(prefix.toLowerCase()))
-				return true;
-		return false;
-	}
-	
-	public static String consumePrefix(String input, String... prefixes) {
+	public static String consumePrefix(String input, String...prefixes) {
 		for (String prefix : prefixes) 
 			if (input.toLowerCase().contains(prefix.toLowerCase()))
 				return consume(prefix, input);
 		return input;
 	}
 	
-	public static String consumeName(String command, String... names) {
+	public static String consumeName(String command, String...names) {
 		for (String name : names)
 			if (command.toLowerCase().startsWith(name.toLowerCase()))
 				return command.substring(name.length()).trim();
@@ -166,7 +160,7 @@ public final class StringLib {
 		return join(" ", strings);
 	}
 
-	public static String join(String sep, String... strings) {
+	public static String join(String sep, String...strings) {
 		StringBuilder sb = new StringBuilder();
 		for (String string : strings) sb.append(string+sep);
 		String out = sb.toString();
@@ -174,15 +168,15 @@ public final class StringLib {
 		return out.substring(0,out.length()-1);
 	}
 	
-	public static String join(int start, String... strings) {
+	public static String join(int start, String...strings) {
 		return join(" ", start, strings);
 	}
 
-	public static String join(String sep, int start, String... strings) {
+	public static String join(String sep, int start, String...strings) {
 		return join(sep, start, strings.length, strings);
 	}
 
-	public static String join(String sep, int start, int end, String... strings) {
+	public static String join(String sep, int start, int end, String...strings) {
 		if (end < start) return "ERROR";
 		String[] words = new String[end-start];
 		for (int i=start; i<end; i++) words[i-start] = strings[i];
@@ -224,26 +218,42 @@ public final class StringLib {
 		return count;
 	}
 
-	public static int[] intify(String... strs) {
+	public static int[] intify(String...strs) {
 		int[] ints = new int[strs.length];
 		int i = 0;
 		for (String str : strs) ints[i++] = Integer.parseInt(str);
 		return ints;
 	}
 
-	//needs to only match 1 needle in the specified haystack
-	public static boolean matches(String haystack, String... needles) {	
-		boolean matched = false;
+	// Predicate needs match only 1 needle in haystack
+	public static boolean matcher(final String haystack, String[] needles, Predicate<String> predicate) {
 		for (String needle : needles) 
-			matched |= haystack.toLowerCase().equals(needle.toLowerCase());
-		return matched;
+			if (predicate.test(needle))
+				return true;
+		return false;
+	}
+	
+	public static boolean matches(final String haystack, String...needles) {	
+		return matcher(haystack, needles, needle -> haystack.toLowerCase().trim().equals(needle.toLowerCase().trim())); 
+	}
+	
+	public static boolean startsWith(final String haystack, String...needles) {
+		return matcher(haystack, needles, needle -> haystack.toLowerCase().trim().startsWith(needle.toLowerCase().trim()));
+	}
+	
+	public static boolean contains(final String haystack, String...needles) {
+		return matcher(haystack, needles, needle -> haystack.toLowerCase().trim().contains(needle.toLowerCase().trim()));
+	}
+	
+	public static boolean matchesSimplified(final String haystack, String...needles) {
+		return matcher(haystack, needles, needle -> matchSimplified(haystack.toLowerCase().trim(), needle.toLowerCase().trim()));
 	}
 	
 	public static String simplify(String name) {
 		return name.replaceAll("[^A-Za-z0-9]","").toLowerCase();
 	}
 	
-	public static boolean simpleMatch(String input, String match) {
+	public static boolean matchSimplified(String input, String match) {
 		return simplify(input).contains(simplify(match));
 	}
 	
