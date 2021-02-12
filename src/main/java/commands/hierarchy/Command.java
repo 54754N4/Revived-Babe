@@ -76,6 +76,10 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		channel.sendTyping().queue();
 	}
 	
+	protected void clear() {
+		stdout = new StringBuilder();
+	}
+	
 	protected boolean hasArgs(String... args) {
 		for (String param : params.all) 
 			if (StringLib.matches(param, args)) 
@@ -89,28 +93,26 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 			unnamed = new ArrayList<>();
 		for (String arg : args) {
 			List<String> target;
-			if (arg.startsWith("--")) target = named;
-			else if (arg.startsWith("-") && !arg.equals("-")) target = unnamed;
-			else target = nonArgs;
+			if (arg.startsWith("--")) 
+				target = named;
+			else if (arg.startsWith("-") && !arg.equals("-")) 
+				target = unnamed;
+			else 
+				target = nonArgs;
 			target.add(arg);
 		}
 		params = new Params(named, unnamed);
 		return nonArgs.toArray(new String[nonArgs.size()]);
 	}
 	
-	public void attachListener() {
-		logger.info("Attached listener to FSM {}", getClass());
-		bot.getJDA().addEventListener(this);
-	}
-	
-	public void removeListener() {
-		logger.info("Unattach FSM {} listener", getClass());
-		bot.getJDA().removeEventListener(this);	// stop listening for replies
+	private String treatInput(String...inputs) {
+		String input = StringLib.consumeName(StringLib.join(setParams(inputs)), names);	// separate out parameters
+		return StringLib.unQuote(input.trim()).trim(); // remove explicit quotes and trailing spaces
 	}
 	
 	public Command start(String command) {
-		mentioned = new Mentions(message, command);				// filter mentions from input first
-		input = StringLib.consumeName(StringLib.join(setParams(mentioned.filteredMessage)), names); 	// then args + name
+		mentioned = new Mentions(message, command);		// filter mentions from input first
+		input = treatInput(mentioned.filteredMessage);	// then cleanup input
 		channel = hasArgs(Global.PRIVATE_MESSAGE_REPLY.params) ? 
 				message.getAuthor().openPrivateChannel().complete()
 				: message.getChannel();
