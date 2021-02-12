@@ -9,8 +9,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import com.google.gson.Gson;
@@ -28,51 +30,29 @@ import lib.StringLib;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public abstract class DiscordCommand extends PrintCommand {
 	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
-	private boolean keepAlive;
-	
-	public static enum Global {
-		DELETE_USER_MESSAGE("-d", "--delete"), 
-		DISPLAY_HELP_MESSAGE("--help", "-h"),
-		PRIVATE_MESSAGE_REPLY("-rep", "--reply"),
-		SHOW_EXECUTION_TIME("--timed"),
-		HIDE_ALL_OUTPUT("-s", "--silent"),
-		DELAYED("--after"),
-		SCHEDULED("--every");
-		
-		public String[] params;
-		
-		Global(String...args) {
-			this.params = args;
-		}
-	}
-	
-	public static class GuildStateInitializer {
-		private static final Set<Long> GUILDS_VISITED = new HashSet<>();
-		
-		public static void setup(UserBot bot, Message message) {
-			if (bot != null) {	// since commands can be instantiated using dummy data
-				long id = message.getGuild().getIdLong();
-				if (!GUILDS_VISITED.contains(id)) {
-					GUILDS_VISITED.add(id);
-					MusicState.restore(bot);
-					Reminders.restoreAll(message.getChannel());
-				}
-			}
-		}
-	}
+	private boolean keepAlive, scheduled;
+	private long time;			// execution time
 	
 	public DiscordCommand(UserBot bot, Message message, String...names) {
 		super(bot, message, names);
-		keepAlive = false;
+		keepAlive = scheduled = false;
+		time = 0;
 		GuildStateInitializer.setup(bot, message);
 	}
 	
 	protected DiscordCommand keepAlive() {
 		keepAlive = true;
+		return this;
+	}
+	
+	protected DiscordCommand kill() {
+		keepAlive = false;
+		finished.set(true);
 		return this;
 	}
 	
@@ -133,7 +113,7 @@ public abstract class DiscordCommand extends PrintCommand {
 	}
 	
 	protected void removeUserMessage() {
-		message.delete().queue();
+		message.delete().queue(v -> {}, e -> logger.error("Could not remove user message", e));
 	}
 	
 	/* Rest + multipart/form requests convenience methods */
@@ -168,28 +148,6 @@ public abstract class DiscordCommand extends PrintCommand {
 		}
 	}
 	
-	/* Exception handling convenience methods */
-	
-	public DiscordCommand test(Executable consumer, Consumer<Throwable> errorConsumer, String errorMessage) {
-		try {
-			consumer.invoke();
-		} catch (Exception e) {
-			if (errorConsumer != null)
-				errorConsumer.accept(e);
-			String message = errorMessage == null ? e.getMessage() : errorMessage;
-			logger.error(message, e);
-		}
-		return this;
-	}
-	
-	public DiscordCommand test(Executable consumer, String errorMessage) {
-		return test(consumer, null, errorMessage);
-	}
-	
-	public DiscordCommand test(Executable consumer) {
-		return test(consumer, null, null);
-	}
-	
 	/* help building + argument parsing*/
 	
 	protected String helpBuilder(String args, String... lines) {
@@ -207,43 +165,130 @@ public abstract class DiscordCommand extends PrintCommand {
 		return markdown(sb.toString());
 	}
 	
+	/* Specific event hooking and handling + Scheduling */ 
+	
+	public void attachListener() {
+		logger.info("Attached listener to {}", getClass());
+		bot.getJDA().addEventListener(this);	// listen to events
+	}
+	
+	public void removeListener() {
+		logger.info("Unattached {} listener", getClass());
+		bot.getJDA().removeEventListener(this);	// stop listening for replies
+	}
+	
+	private void schedule() {
+		scheduled = true;
+		keepAlive = true;	// prevent automatic killing
+		attachListener();	// make command listen to any message
+		// Parse period input
+		String param = params.named.get("--every");
+		boolean instant = param.startsWith("*");
+		final long period = Long.parseLong(instant ? param.substring(1) : param) * 1000,
+			initial = System.currentTimeMillis();
+		// Prepare function to keep executing
+		Consumer<String> iteration = (input) -> {
+			try { execute(input); } 
+			catch (Exception e) {
+				print("Error during execution: %s%n", e.getMessage());
+				kill();	// stop command execution
+			} finally {
+				time = System.currentTimeMillis() - initial;
+				finalise();
+				clear();
+			}
+		};
+		// Do scheduling logic
+		if (instant)
+			iteration.accept(input);
+		while (!finished.get()) {
+			test(() -> Thread.sleep(period), "Could not sleep for "+period+"ms");
+			iteration.accept(input);
+		}
+		removeListener();	// stop listening to incoming messages
+	}
+	
+	@Override
+	public void onMessageReceived(MessageReceivedEvent event) {
+		if (event.getAuthor().isBot())
+			return;
+		boolean isAuthor = event.getAuthor().getIdLong() == this.message.getAuthor().getIdLong();
+		String message = event.getMessage().getContentDisplay();
+		String[] killVerbs = {"abort", "stop", "kill", "shutdown"};
+		logger.info("Handling message "+message);
+		logger.info("abort: "+StringLib.matchesSimplified(message, killVerbs));
+		logger.info("names: "+Arrays.toString(names)+" : "+StringLib.matchesSimplified(message, names));
+		logger.info("==================");
+		if (isAuthor && scheduled								// only author can stop command
+			&& StringLib.matchesSimplified(message, killVerbs)	// has to contain kill verb
+			&& StringLib.matchesSimplified(message, names))	{	// has to contain command name
+			println("Aborting command %s", getClass().getName());
+			kill();
+		}
+	}
+	
+	/* Exception handling convenience methods */
+	
+	public DiscordCommand test(Executable consumer) {
+		return test(consumer, null, null);
+	}
+	
+	public DiscordCommand test(Executable consumer, String errorMessage) {
+		return test(consumer, null, errorMessage);
+	}
+	
+	public DiscordCommand test(Executable consumer, Consumer<Throwable> errorConsumer, String errorMessage) {
+		try { consumer.invoke(); }
+		catch (Exception e) {
+			if (errorConsumer != null)
+				errorConsumer.accept(e);
+			String message = errorMessage == null ? e.getMessage() : errorMessage;
+			logger.error(message, e);
+		}
+		return this;
+	}
+	
+	/* Thread execution */
+	
 	@Override
 	public Void call() throws Exception {
-		try {
-			long time = 0;
-			if (hasArgs(Global.DELETE_USER_MESSAGE.params)) 
-				removeUserMessage();
-			if (hasArgs(Global.SCHEDULED.params)) {
-				println("Not implemented yet for `--every=T`.");
-			} else if (hasArgs(Global.DELAYED.params)) {
-				String delay = params.named.get("--after");
-				if (!delay.matches("[0-9]+"))
-					println("Invalid delay %s", delay);
-				else {
-					final long l = Long.parseLong(delay)*1000; // convert from seconds
-					test(() -> Thread.sleep(l), "Could not delay for "+l+"ms");
-				}
-			} 
-			if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params))
-				print(helpMessage());
+		if (hasArgs(Global.DELETE_USER_MESSAGE.params)) 
+			removeUserMessage();
+		if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params)) {
+			print(helpMessage());
+			finalise();
+			return null;
+		} else if (hasArgs(Global.SCHEDULED.params)) {
+			schedule();
+			finalise();
+			return null;
+		} else if (hasArgs(Global.DELAYED.params)) {
+			String delay = params.named.get("--after");
+			if (!delay.matches("[0-9]+"))
+				println("Invalid delay %s", delay);
 			else {
-				time = System.currentTimeMillis();
-				execute(StringLib.unQuote(input.trim()).trim());
-				time = System.currentTimeMillis() - time;
+				final long l = Long.parseLong(delay)*1000; // convert from seconds
+				test(() -> Thread.sleep(l), "Could not delay for "+l+"ms");
 			}
-			if (hasArgs(Global.SHOW_EXECUTION_TIME.params))
-				println(String.format("Execution time: %d ms", time));
-		} catch (Exception e) {
+		}
+		// Single execution
+		time = System.currentTimeMillis();
+		try { execute(input); } 
+		catch (Exception e) {
 			println("Error during execution: `%s`", e.getMessage());
 			getLogger().error(this+" thread generated "+e+" : "+e.getMessage(), e);
 		} finally {
+			time = System.currentTimeMillis() - time;
 			finalise();
-		} return null;
+		}
+		return null;
 	}
 	
 	private void finalise() {
 		if (!keepAlive)
 			finished.set(true);
+		if (hasArgs(Global.SHOW_EXECUTION_TIME.params))
+			println(String.format("Execution time: %d ms", time));
 		if (hasArgs(Global.HIDE_ALL_OUTPUT.params)) 
 			return;
 		String[] tokens = PrintBooster.splitForDiscord(stdout.toString())
@@ -256,5 +301,38 @@ public abstract class DiscordCommand extends PrintCommand {
 	@FunctionalInterface
 	public static interface Executable {
 		void invoke() throws Exception;
+	}
+	
+	public static class GuildStateInitializer {
+		private static final Map<UserBot, Set<Long>> GUILDS_VISITED = new ConcurrentHashMap<>();	// keep track per bot
+		
+		public static void setup(UserBot bot, Message message) {
+			if (bot != null) {	// since commands can be instantiated using dummy data
+				long id = message.getGuild().getIdLong();
+				GUILDS_VISITED.putIfAbsent(bot, new HashSet<>());
+				Set<Long> visited = GUILDS_VISITED.get(bot);
+				if (!visited.contains(id)) {
+					visited.add(id);
+					MusicState.restore(bot);
+					Reminders.restoreAll(message.getChannel());
+				}
+			}
+		}
+	}
+	
+	public static enum Global {
+		DELETE_USER_MESSAGE("-d", "--delete"), 
+		DISPLAY_HELP_MESSAGE("--help", "-h"),
+		PRIVATE_MESSAGE_REPLY("-rep", "--reply"),
+		SHOW_EXECUTION_TIME("--timed"),
+		HIDE_ALL_OUTPUT("-s", "--silent"),
+		DELAYED("--after"),
+		SCHEDULED("--every");
+		
+		public String[] params;
+		
+		Global(String...args) {
+			this.params = args;
+		}
 	}
 }

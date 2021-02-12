@@ -82,7 +82,8 @@ public class Help extends DiscordCommand {
 			inline("-rep or --reply")+"\tSends output of command as a private message reply.",
 			inline("-d or --delete")+"\tDeletes your msg that invoked the command.",
 			inline("-s or --silent")+"\tPrevents the command from outputting anything.",
-			inline("--after=<seconds>")+"\tExecutes the command after delay in seconds.");
+			inline("--after=<seconds>")+"\tExecutes the command after delay in seconds.",
+			inline("--every=<seconds>")+"\tRepeats every period. If you want it to execute instantly, add a '*' before (e.g. --every=*60)");
 	}
 	
 	/*
