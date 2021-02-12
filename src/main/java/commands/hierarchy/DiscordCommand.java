@@ -203,7 +203,7 @@ public abstract class DiscordCommand extends PrintCommand {
 		if (instant)
 			iteration.accept(input);
 		while (!finished.get()) {
-			test(() -> Thread.sleep(period), "Could not sleep for "+period+"ms");
+			tryExecuting(() -> Thread.sleep(period), "Could not sleep for "+period+"ms");
 			iteration.accept(input);
 		}
 		removeListener();	// stop listening to incoming messages
@@ -225,15 +225,15 @@ public abstract class DiscordCommand extends PrintCommand {
 	
 	/* Exception handling convenience methods */
 	
-	public DiscordCommand test(Executable consumer) {
-		return test(consumer, null, null);
+	public DiscordCommand tryExecuting(Executable consumer) {
+		return tryExecuting(consumer, null);
 	}
 	
-	public DiscordCommand test(Executable consumer, String errorMessage) {
-		return test(consumer, null, errorMessage);
+	public DiscordCommand tryExecuting(Executable consumer, String errorMessage) {
+		return tryExecuting(consumer, null, errorMessage);
 	}
 	
-	public DiscordCommand test(Executable consumer, Consumer<Throwable> errorConsumer, String errorMessage) {
+	public DiscordCommand tryExecuting(Executable consumer, Consumer<Throwable> errorConsumer, String errorMessage) {
 		try { consumer.invoke(); }
 		catch (Exception e) {
 			if (errorConsumer != null)
@@ -264,7 +264,7 @@ public abstract class DiscordCommand extends PrintCommand {
 				println("Invalid delay %s", delay);
 			else {
 				final long l = Long.parseLong(delay)*1000; // convert from seconds
-				test(() -> Thread.sleep(l), "Could not delay for "+l+"ms");
+				tryExecuting(() -> Thread.sleep(l), "Could not delay for "+l+"ms");
 			}
 		}
 		// Single execution
