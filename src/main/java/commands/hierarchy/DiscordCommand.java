@@ -33,6 +33,7 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public abstract class DiscordCommand extends PrintCommand {
+	private static final String[] SCHEDULING_STOP_VERBS = {"abort", "stop", "kill", "shutdown"};
 	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
 	private boolean keepAlive, scheduled;
@@ -214,14 +215,9 @@ public abstract class DiscordCommand extends PrintCommand {
 			return;
 		boolean isAuthor = event.getAuthor().getIdLong() == this.message.getAuthor().getIdLong();
 		String message = event.getMessage().getContentDisplay();
-		String[] killVerbs = {"abort", "stop", "kill", "shutdown"};
-		logger.info("Handling message "+message);
-		logger.info("abort: "+StringLib.matchesSimplified(message, killVerbs));
-		logger.info("names: "+Arrays.toString(names)+" : "+StringLib.matchesSimplified(message, names));
-		logger.info("==================");
-		if (isAuthor && scheduled								// only author can stop command
-			&& StringLib.matchesSimplified(message, killVerbs)	// has to contain kill verb
-			&& StringLib.matchesSimplified(message, names))	{	// has to contain command name
+		if (isAuthor && scheduled											// only author can stop command
+			&& StringLib.matchesSimplified(message, SCHEDULING_STOP_VERBS)	// has to contain kill verb
+			&& StringLib.matchesSimplified(message, names))	{				// has to contain command name
 			println("Aborting command %s", getClass().getName());
 			kill();
 		}
