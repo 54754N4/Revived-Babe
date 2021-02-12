@@ -32,10 +32,6 @@ public abstract class MusicState {
 			VOLUME = "lastVolume", PAUSED = "wasPaused";
 	private static final Logger logger = LoggerFactory.getLogger(MusicState.class);
 	
-	private static String getName(UserBot bot) {
-		return bot.getClass().getSimpleName();
-	}
-	
 	public static void backup(MusicBot bot) {
 		for (Entry<Long, MusicController> entry : bot.getControllers().entrySet())
 			backup(bot, entry.getKey(), entry.getValue().getScheduler());
@@ -44,7 +40,7 @@ public abstract class MusicState {
 	public static void clear(MusicBot bot, long id) {
 		try {
 			DBManager.INSTANCE
-				.manage("Backup"+getName(bot)+id)
+				.manage("Backup"+bot.getBotName()+id)
 				.clear();
 		} catch (SQLException e) {
 			logger.error("Could not clear table", e);
@@ -53,16 +49,16 @@ public abstract class MusicState {
 	
 	public static void restore(UserBot bot) {
 		if (MusicBot.class.isInstance(bot)) {
-			logger.info("Restoring tracks for {}", getName(bot));
+			logger.info("Restoring tracks for {}", bot.getBotName());
 			restore(MusicBot.class.cast(bot));
 		}
 	}
 	
 	private static void restore(MusicBot bot) {
 		try {
-			List<String> tables = Query.getGuildTables("Backup"+getName(bot)+"%");
+			List<String> tables = Query.getGuildTables("Backup"+bot.getBotName()+"%");
 			logger.info("Matched guild tables : {}", Arrays.toString(tables.toArray()));
-			int size = ("Backup"+getName(bot)).length();
+			int size = ("Backup"+bot.getBotName()).length();
 			for (String name : tables) 
 				restore(bot, name.substring(size), DBManager.INSTANCE.manage(name));
 		} catch (SQLException e) {
@@ -73,7 +69,7 @@ public abstract class MusicState {
 	private static void backup(MusicBot bot, long guild, TrackScheduler scheduler) {
 		TableManager table = null;
 		try {
-			table = DBManager.INSTANCE.manage("Backup"+getName(bot)+guild);
+			table = DBManager.INSTANCE.manage("Backup"+bot.getBotName()+guild);
 			table.reset();
 		} catch (SQLException e) {
 			logger.error("Backup: Could not connect and clear database for guild "+guild+" with bot "+bot, e);

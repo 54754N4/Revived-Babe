@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
 
 import bot.EchoBot;
 import bot.SlaveBot;
@@ -38,9 +41,13 @@ public enum Bot {
 			echo.kill(now);
 	}
 	
-	public static void killAllBots(boolean now) {
+	public static void killAll(boolean now) {
+		killAll(now, null);
+	}
+	
+	public static void killAll(boolean now, @Nullable Consumer<? super MusicBot> consumer) {
 		killEcho(now);
-		Slaves.killSlaves(now);
+		Slaves.killSlaves(now, consumer);
 	}
 	
 	public static final class Slaves {
@@ -72,12 +79,18 @@ public enum Bot {
 			killed.kill(now);
 		}
 		
-		public static void killSlaves(boolean now) {
+		public static void killSlaves(boolean now, @Nullable Consumer<? super MusicBot> consumer) {
 			alive.forEach(slave -> {
 				queue.offer(slave.bot);
 				slave.kill(now);
+				if (consumer != null)
+					consumer.accept(slave);
 			});
 			alive.clear();
+		}
+		
+		public static void killSlaves(boolean now) {
+			killSlaves(now, null);
 		}
 		
 		public static void reset() {

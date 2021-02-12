@@ -1,5 +1,6 @@
 package bot;
 
+import backup.MusicState;
 import backup.Reminders;
 import backup.SpellingCorrector;
 import bot.hierarchy.Bot;
@@ -34,13 +35,14 @@ public class BabeBot extends MusicBot {
 
 	@Override 
 	protected void preKill(boolean now) throws Exception {
-		Reminders.backup();
 		getReactionsTracker().stopTracking();
 		ThreadsManager.kill(now);
 		TypingWatchdog.kill();
-		Bot.killAllBots(now);
 		Browser.getInstance().kill();
+		Reminders.backup();
 		SpellingCorrector.serialize(Invoker.getCorrector());
+		MusicState.backup(this);
+		Bot.killAll(now, bot -> MusicState.backup(bot));
 		super.preKill(now);
 	}
 }

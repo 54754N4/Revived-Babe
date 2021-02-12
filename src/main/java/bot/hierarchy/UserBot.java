@@ -89,6 +89,10 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
                 .setAutoReconnect(true);
 	}
 	
+	public String getBotName() {
+		return bot.name();
+	}
+	
 	// children can override and: return super.attachListeners(builder.addEventListeners(...))
 	protected JDABuilder attachListeners(JDABuilder builder) {
 		return builder.addEventListeners(setListeners(getListeners()));
