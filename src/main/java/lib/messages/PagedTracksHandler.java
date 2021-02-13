@@ -14,6 +14,7 @@ import lib.StringLib;
 //create a NumberedHandler class for digits only
 public class PagedTracksHandler extends PagedHandler<AudioTrack> implements AudioLoadResultHandler {
 	private final boolean listTracks;
+	private boolean loopbackIndices;
 	private TrackScheduler scheduler;
 	
 	public PagedTracksHandler(UserBot bot, TrackScheduler scheduler) {
@@ -24,6 +25,7 @@ public class PagedTracksHandler extends PagedHandler<AudioTrack> implements Audi
 		super(bot, listTracks ? scheduler.getQueue() : new ArrayList<>());
 		this.listTracks = listTracks;
 		this.scheduler = scheduler;
+		loopbackIndices = false;
 	}
 	
 	@Override
@@ -32,11 +34,16 @@ public class PagedTracksHandler extends PagedHandler<AudioTrack> implements Audi
 		String prefix = "", postfix = "";
 		if (listTracks && queueIndex == queue.getCurrent())
 			prefix = postfix = new String(Character.toChars(0x1F3B6));
-		return index + ". " 
+		return (loopbackIndices ? index : queueIndex) + ". " 
 				+ prefix 
 				+ track.getInfo().title 
 				+ " (" + StringLib.millisToTime(track.getDuration()) + ")" 
 				+ postfix;
+	}
+	
+	public PagedTracksHandler loopbackIndices() {
+		loopbackIndices = true;
+		return this;
 	}
 	
 	@Override

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bot.hierarchy.UserBot;
+import lib.Consumers;
 import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -88,7 +89,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 	}
 	
 	protected void print() {
-		try { tracked.editMessage(parsePage(page)).queue(); } 
+		try { tracked.editMessage(parsePage(page)).queue(Consumers::ignore, Consumers::ignore); } 
 		catch (Exception e) { logger.error("Exception trying to print paged handler", e); }
 	}
 	

@@ -33,9 +33,9 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public abstract class DiscordCommand extends PrintCommand {
-	private static final String[] SCHEDULING_STOP_VERBS = {"abort", "stop", "kill", "shutdown"};
 	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
+	private static final String[] SCHEDULING_STOP_VERBS = { "abort", "stop", "kill", "shutdown" };
 	private boolean keepAlive, scheduled;
 	private long time;			// execution time
 	

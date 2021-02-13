@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import lib.Consumers;
 import lib.Emoji;
 import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
@@ -29,7 +30,9 @@ public class ReactionsDispatcher extends ListenerAdapter {
 			.collect(Collectors.toList());
     	if (handlers.size() != 0) {
     		if (!handlers.stream().anyMatch(handler -> handler.name.equals(Emoji.fromUnicode(ReactionsHandler.UNICODE_CLOSE))))
-    			event.getReaction().removeReaction(event.getMember().getUser()).queue();		// consume handled reaction
+    			event.getReaction()
+    				.removeReaction(event.getMember().getUser())
+    				.queue(Consumers::ignore, Consumers::ignore);		// consume handled reaction
     		handlers.forEach(handler -> handler.consumer.accept(event.getReaction())); 
     	}
     }
@@ -61,7 +64,9 @@ public class ReactionsDispatcher extends ListenerAdapter {
 	}
 	
 	public void stopTracking() {
-		consumers.forEach(handler -> handler.channel.deleteMessageById(handler.id).queue()); 
+		consumers.forEach(handler -> 
+			handler.channel.deleteMessageById(handler.id)
+				.queue(Consumers::ignore, Consumers::ignore)); 
 		consumers.clear();
 	}
 	
