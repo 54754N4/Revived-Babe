@@ -29,10 +29,9 @@ public class ReactionsDispatcher extends ListenerAdapter {
 			.filter(handler -> handler.name.equals(isCustom ? reactionName : event.getReactionEmote().getName()))
 			.collect(Collectors.toList());
     	if (handlers.size() != 0) {
-    		if (!handlers.stream().anyMatch(handler -> handler.name.equals(Emoji.fromUnicode(ReactionsHandler.UNICODE_CLOSE))))
-    			event.getReaction()
-    				.removeReaction(event.getMember().getUser())
-    				.queue(Consumers::ignore, Consumers::ignore);		// consume handled reaction
+    		event.getReaction()
+    			.removeReaction(event.getMember().getUser())
+    			.queue(Consumers::ignore, Consumers::ignore);		// consume handled reaction
     		handlers.forEach(handler -> handler.consumer.accept(event.getReaction())); 
     	}
     }
