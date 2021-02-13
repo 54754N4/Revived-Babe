@@ -21,6 +21,7 @@ import backup.MusicState;
 import backup.Reminders;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
+import lib.Consumers;
 import lib.HTTP.Method;
 import lib.HTTP.MultipartRequestBuilder;
 import lib.HTTP.RequestBuilder;
@@ -114,7 +115,7 @@ public abstract class DiscordCommand extends PrintCommand {
 	}
 	
 	protected void removeUserMessage() {
-		message.delete().queue(v -> {}, e -> logger.error("Could not remove user message", e));
+		message.delete().queue(Consumers::ignore, Consumers::ignore);
 	}
 	
 	/* Rest + multipart/form requests convenience methods */
@@ -180,8 +181,8 @@ public abstract class DiscordCommand extends PrintCommand {
 	
 	private void schedule() {
 		scheduled = true;
-		keepAlive = true;	// prevent automatic killing
-		attachListener();	// make command listen to any message
+		keepAlive = true;	// prevent killing on finalisation
+		attachListener();	// make command listen to author messages
 		// Parse period input
 		String param = params.named.get("--every");
 		boolean instant = param.startsWith("*");
@@ -195,8 +196,8 @@ public abstract class DiscordCommand extends PrintCommand {
 				kill();	// stop command execution
 			} finally {
 				time = System.currentTimeMillis() - initial;
-				finalise();
-				clear();
+				finalise();	// finalise and send output
+				clear();	// reset stdout
 			}
 		};
 		// Do scheduling logic
@@ -250,6 +251,7 @@ public abstract class DiscordCommand extends PrintCommand {
 	public Void call() throws Exception {
 		if (hasArgs(Global.DELETE_USER_MESSAGE.params)) 
 			removeUserMessage();
+		time = System.currentTimeMillis();	// execution start time
 		if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params)) {
 			print(helpMessage());
 			finalise();
@@ -268,13 +270,12 @@ public abstract class DiscordCommand extends PrintCommand {
 			}
 		}
 		// Single execution
-		time = System.currentTimeMillis();
 		try { execute(input); } 
 		catch (Exception e) {
 			println("Error during execution: `%s`", e.getMessage());
 			getLogger().error(this+" thread generated "+e+" : "+e.getMessage(), e);
 		} finally {
-			time = System.currentTimeMillis() - time;
+			time = System.currentTimeMillis() - time;	// execution end time
 			finalise();
 		}
 		return null;

@@ -55,7 +55,8 @@ public enum Command {
 	SCREENSHOT("screenshot", "sc"), 
 	LYRICS("lyrics", "lr"), 
 	REMINDER("reminder", "remind", "rem"),
-	DISCONNECT("disconnect", "dc");
+	DISCONNECT("disconnect", "dc"), 
+	REMOVE("remove", "rm");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
@@ -88,4 +89,6 @@ public enum Command {
 	public String[] getNames() {
 		return names;
 	}
+	
+	public static void main(String[] args) {}	// just for name duplication check
 }

@@ -1,9 +1,14 @@
 package bot.hierarchy;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
@@ -567,4 +572,62 @@ public abstract class MusicBot extends UserBot {
 	public Future<Void> playTop(Guild guild, String identifier) {
 		return playTop(guild, identifier, null);
 	}
+	
+	/* Remove */
+	
+	public MusicBot remove(Guild guild, Collection<Integer> indices) {
+		return remove(guild.getIdLong(), indices);
+	}
+	
+	public MusicBot remove(long guildID, Collection<Integer> indices) {
+		return remove(guildID, indices.toArray(new Integer[0]));
+	}
+	
+	public MusicBot remove(Guild guild, Integer...indices) {
+		return remove(guild.getIdLong(), indices);
+	}
+	
+	public MusicBot remove(long guildID, Integer...indices) {
+		return remove(guildID, Arrays.stream(indices));
+	}
+	
+	public MusicBot remove(Guild guild, Stream<Integer> indices) {
+		return remove(guild.getIdLong(), indices);
+	}
+	
+	public MusicBot remove(long guildID, Stream<Integer> indices) {
+		return remove(guildID, indices.mapToInt(i -> i).toArray());
+	}
+	
+	public MusicBot remove(Guild guild, IntStream indices) {
+		return remove(guild.getIdLong(), indices);
+	}
+	
+	public MusicBot remove(long guildID, IntStream indices) {
+		return remove(guildID, indices.toArray());
+	}
+	
+	public MusicBot remove(Guild guild, int...indices) {
+		return remove(guild.getIdLong(), indices);
+	}
+	
+	/* If we don't reverse sort, the indices would
+	 * end up mapping to wrong tracks the further we 
+	 * remove. However, removing from biggest to smallest,
+	 * allows us to avoid removing the wrong tracks, all 
+	 * the while ignoring the initial (potentially 
+	 * corrupting) ordering.								*/
+	public MusicBot remove(long guildID, int...indices) {
+		TrackScheduler scheduler = setupAudio(guildID)
+			.controller(guildID)
+			.getScheduler();
+		int max = scheduler.getQueue().size();
+		Arrays.stream(indices)
+			.filter(i -> 0 <= i && i < max)	// in queue range
+			.boxed()	// convert from primitive to Integer
+			.sorted(Comparator.reverseOrder())
+			.forEachOrdered(scheduler::remove);
+		return this;
+	}
+	
 }
