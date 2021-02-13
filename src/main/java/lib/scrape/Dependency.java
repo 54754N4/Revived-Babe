@@ -128,7 +128,9 @@ public enum Dependency {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		try { checkUpdates(Dependency::defaultVersionHandler); }
-		finally { Browser.getInstance().close(); }
+		try { 
+//			checkUpdates(Dependency::defaultVersionHandler);
+			System.out.println(latestMaven("org.dyn4j", "dyn4j"));
+		} finally { Browser.getInstance().close(); }
 	}
 }
