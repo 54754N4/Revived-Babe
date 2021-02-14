@@ -4,11 +4,8 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -28,12 +25,10 @@ import lib.HTTP.RequestBuilder;
 import lib.HTTP.ResponseHandler;
 import lib.PrintBooster;
 import lib.StringLib;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-public abstract class DiscordCommand extends PrintCommand {
+public abstract class DiscordCommand extends RoleCommand {
 	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
 	private static final String[] SCHEDULING_STOP_VERBS = { "abort", "stop", "kill", "shutdown" };
@@ -87,33 +82,7 @@ public abstract class DiscordCommand extends PrintCommand {
 	public boolean isOwner() {
 		return message.getAuthor().getIdLong() == 188033164864782336l;
 	}
-	
-	protected List<Role> getCallerRoles() {
-		return message.getMember() == null ? new ArrayList<>() : message.getMember().getRoles();
-	}
-	
-	protected boolean callerHasRole(Role role) {
-		for (Role r : getCallerRoles()) 
-			if (r.equals(role)) 
-				return true;
-		return false;
-	}
-	
-	protected void addRoles(Member member, Collection<Role> roles) {
-		getGuild().modifyMemberRoles(member, roles, new ArrayList<>()).queue();
-	}
-	
-	protected void removeRoles(Member member, Collection<Role> roles) {
-		getGuild().modifyMemberRoles(member, new ArrayList<>(), roles).queue();
-	}
-	
-	protected List<Role> getRoles(String match, boolean createIfNonExistant) {
-		List<Role> roles = guild.getRolesByName(match, true);
-		if (roles.size() == 0 && createIfNonExistant)
-			roles.add(guild.createRole().setName(StringLib.capitalize(match)).complete());
-		return roles;
-	}
-	
+
 	protected void removeUserMessage() {
 		message.delete().queue(Consumers::ignore, Consumers::ignore);
 	}
@@ -252,7 +221,11 @@ public abstract class DiscordCommand extends PrintCommand {
 		if (hasArgs(Global.DELETE_USER_MESSAGE.params)) 
 			removeUserMessage();
 		time = System.currentTimeMillis();	// execution start time
-		if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params)) {
+		if (!callerAllowed()) {
+			println("Only the following roles are allowed : %s", Arrays.toString(getAllowedRoles()));
+			finalise();
+			return null;
+		} else if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params)) {
 			print(helpMessage());
 			finalise();
 			return null;
