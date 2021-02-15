@@ -32,7 +32,6 @@ public class Restarter extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		backup();
 		if (hasArgs("-l", "--log")) {
 			println(getUpdateLog());
 			return;
@@ -53,8 +52,8 @@ public class Restarter extends DiscordCommand {
 	}
 	
 	public static String getUpdateLog() throws IOException {
-		String root = FileSystems.getDefault().getPath(".").toAbsolutePath().toString();
-		Path log = Paths.get(root+"\\logs\\shadowjar-build.log").normalize();
+		String workingDir = System.getProperty("user.dir");
+		Path log = Paths.get(workingDir+"/logs/shadowjar-build.log").normalize();
 		StringBuilder sb = new StringBuilder();
 		Files.lines(log)
 			.map((line) -> sb.append(line+System.lineSeparator()));
