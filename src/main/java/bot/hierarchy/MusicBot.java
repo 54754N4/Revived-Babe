@@ -21,6 +21,7 @@ import audio.TrackScheduler;
 import audio.track.handlers.SpeakTrackHandler;
 import audio.track.handlers.TrackLoadHandler;
 import audio.track.handlers.TrackLoadHandler.StatusUpdater;
+import backup.MusicState;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
@@ -84,6 +85,7 @@ public abstract class MusicBot extends UserBot {
 	
 	@Override
 	protected void preKill(boolean now) throws Exception {
+		MusicState.backup(this);
 		controllers.values()
 			.stream()
 			.map(MusicController::getPlayer)

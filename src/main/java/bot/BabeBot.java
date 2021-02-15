@@ -41,7 +41,6 @@ public class BabeBot extends MusicBot {
 		Browser.getInstance().kill();
 		Reminders.backup();
 		SpellingCorrector.serialize(Invoker.getCorrector());
-		MusicState.backup(this);
 		Bot.killAll(now, bot -> MusicState.backup(bot));
 		super.preKill(now);
 	}
