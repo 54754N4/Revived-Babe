@@ -8,21 +8,19 @@ import commands.hierarchy.DiscordCommand;
 
 /**
  * Performance boost strategy takes 2 steps and is as follows : 
- * - 1st step = empirically split into smallest tokens
- * 		if msg is less than MESSAGE_MAX -> it won't be touched 
+ * 1. if msg is less than MESSAGE_MAX -> it won't be touched 
  * 		else -> subdivide the message based on code blocks into tokens
  * 		if no code blocks or is still too big -> split token on newlines
  * 		if still too big -> split token on dots
- * at this point, we suppose that after 3 kinds of splitting (worst case), 
+ * at this point, we suppose that after these 3 kinds of splits (worst case), 
  * tokens should all become valid but small discord messages.
- *  
- * - 2nd step = merge tokens into biggest ones that still satisfy biggestToken.length < MESSAGE_MAX
+ * 2. merge tokens as long as satisfy length < MESSAGE_MAX
  * 
- * At this point, DiscordCommand can chain MessageActions (e.g. network I/O) 
- * using the tokens we give it since they're all valid and this greatly 
- * reduces the number of network calls we initiate to Discord, and directly 
- * translates to the bot replying faster no matter the length of the output
- * built by each command.
+ * This allows DiscordCommands to chain MessageActions (e.g. network I/O) 
+ * using the tokens we give it since they're all the biggest/valid we could
+ * make from the command output. This greatly reduces the number of network 
+ * calls we initiate to Discord, and directly translates to the bot replying 
+ * faster no matter the output length.
  */
 public abstract class PrintBooster {
 

@@ -74,11 +74,12 @@ public class ListTracks extends DiscordCommand {
 	private String printCurrent() {
 		CircularDeque queue = getMusicBot().getPlaylist(guild);
 		AudioTrack track = queue.get(queue.getCurrent());
-		return String.format("%d. %s (`%s`/%s)", 
+		return String.format("%d. %s (`%s`/%s) | Total Songs = `%s`", 
 				queue.getCurrent(),
 				track.getInfo().title, 
 				StringLib.millisToTime(track.getPosition()), 
-				StringLib.millisToTime(track.getDuration()));
+				StringLib.millisToTime(track.getDuration()),
+				queue.size());
 	}
 	
 	private void createCurrent() {
