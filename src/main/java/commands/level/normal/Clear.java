@@ -14,14 +14,18 @@ public class Clear extends DiscordCommand {
 	@Override
 	public String helpMessage() {
 		return helpBuilder("",
-//				"-b or --backup\t\tClears backed up queue",
+				"-b or --backup\t\tClears backed up queue",
 				"-f or --force\t\tForces the clear of even the currently playing song",
 				"Discards all tracks from the queue except for the currently playing song, otherwise clears everything.");
 	}
 
 	@Override
 	protected void execute(String input) throws Exception {
-		clearBackup();
+		if (hasArgs("-b", "--backup")) {
+			clearBackup();
+			println("Cleared backed up queue");
+			return;
+		}
 		MusicBot bot = getMusicBot();
 		String output = "Cleared all tracks from queue";
 		if (hasArgs("-f", "--force")) {
