@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bot.hierarchy.UserBot;
+import commands.hierarchy.DiscordCommand.Executable;
 import commands.hierarchy.DiscordCommand.Global;
 import commands.model.Mentions;
 import commands.model.Params;
@@ -24,7 +26,9 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public abstract class Command extends ListenerAdapter implements Callable<Void> {
 	public static final int MESSAGE_MAX = Message.MAX_CONTENT_LENGTH;
 	public final String[] names;
-	public AtomicBoolean finished;			// stores cmd execution state
+	protected AtomicBoolean keepAlive, 
+		scheduled, 
+		finished;			// stores cmd execution state
 	protected final Logger logger;
 	protected UserBot bot;					// bot responder
 	protected Guild guild;
@@ -47,9 +51,22 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		} catch (Exception e) {
 			// because getGuild() throws if sent in private message chat
 		}
+		keepAlive = new AtomicBoolean();
+		scheduled = new AtomicBoolean();
 		finished = new AtomicBoolean();
 		stdout = new StringBuilder();
 		logger = LoggerFactory.getLogger(getClass());
+	}
+	
+	protected Command keepAlive() {
+		keepAlive.set(true);
+		return this;
+	}
+	
+	protected Command kill() {
+		keepAlive.set(false);
+		finished.set(true);
+		return this;
 	}
 	
 	protected Logger getLogger() {
@@ -79,6 +96,29 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 	protected void clear() {
 		stdout = new StringBuilder();
 	}
+	
+	/* Exception handling convenience methods */
+	
+	public Command tryExecuting(Executable consumer) {
+		return tryExecuting(consumer, null);
+	}
+	
+	public Command tryExecuting(Executable consumer, String errorMessage) {
+		return tryExecuting(consumer, null, errorMessage);
+	}
+	
+	public Command tryExecuting(Executable consumer, Consumer<Throwable> errorConsumer, String errorMessage) {
+		try { consumer.invoke(); }
+		catch (Exception e) {
+			if (errorConsumer != null)
+				errorConsumer.accept(e);
+			String message = errorMessage == null ? e.getMessage() : errorMessage;
+			logger.error(message, e);
+		}
+		return this;
+	}
+	
+	/* Args/input handling */
 	
 	protected boolean hasArgs(String... args) {
 		for (String param : params.all) 

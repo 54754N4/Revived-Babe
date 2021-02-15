@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -18,6 +19,7 @@ import backup.MusicState;
 import backup.Reminders;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
+import commands.model.ThreadSleep;
 import lib.Consumers;
 import lib.HTTP.Method;
 import lib.HTTP.MultipartRequestBuilder;
@@ -26,31 +28,33 @@ import lib.HTTP.ResponseHandler;
 import lib.PrintBooster;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-public abstract class DiscordCommand extends RoleCommand {
+public abstract class DiscordCommand extends ListenerCommand {
+	private static final String[] SCHEDULING_STOP_VERBS = { "abort", "stop", "kill", "shutdown" };
 	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
-	private static final String[] SCHEDULING_STOP_VERBS = { "abort", "stop", "kill", "shutdown" };
-	private boolean keepAlive, scheduled;
 	private long time;			// execution time
+	
+	public static enum Global {
+		DELETE_USER_MESSAGE("-d", "--delete"), 
+		DISPLAY_HELP_MESSAGE("--help", "-h"),
+		PRIVATE_MESSAGE_REPLY("-rep", "--reply"),
+		SHOW_EXECUTION_TIME("--timed"),
+		HIDE_ALL_OUTPUT("-s", "--silent"),
+		DELAYED("--after"),
+		SCHEDULED("--every");
+		
+		public String[] params;
+		
+		Global(String...args) {
+			this.params = args;
+		}
+	}
 	
 	public DiscordCommand(UserBot bot, Message message, String...names) {
 		super(bot, message, names);
-		keepAlive = scheduled = false;
 		time = 0;
 		GuildStateInitializer.setup(bot, message);
-	}
-	
-	protected DiscordCommand keepAlive() {
-		keepAlive = true;
-		return this;
-	}
-	
-	protected DiscordCommand kill() {
-		keepAlive = false;
-		finished.set(true);
-		return this;
 	}
 	
 	public boolean fromGuild() {
@@ -63,12 +67,6 @@ public abstract class DiscordCommand extends RoleCommand {
 	
 	public MusicBot getMusicBot() {
 		return MusicBot.class.cast(bot);
-	}
-	
-	protected DiscordCommand backup() {
-		if (fromMusicBot())
-			MusicState.backup(getMusicBot());
-		return this;
 	}
 	
 	protected DiscordCommand clearBackup() throws SQLException {
@@ -136,22 +134,28 @@ public abstract class DiscordCommand extends RoleCommand {
 		return markdown(sb.toString());
 	}
 	
-	/* Specific event hooking and handling + Scheduling */ 
+	/* Scheduling */
 	
-	public void attachListener() {
-		logger.info("Attached listener to {}", getClass());
-		bot.getJDA().addEventListener(this);	// listen to events
+	private DiscordCommand addKillHandler() {
+		addReplyHandler(new ReplyHandler.Builder()
+			.ignoreBots()
+			.authorOnly()
+			.ifTrue((text, cmd) -> 
+				cmd.scheduled.get() && 
+				StringLib.matchesSimplified(text, SCHEDULING_STOP_VERBS) &&
+				StringLib.matchesSimplified(text, names)
+			)
+			.then(Command::kill)
+			.println("Aborting command %s", getClass().getName())
+			.build());
+		return this;
 	}
 	
-	public void removeListener() {
-		logger.info("Unattached {} listener", getClass());
-		bot.getJDA().removeEventListener(this);	// stop listening for replies
-	}
-	
-	private void schedule() {
-		scheduled = true;
-		keepAlive = true;	// prevent killing on finalisation
-		attachListener();	// make command listen to author messages
+	private void schedule() throws Exception {
+		scheduled.set(true);
+		addKillHandler()
+			.attachListener()	// make command listen for replies
+			.keepAlive();		// prevent killing on finalisation
 		// Parse period input
 		String param = params.named.get("--every");
 		boolean instant = param.startsWith("*");
@@ -170,51 +174,19 @@ public abstract class DiscordCommand extends RoleCommand {
 			}
 		};
 		// Do scheduling logic
-		if (instant)
+		Callable<Void> sleeper = ThreadSleep.nonBlocking(period, this);
+		if (instant) {
 			iteration.accept(input);
+			sleeper.call();
+		}
 		while (!finished.get()) {
-			tryExecuting(() -> Thread.sleep(period), "Could not sleep for "+period+"ms");
 			iteration.accept(input);
+			sleeper.call();
 		}
 		removeListener();	// stop listening to incoming messages
 	}
 	
-	@Override
-	public void onMessageReceived(MessageReceivedEvent event) {
-		if (event.getAuthor().isBot())
-			return;
-		boolean isAuthor = event.getAuthor().getIdLong() == this.message.getAuthor().getIdLong();
-		String message = event.getMessage().getContentDisplay();
-		if (isAuthor && scheduled											// only author can stop command
-			&& StringLib.matchesSimplified(message, SCHEDULING_STOP_VERBS)	// has to contain kill verb
-			&& StringLib.matchesSimplified(message, names))	{				// has to contain command name
-			println("Aborting command %s", getClass().getName());
-			kill();
-		}
-	}
-	
-	/* Exception handling convenience methods */
-	
-	public DiscordCommand tryExecuting(Executable consumer) {
-		return tryExecuting(consumer, null);
-	}
-	
-	public DiscordCommand tryExecuting(Executable consumer, String errorMessage) {
-		return tryExecuting(consumer, null, errorMessage);
-	}
-	
-	public DiscordCommand tryExecuting(Executable consumer, Consumer<Throwable> errorConsumer, String errorMessage) {
-		try { consumer.invoke(); }
-		catch (Exception e) {
-			if (errorConsumer != null)
-				errorConsumer.accept(e);
-			String message = errorMessage == null ? e.getMessage() : errorMessage;
-			logger.error(message, e);
-		}
-		return this;
-	}
-	
-	/* Thread execution */
+	/* Thread execution entry-point */
 	
 	@Override
 	public Void call() throws Exception {
@@ -234,12 +206,15 @@ public abstract class DiscordCommand extends RoleCommand {
 			finalise();
 			return null;
 		} else if (hasArgs(Global.DELAYED.params)) {
-			String delay = params.named.get("--after");
-			if (!delay.matches("[0-9]+"))
-				println("Invalid delay %s", delay);
+			addKillHandler().attachListener();
+			String after = params.named.get("--after");
+			if (!after.matches("[0-9]+"))
+				println("Invalid delay %s", after);
 			else {
-				final long l = Long.parseLong(delay)*1000; // convert from seconds
-				tryExecuting(() -> Thread.sleep(l), "Could not delay for "+l+"ms");
+				final long delay = Long.parseLong(after)*1000; // convert from seconds
+				ThreadSleep.nonBlocking(delay, this).call();
+				if (finished.get())	// has been aborted
+					return null;	// prevent execution
 			}
 		}
 		// Single execution
@@ -255,7 +230,7 @@ public abstract class DiscordCommand extends RoleCommand {
 	}
 	
 	private void finalise() {
-		if (!keepAlive)
+		if (!keepAlive.get())
 			finished.set(true);
 		if (hasArgs(Global.SHOW_EXECUTION_TIME.params))
 			println(String.format("Execution time: %d ms", time));
@@ -287,22 +262,6 @@ public abstract class DiscordCommand extends RoleCommand {
 					Reminders.restoreAll(message.getChannel());
 				}
 			}
-		}
-	}
-	
-	public static enum Global {
-		DELETE_USER_MESSAGE("-d", "--delete"), 
-		DISPLAY_HELP_MESSAGE("--help", "-h"),
-		PRIVATE_MESSAGE_REPLY("-rep", "--reply"),
-		SHOW_EXECUTION_TIME("--timed"),
-		HIDE_ALL_OUTPUT("-s", "--silent"),
-		DELAYED("--after"),
-		SCHEDULED("--every");
-		
-		public String[] params;
-		
-		Global(String...args) {
-			this.params = args;
 		}
 	}
 }
