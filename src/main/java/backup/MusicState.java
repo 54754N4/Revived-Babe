@@ -1,11 +1,15 @@
 package backup;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.OptionalInt;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +23,7 @@ import audio.TrackScheduler;
 import audio.track.handlers.TrackLoadHandler;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
+import commands.model.ThreadSleep;
 import database.DBManager;
 import database.Query;
 import database.TableManager;
@@ -88,7 +93,7 @@ public abstract class MusicState {
 		if (guild == null) 
 			return;
 		bot.setupAudio(guildID);
-		restorePlaylist(table, bot, guildID);
+		restorePlaylist(table, bot, guild);
 		restoreVoiceChannel(table, bot);
 		restoreVolumeAndPause(table, bot, guild);
 		restoreSongAndPosition(table, bot, guild);
@@ -108,19 +113,26 @@ public abstract class MusicState {
 		}
 	}
 	
-	private static void restorePlaylist(TableManager table, MusicBot bot, long guild) {
+	private static int restorePlaylist(TableManager table, MusicBot bot, Guild guild) {
 		Map<String, String> urls;
 		try {
 			urls = table.selectAll();
 			if (urls.size() == 0)
-				return;
+				return 0;
 		} catch (SQLException e) {
 			logger.error("Could not retrieve playlist from backup", e);
-			return;
+			return 0;
 		}
 		final TrackLoadHandler handler = new TrackLoadHandler(bot.getScheduler(guild));
 		final AudioPlayerManager playerManager = bot.getPlayerManager(guild);
-		urls.forEach((name, value) -> playerManager.loadItemOrdered(playerManager, value, handler));
+		List<Future<Void>> loaders = new ArrayList<>();
+		urls.forEach((name, value) -> loaders.add(playerManager.loadItemOrdered(playerManager, value, handler)));
+		try {
+			ThreadSleep.waitFor(loaders).call();
+		} catch (Exception e) {
+			logger.error("Could not wait for tracks", e);
+		}
+		return urls.size();
 	}
 	
 	/* Backup/restore: Song index + position */
@@ -130,7 +142,7 @@ public abstract class MusicState {
 		if (current == CircularDeque.UNINITIALISED)
 			return;
 		try {
-			table.insertOrUpdate(CURRENT, current);
+			table.insertOrUpdate(CURRENT, queue.get(current).getInfo().title);
 			table.insertOrUpdate(POSITION, queue.get(current).getPosition());
 		} catch (SQLException e) {
 			logger.error("Could not backup current track index + position", e);
@@ -139,13 +151,15 @@ public abstract class MusicState {
 	
 	private static void restoreSongAndPosition(TableManager table, MusicBot bot, Guild guild) {
 		try {
-			int current = table.retrieveInt(CURRENT, -1);
-			if (current == -1) 
+			String current = table.retrieve(CURRENT, "");
+			if (current.equals("")) 
 				return;
-			bot.play(guild, current);
-			bot.getScheduler(guild)
-				.getQueue()
-				.setCurrent(current);
+			CircularDeque queue = bot.getScheduler(guild).getQueue();
+			OptionalInt index = IntStream.range(0, queue.size())
+				.filter(i -> queue.get(i).getInfo().title.equals(current))
+				.findFirst();
+			if (index.isPresent())
+				bot.play(guild, index.getAsInt());
 		} catch (NumberFormatException | SQLException e) {
 			logger.error("Could not retrieve last song index", e);
 			return;
@@ -154,9 +168,8 @@ public abstract class MusicState {
 			long position = table.retrieveLong(POSITION, -1);
 			if (position == -1)
 				return;
-			bot.waitForTrack(guild)
-				.seekTo(guild,  position);
-		} catch (NumberFormatException | SQLException | InterruptedException e) {
+			bot.seekTo(guild,  position);
+		} catch (Exception e) {
 			logger.error("Could not retrieve last song's position", e);
 		}
 	}

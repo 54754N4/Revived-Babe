@@ -22,6 +22,7 @@ import audio.track.handlers.SpeakTrackHandler;
 import audio.track.handlers.TrackLoadHandler;
 import audio.track.handlers.TrackLoadHandler.StatusUpdater;
 import backup.MusicState;
+import commands.model.ThreadSleep;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
@@ -39,8 +40,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
  * music/voice handling from commands.
  */
 public abstract class MusicBot extends UserBot {
-	private static final long DEFAULT_TIMEOUT = 5*1000, 
-			DEFAULT_CHECK_RATE = 1000;
+	private static final long DEFAULT_TIMEOUT = 5*1000;
 	private final Map<Long, MusicController> controllers;
 	
 	public MusicBot(Bot bot) {
@@ -198,16 +198,25 @@ public abstract class MusicBot extends UserBot {
 	
 	/* Music methods */
 	
-	public MusicBot waitForTrack(Guild guild) throws InterruptedException {
-		return waitForTrack(guild, DEFAULT_TIMEOUT, DEFAULT_CHECK_RATE);
+	public MusicBot waitForTrack(Guild guild) throws Exception {
+		return waitForTrack(guild, DEFAULT_TIMEOUT);
 	}
 	
-	public MusicBot waitForTrack(Guild guild, long timeout, long checkRate) throws InterruptedException {
-		AudioPlayer player = getPlayer(guild);
-		long duration = System.currentTimeMillis();
-		while (player.getPlayingTrack() == null 
-				&& System.currentTimeMillis() - duration < timeout) 
-			delay(checkRate);
+	public MusicBot waitForTrack(Guild guild, long timeout) throws Exception {
+		final AudioPlayer player = getPlayer(guild);
+		ThreadSleep.nonBlocking(timeout, () -> player.getPlayingTrack() == null).call();
+		return this;
+	}
+	
+	public MusicBot waitForTracks(Guild guild, long timeout, int tracks) throws Exception {
+		final CircularDeque queue = getPlaylist(guild);
+		ThreadSleep.nonBlocking(timeout, () -> queue.size() != tracks).call();
+		return this;
+	}
+
+	public MusicBot waitForAllTracks(Guild guild, int tracks) throws Exception {
+		final CircularDeque queue = getPlaylist(guild);
+		ThreadSleep.blocking(() -> queue.size() != tracks).call();
 		return this;
 	}
 	
