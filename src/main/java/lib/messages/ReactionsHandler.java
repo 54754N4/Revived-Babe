@@ -13,13 +13,13 @@ import lib.messages.ReactionsDispatcher.NativeEmojiConsumer;
 import lib.messages.ReactionsDispatcher.NativeExtendedEmojiConsumer;
 import lib.messages.ReactionsDispatcher.ReactionConsumer;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 public class ReactionsHandler implements Consumer<Message> {
 	public static final int UNICODE_CLOSE = 0x274C;
 	private int count;
 	private final Map<Integer, Object> keys;
-	private final List<Consumer<MessageReaction>> consumers;
+	private final List<Consumer<MessageReactionAddEvent>> consumers;
 	private final List<Consumer<Message>> onCloseConsumers;
 	private final List<ReactionConsumer> handlers;
 	private final UserBot bot;
@@ -38,13 +38,13 @@ public class ReactionsHandler implements Consumer<Message> {
 		return this;
 	}
 	
-	public ReactionsHandler handle(String name, Consumer<MessageReaction> consumer) {
+	public ReactionsHandler handle(String name, Consumer<MessageReactionAddEvent> consumer) {
 		keys.put(count++, name);
 		consumers.add(consumer);
 		return this;
 	}
 	
-	public ReactionsHandler handle(int unicode, Consumer<MessageReaction> consumer) {
+	public ReactionsHandler handle(int unicode, Consumer<MessageReactionAddEvent> consumer) {
 		keys.put(count++, unicode);
 		consumers.add(consumer);
 		return this;

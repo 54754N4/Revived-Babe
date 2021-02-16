@@ -222,14 +222,14 @@ public abstract class MusicBot extends UserBot {
 	
 	/* Joining & leaving */
 	
-	public MusicBot connectTo(VoiceChannel channel) {
+	public MusicBot connect(VoiceChannel channel) {
 		setupAudio(channel.getGuild())
 			.getManager(channel.getGuild())
 			.openAudioConnection(channel);
 		return this;
 	}
 	
-	public MusicBot leaveVoice(Guild guild) {
+	public MusicBot disconnect(Guild guild) {
 		setupAudio(guild)
 			.getManager(guild)
 			.closeAudioConnection();

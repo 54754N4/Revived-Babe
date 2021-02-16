@@ -28,7 +28,7 @@ public class Join extends DiscordCommand {
 			println("You have to be in a voice channel so i can join =v..");
 			return;
 		}
-		getMusicBot().connectTo(channel);
+		getMusicBot().connect(channel);
 		println("Joined voice channel `%s`.", channel.getName());
 	}
 

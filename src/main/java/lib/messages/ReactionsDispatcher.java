@@ -11,7 +11,6 @@ import lib.Emoji;
 import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -32,7 +31,7 @@ public class ReactionsDispatcher extends ListenerAdapter {
     		event.getReaction()
     			.removeReaction(event.getMember().getUser())
     			.queue(Consumers::ignore, Consumers::ignore);		// consume handled reaction
-    		handlers.forEach(handler -> handler.consumer.accept(event.getReaction())); 
+    		handlers.forEach(handler -> handler.consumer.accept(event)); 
     	}
     }
 	
@@ -44,11 +43,11 @@ public class ReactionsDispatcher extends ListenerAdapter {
 		consumers.remove(consumer);
 	}
 	
-	public void subscribe(Message message, String reactionName, Consumer<MessageReaction> consumer) {
+	public void subscribe(Message message, String reactionName, Consumer<MessageReactionAddEvent> consumer) {
 		consumers.add(new CustomEmojiConsumer(message, reactionName, consumer));
 	}
 	
-	public void subscribe(Message message, Integer unicode, Consumer<MessageReaction> consumer) {
+	public void subscribe(Message message, Integer unicode, Consumer<MessageReactionAddEvent> consumer) {
 		consumers.add(new NativeEmojiConsumer(message, unicode, consumer));
 	}
 	
@@ -70,7 +69,7 @@ public class ReactionsDispatcher extends ListenerAdapter {
 	}
 	
 	public static final class CustomEmojiConsumer extends ReactionConsumer {		
-		public CustomEmojiConsumer(Message msg, String reactionName, Consumer<MessageReaction> consumer) {
+		public CustomEmojiConsumer(Message msg, String reactionName, Consumer<MessageReactionAddEvent> consumer) {
 			super(msg.getIdLong(), reactionName, msg.getChannel(), consumer);
 		}
 	}
@@ -78,14 +77,14 @@ public class ReactionsDispatcher extends ListenerAdapter {
 	public static final class NativeEmojiConsumer extends ReactionConsumer {
 		public final int unicode;
 		
-		public NativeEmojiConsumer(Message msg, int unicode, Consumer<MessageReaction> consumer) {
+		public NativeEmojiConsumer(Message msg, int unicode, Consumer<MessageReactionAddEvent> consumer) {
 			super(msg.getIdLong(), Emoji.fromUnicode(unicode), msg.getChannel(), consumer);
 			this.unicode = unicode;
 		}
 	}
 	
 	public static final class NativeExtendedEmojiConsumer extends ReactionConsumer {
-		public NativeExtendedEmojiConsumer(Message msg, String extended, Consumer<MessageReaction> consumer) {
+		public NativeExtendedEmojiConsumer(Message msg, String extended, Consumer<MessageReactionAddEvent> consumer) {
 			super(msg.getIdLong(), extended, msg.getChannel(), consumer);
 		}
 	}
@@ -94,9 +93,9 @@ public class ReactionsDispatcher extends ListenerAdapter {
 		public long id;				// message id
 		public String name;
 		public MessageChannel channel;
-		public Consumer<MessageReaction> consumer; 
+		public Consumer<MessageReactionAddEvent> consumer; 
 		
-		protected ReactionConsumer(long id, String name, MessageChannel channel, Consumer<MessageReaction> consumer) {
+		protected ReactionConsumer(long id, String name, MessageChannel channel, Consumer<MessageReactionAddEvent> consumer) {
 			this.id = id;
 			this.name = name;
 			this.channel = channel;

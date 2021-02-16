@@ -17,6 +17,7 @@ import commands.model.Mentions;
 import commands.model.Params;
 import commands.model.ThreadsManager;
 import commands.model.TypingWatchdog;
+import lib.Consumers;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -91,7 +92,8 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 	}
 	
 	public void actTyping() {
-		channel.sendTyping().queue();
+		channel.sendTyping()
+			.queue(Consumers::ignore, Consumers::ignore);
 	}
 	
 	protected void clear() {

@@ -4,14 +4,17 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
 import audio.TrackScheduler;
+import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
 import lib.messages.PagedTracksHandler;
 import lib.messages.ReactionsHandler;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 public class ListTracks extends DiscordCommand {
 	
@@ -48,27 +51,47 @@ public class ListTracks extends DiscordCommand {
 	}
 	
 	private void createPlayer() {
-		final CircularDeque queue = getMusicBot().getPlaylist(guild);
-		final TrackScheduler scheduler = getMusicBot().getScheduler(guild);
+		final MusicBot bot = getMusicBot();	// give lambdas already casted
+		final TrackScheduler scheduler = bot.getScheduler(guild);
 		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler, true)
-				.handle(0x23EF, reaction -> scheduler.togglePause())
-				.handle(0x23EE, reaction -> scheduler.previousTrack())
-				.handle(0x23ED, reaction -> scheduler.nextTrack())
-				.handle(0x1F502, reaction -> scheduler.toggleRepeating())
-				.handle(0x1F501, reaction -> scheduler.toggleLooping())
-				.handle(0x1F500, reaction -> scheduler.shuffle())
-				.handle(0x1F932, reaction -> printlnIndependently(queue.get(queue.getCurrent()).getInfo().uri))
-				.handle(0x1F508, reaction -> scheduler.decreaseVolume())
-				.handle(0x1F50A, reaction -> scheduler.increaseVolume())
-				.handle(0x2B07, this::moveBottom);
+				.handle(0x23EF, event -> scheduler.togglePause())
+				.handle(0x23EE, event -> scheduler.previousTrack())
+				.handle(0x23ED, event -> scheduler.nextTrack())
+				.handle(0x1F502, event -> scheduler.toggleRepeating())
+				.handle(0x1F501, event -> scheduler.toggleLooping())
+				.handle(0x1F500, event -> scheduler.shuffle())
+				.handle(0x1F517, this::currentUrl)
+				.handle(0x1F508, event -> scheduler.decreaseVolume())
+				.handle(0x1F50A, event -> scheduler.increaseVolume())
+				.handle(0x2B07, this::moveBottom)
+				.handle(0x23FA, this::joinUser)
+				.handle(0x23CF, event -> bot.disconnect(guild));
 		channel.sendMessage("Loading..")
 			.queue(handler);
 	}
 	
-	private void moveBottom(MessageReaction reaction) {
-		reaction.getChannel()
-			.deleteMessageById(reaction.getMessageId())
+	private void currentUrl(MessageReactionAddEvent event) {
+		CircularDeque queue = getMusicBot().getPlaylist(guild);
+		printlnIndependently(queue.get(queue.getCurrent()).getInfo().uri);
+	}
+	
+	private void moveBottom(MessageReactionAddEvent event) {
+		event.getChannel()
+			.deleteMessageById(event.getMessageId())
 			.queue(message -> createPlayer());
+	}
+	
+	private void joinUser(MessageReactionAddEvent reaction) {
+		Member member = reaction.getMember();
+		if (member == null) {
+			println("Could not retrieve member from reaction event.");
+			return;
+		}
+		GuildVoiceState state = member.getVoiceState();
+		if (!state.inVoiceChannel()) 
+			println("%s You should be in a voice channel before you ask me to join =v.");
+		else
+			getMusicBot().connect(state.getChannel());
 	}
 	
 	private String printCurrent() {

@@ -199,7 +199,7 @@ public abstract class MusicState {
 			VoiceChannel channel = bot.getJDA().getVoiceChannelById(channelID);
 			if (channel == null)
 				return;
-			bot.connectTo(channel);
+			bot.connect(channel);
 		} catch (NumberFormatException | SQLException e) {
 			logger.error("Could not retrieve last channel ID", e);
 		}

@@ -57,7 +57,7 @@ public class Speak extends DiscordCommand {
 			println("I have to be in a voice channel to talk.. So you also have to be in one so I can join you lol..");
 			return;
 		} else if (!connected) 
-			bot.connectTo(message.getMember().getVoiceState().getChannel());
+			bot.connect(message.getMember().getVoiceState().getChannel());
 		// Generate WAV from API
 		try (ResponseHandler handler = restRequest(API_FORMAT, API_KEY, URLEncoder.encode(input, "UTF-8"), 
 				language, DEFAULT_FILE_FORMAT, rate, voice)) {

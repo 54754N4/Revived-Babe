@@ -11,7 +11,7 @@ import bot.hierarchy.UserBot;
 import lib.Consumers;
 import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 public class PagedHandler<T> extends ReactionsHandler {
 	public static final Logger logger = LoggerFactory.getLogger(PagedHandler.class);
@@ -74,16 +74,16 @@ public class PagedHandler<T> extends ReactionsHandler {
 		// do something with element
 	}
 	
-	protected void onUpdate(MessageReaction reaction) {
+	protected void onUpdate(MessageReactionAddEvent reaction) {
 		print();
 	}
 	
-	private void onNext(MessageReaction reaction) {
+	private void onNext(MessageReactionAddEvent reaction) {
 		if (page + 1 > (data.size()-1)/count) return;
 		page++;
 	}
 	
-	private void onPrev(MessageReaction reaction) {
+	private void onPrev(MessageReactionAddEvent reaction) {
 		if (page - 1 < 0) return;
 		page--;
 	}
@@ -126,18 +126,18 @@ public class PagedHandler<T> extends ReactionsHandler {
 	// Compose all consumers so we update text after every action 
 	
 	@Override
-	public ReactionsHandler handle(String name, Consumer<MessageReaction> consumer) {
+	public ReactionsHandler handle(String name, Consumer<MessageReactionAddEvent> consumer) {
 		super.handle(name, wrap(consumer));
 		return this;
 	}
 	
 	@Override
-	public ReactionsHandler handle(int unicode, Consumer<MessageReaction> consumer) {
+	public ReactionsHandler handle(int unicode, Consumer<MessageReactionAddEvent> consumer) {
 		super.handle(unicode, wrap(consumer));
 		return this;
 	}
 	
-	private Consumer<MessageReaction> wrap(Consumer<MessageReaction> consumer) {
+	private Consumer<MessageReactionAddEvent> wrap(Consumer<MessageReactionAddEvent> consumer) {
 		return consumer.andThen(this::onUpdate);
 	}
 }

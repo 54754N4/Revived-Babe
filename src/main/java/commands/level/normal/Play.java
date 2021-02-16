@@ -43,7 +43,7 @@ public class Play extends DiscordCommand {
 	private void play(String input) throws NumberFormatException, InterruptedException, ExecutionException {
 		MusicBot bot = getMusicBot();
 		if (!bot.isConnected(guild))
-			bot.connectTo(message.getMember().getVoiceState().getChannel());
+			bot.connect(message.getMember().getVoiceState().getChannel());
 		if (StringLib.isInteger(input)) {
 			int index = Integer.parseInt(input),
 				max = bot.getScheduler(guild).getQueue().size();

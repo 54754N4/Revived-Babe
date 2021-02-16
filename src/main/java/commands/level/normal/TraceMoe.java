@@ -16,7 +16,7 @@ import lib.messages.ValidatingEmbedBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
-import net.dv8tion.jda.api.entities.MessageReaction;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 public class TraceMoe extends DiscordCommand {
 	private static final String API_FORMAT = "https://trace.moe/api/search%s",
@@ -85,7 +85,7 @@ public class TraceMoe extends DiscordCommand {
 			eb.addField("MyAnimeList ID", doc.mal_id);
 			eb.addField("Filename", doc.filename);
 			eb.addField("Token Thumb", doc.tokenthumb);
-			builders.add(new Package(eb, action -> 
+			builders.add(new Package(eb, event -> 
 				printlnIndependently(
 						PREVIEW_FORMAT, 
 						""+doc.anilist_id, 
@@ -98,9 +98,9 @@ public class TraceMoe extends DiscordCommand {
 	
 	private class Package {
 		public final EmbedBuilder builder;
-		public final Consumer<MessageReaction> consumer;
+		public final Consumer<MessageReactionAddEvent> consumer;
 		
-		public Package(EmbedBuilder builder, Consumer<MessageReaction> consumer) {
+		public Package(EmbedBuilder builder, Consumer<MessageReactionAddEvent> consumer) {
 			this.builder = builder;
 			this.consumer = consumer;
 		}
