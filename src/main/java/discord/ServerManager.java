@@ -11,8 +11,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import lib.Consumers;
 import lib.Pair;
+import lib.StringLib;
 import lib.messages.ValidatingEmbedBuilder;
 import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,11 +26,9 @@ import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
-import net.dv8tion.jda.api.managers.GuildManager;
 
-public class ServerManager {
+public class ServerManager extends ServerRestAction {
 	private final Guild guild;
-	private final GuildManager manager;
 	private final ServerSetting<Region> regions;
 	private final ServerSetting<Timeout> timeouts;
 	private final ServerSetting<NotificationLevel> notificationLevels;
@@ -39,36 +37,27 @@ public class ServerManager {
 	private final ServerSetting<VerificationLevel> verificationLevels;
 	
 	private ServerManager(final Guild guild) {
+		super(guild.getManager());
 		this.guild = guild;
-		manager = guild.getManager();
-		regions = new ServerSetting<>(Region.class, manager::setRegion);
-		timeouts = new ServerSetting<>(Timeout.class, manager::setAfkTimeout);
-		mfaLevels = new ServerSetting<>(MFALevel.class, manager::setRequiredMFALevel);
-		verificationLevels = new ServerSetting<>(VerificationLevel.class, manager::setVerificationLevel);
-		notificationLevels = new ServerSetting<>(NotificationLevel.class, manager::setDefaultNotificationLevel);
-		explicitContentLevels = new ServerSetting<>(ExplicitContentLevel.class, manager::setExplicitContentLevel);
+		regions = new ServerSetting<>(Region.class, manager::setRegion, manager, Region::isVip);
+		timeouts = new ServerSetting<>(Timeout.class, manager::setAfkTimeout, manager);
+		mfaLevels = new ServerSetting<>(MFALevel.class, manager::setRequiredMFALevel, manager);
+		verificationLevels = new ServerSetting<>(VerificationLevel.class, manager::setVerificationLevel, manager);
+		notificationLevels = new ServerSetting<>(NotificationLevel.class, manager::setDefaultNotificationLevel, manager);
+		explicitContentLevels = new ServerSetting<>(ExplicitContentLevel.class, manager::setExplicitContentLevel, manager);
 	}
 	
 	public static ServerManager manage(Guild guild) {
 		return new ServerManager(guild);
 	}
 	
-	public void applyChanges() {
-		applyChanges(Consumers::ignore, Consumers::ignore);
+	public ServerManager setName(String name) {
+		manager.setName(name);
+		return this;
 	}
 	
-	public void applyChanges(@Nullable Consumer<? super Void> onSuccess) {
-		applyChanges(onSuccess, Consumers::ignore);
-	}
-	
-	public void applyChanges(
-			@Nullable Consumer<? super Void> onSuccess, 
-			@Nullable Consumer<? super Throwable> onFailure) {
-		manager.queue(onSuccess, onFailure);
-	}
-	
-	public ServerManager setAfkChannel(@Nonnull VoiceChannel channel) {
-		manager.setAfkChannel(channel);
+	public ServerManager setDescription(String description) {
+		manager.setDescription(description);
 		return this;
 	}
 	
@@ -76,19 +65,9 @@ public class ServerManager {
 		manager.setBanner(banner);
 		return this;
 	}
-
-	public ServerManager setDescription(String description) {
-		manager.setDescription(description);
-		return this;
-	}
 	
 	public ServerManager setIcon(Icon icon) {
 		manager.setIcon(icon);
-		return this;
-	}
-	
-	public ServerManager setName(String name) {
-		manager.setName(name);
 		return this;
 	}
 	
@@ -101,19 +80,15 @@ public class ServerManager {
 		manager.setSystemChannel(channel);
 		return this;
 	}
+	
+	public ServerManager setAfkChannel(@Nonnull VoiceChannel channel) {
+		manager.setAfkChannel(channel);
+		return this;
+	}
 
 	public ServerManager setVanityCode(String code) {
 		manager.setVanityCode(code);
 		return this;
-	}
-	
-	public ServerManager retrieveInvites(@Nullable Consumer<List<Invite>> handler) {
-		guild.retrieveInvites().queue(handler);
-		return this;
-	}
-	
-	public InvitesParser parse(Invite invite) {
-		return new InvitesParser(invite);
 	}
 
 	public ServerSetting<Timeout> timeouts() {
@@ -140,23 +115,62 @@ public class ServerManager {
 		return verificationLevels;
 	}
 	
-	public class InvitesParser {
-		private final String[] FIELD_NAMES = { "Code", "Max Age", "Uses/Max", "By", "Channel", "URL", "Type", "Temp", "Creation" };
-		
+	public InvitesParser parseInvite(Invite invite) {
+		return new InvitesParser(invite);
+	}
+	
+	public ServerManager retrieveInvites(@Nullable Consumer<List<Invite>> handler) {
+		guild.retrieveInvites().queue(handler);
+		return this;
+	}
+	
+	public static class InvitesParser {
+		private final String[] FIELD_NAMES = { "Code", "Max Age", "Uses/Max", "By", "Channel", "URL", "Type", "Temp", "Creation" },
+				fields;			// actual values
 		private Invite invite;
 		
 		private InvitesParser(Invite invite) {
 			this.invite = invite;
+			fields = getFields(invite);
 		}
+		
+		/* Convenience methods */
+		
+		public static String[] getFields(Invite invite) {
+			return new String[] {
+				invite.getCode(), 
+				Integer.toString(invite.getMaxAge()), 
+				invite.getUses()+"/"+invite.getMaxUses(),
+				invite.getInviter().getName(),
+				invite.getChannel().getName(),
+				invite.getUrl(),
+				invite.getType().toString(),
+				invite.isTemporary() ? "Temp" : "Permanent",
+				invite.getTimeCreated().toString()
+			};
+		}
+		
+		public Invite getInvite() {
+			return invite;
+		}
+		
+		public boolean matches(String input) {
+			return StringLib.matchesSimplified(input, fields);
+		}
+		
+		public boolean isTemporary() {
+			return invite.isTemporary();
+		}
+		
+		/* Iterator + parse methods */
 		
 		public <I, F> F forEachData(
 				Supplier<? extends I> initialiser, 
 				BiFunction<Pair, I, ? extends I> accumulator,
 				Function<I, ? extends F> finaliser) {
 			I builder = initialiser.get();
-			String[] fields = getFields();
 			Pair entry = new Pair();		// reuse same instance
-			for (int i=0; i<FIELD_NAMES.length; i++) {
+			for (int i=0; i<fields.length; i++) {
 				entry.key = FIELD_NAMES[i];
 				entry.value = fields[i];
 				builder = accumulator.apply(entry, builder);
@@ -190,22 +204,6 @@ public class ServerManager {
 				(entry, sb) -> sb.append(String.format(entry.key+": %s%n", entry.value)),
 				StringBuilder::toString
 			);
-		}
-		
-		/* Convenience methods */
-		
-		public String[] getFields() {
-			return new String[] {
-					invite.getCode(), 
-					""+invite.getMaxAge(), 
-					invite.getUses()+"/"+invite.getMaxUses(),
-					invite.getInviter().getName(),
-					invite.getChannel().getName(),
-					invite.getUrl(),
-					invite.getType().toString(),
-					invite.isTemporary() ? "Temp" : "Permanent",
-					invite.getTimeCreated().toString()
-			};
 		}
 	}
 }

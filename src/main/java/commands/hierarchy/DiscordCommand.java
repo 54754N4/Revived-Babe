@@ -30,10 +30,10 @@ import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
 
 public abstract class DiscordCommand extends ListenerCommand {
+	private static final Map<UserBot, Set<Long>> GUILDS_VISITED = new ConcurrentHashMap<>();	// keep track per bot
 	private static final String[] SCHEDULING_STOP_VERBS = { "abort", "stop", "kill", "shutdown" };
-	protected static final Gson gson = new Gson();
 	protected static final Random rand = new Random();
-	private long time;			// execution time
+	protected static final Gson gson = new Gson();
 	
 	public static enum Global {
 		DELETE_USER_MESSAGE("-d", "--delete"), 
@@ -51,10 +51,8 @@ public abstract class DiscordCommand extends ListenerCommand {
 		}
 	}
 	
-	public DiscordCommand(UserBot bot, Message message, String...names) {
+	public DiscordCommand(UserBot bot, Message message, String[] names) {
 		super(bot, message, names);
-		time = 0;
-		GuildStateInitializer.setup(bot, message);
 	}
 	
 	public boolean fromGuild() {
@@ -168,7 +166,7 @@ public abstract class DiscordCommand extends ListenerCommand {
 				print("Error during execution: %s%n", e.getMessage());
 				kill();	// stop command execution
 			} finally {
-				time = System.currentTimeMillis() - initial;
+				executionTime = System.currentTimeMillis() - initial;
 				finalise();	// finalise and send output
 				clear();	// reset stdout
 			}
@@ -186,13 +184,28 @@ public abstract class DiscordCommand extends ListenerCommand {
 		removeListener();	// stop listening to incoming messages
 	}
 	
-	/* Thread execution entry-point */
+	/* Thread execution methods */
+	
+	@Override
+	public Command start(String command) {
+		if (bot != null) {	// since commands can be instantiated using dummy data
+			long id = message.getGuild().getIdLong();
+			GUILDS_VISITED.putIfAbsent(bot, new HashSet<>());
+			Set<Long> visited = GUILDS_VISITED.get(bot);
+			if (!visited.contains(id)) { // only restore backups if not visited
+				visited.add(id);
+				MusicState.restore(bot);
+				Reminders.restoreAll(message.getChannel());
+			}
+		}
+		return super.start(command);
+	}
 	
 	@Override
 	public Void call() throws Exception {
 		if (hasArgs(Global.DELETE_USER_MESSAGE.params)) 
 			removeUserMessage();
-		time = System.currentTimeMillis();	// execution start time
+		executionTime = System.currentTimeMillis();	// start time
 		if (!callerAllowed()) {
 			println("Only the following roles are allowed : %s", Arrays.toString(getAllowedRoles()));
 			finalise();
@@ -223,7 +236,7 @@ public abstract class DiscordCommand extends ListenerCommand {
 			println("Error during execution: `%s`", e.getMessage());
 			getLogger().error(this+" thread generated "+e+" : "+e.getMessage(), e);
 		} finally {
-			time = System.currentTimeMillis() - time;	// execution end time
+			executionTime = System.currentTimeMillis() - executionTime;	// end time
 			finalise();
 		}
 		return null;
@@ -233,7 +246,7 @@ public abstract class DiscordCommand extends ListenerCommand {
 		if (!keepAlive.get())
 			finished.set(true);
 		if (hasArgs(Global.SHOW_EXECUTION_TIME.params))
-			println(String.format("Execution time: %d ms", time));
+			println(String.format("Execution time: %d ms", executionTime));
 		if (hasArgs(Global.HIDE_ALL_OUTPUT.params)) 
 			return;
 		String[] tokens = PrintBooster.splitForDiscord(stdout.toString())
@@ -246,22 +259,5 @@ public abstract class DiscordCommand extends ListenerCommand {
 	@FunctionalInterface
 	public static interface Executable {
 		void invoke() throws Exception;
-	}
-	
-	public static class GuildStateInitializer {
-		private static final Map<UserBot, Set<Long>> GUILDS_VISITED = new ConcurrentHashMap<>();	// keep track per bot
-		
-		public static void setup(UserBot bot, Message message) {
-			if (bot != null) {	// since commands can be instantiated using dummy data
-				long id = message.getGuild().getIdLong();
-				GUILDS_VISITED.putIfAbsent(bot, new HashSet<>());
-				Set<Long> visited = GUILDS_VISITED.get(bot);
-				if (!visited.contains(id)) {
-					visited.add(id);
-					MusicState.restore(bot);
-					Reminders.restoreAll(message.getChannel());
-				}
-			}
-		}
 	}
 }

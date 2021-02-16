@@ -40,6 +40,7 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 	protected Params params;				// named + unnamed parameters
 	protected Mentions mentioned;			// mentioned users/channels
 	protected Future<?> thread;			// future of current thread
+	protected long executionTime;
 	
 	public Command(UserBot bot, Message message, String...names) {
 		this.bot = bot;
