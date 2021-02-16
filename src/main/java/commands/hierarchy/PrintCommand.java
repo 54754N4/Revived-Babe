@@ -86,6 +86,15 @@ public abstract class PrintCommand extends Command {
 		for (T item : list) print(markdown(i+++".\t"+item.toString()));
 	}
 	
+	protected <T> void printItems(T[] list) {
+		for (T item : list) print(markdown(item.toString()));
+	}
+	
+	protected <T> void printItemsIndexed(T[] list) {
+		int i = 0;
+		for (T item : list) print(markdown(i+++".\t"+item.toString()));
+	}
+	
 	protected <K, V> void printMap(Map<K, V> map) {
 		for (Entry<K, V> entry : map.entrySet()) 
 			print(markdown(entry.getKey()+" = "+entry.getValue()));
