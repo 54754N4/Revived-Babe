@@ -3,6 +3,7 @@ package commands.level.normal.role;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -19,6 +20,7 @@ import discord.ServerSetting;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
@@ -115,9 +117,11 @@ public class Server extends DiscordCommand {
 			println(guild.getName());
 		else if (input.equals("")) 
 			giveMe("name");
-		else 
+		else {
 			manager.setName(input)
 				.applyChanges();
+			println("Set name to : `%s`", input);
+		}
 	}
 	
 	private void handleDescription(String input) {
@@ -125,9 +129,11 @@ public class Server extends DiscordCommand {
 			println(guild.getDescription());
 		else if (input.equals(""))
 			giveMe("description");
-		else
+		else {
 			manager.setDescription(input)
 				.applyChanges();
+			println("Set description to : `%s`", input);
+		}
 	}
 	
 	private void handleImageInput(
@@ -146,9 +152,11 @@ public class Server extends DiscordCommand {
 						.downloadToFile(DOWNLOAD_PATH)
 						.get()))
 				.applyChanges();
-		else
+		else {
 			applier.apply(Icon.from(new URL(input).openStream()))
 				.applyChanges();
+			println("Set new icon.", input);
+		}
 	}
 	
 	private void handleSystemChannel(String input) {
@@ -156,9 +164,11 @@ public class Server extends DiscordCommand {
 			println(guild.getSystemChannel().getAsMention());
 		else if (mentioned.channels.size() == 0)
 			giveMe("new system channel");
-		else 
+		else {
 			manager.setSystemChannel(mentioned.channels.iterator().next())
 				.applyChanges();
+			println("Set system channel to : %s", mentioned.channels.iterator().next().getAsMention());
+		}
 	}
 
 	private void handleAFK(String input) {
@@ -166,12 +176,14 @@ public class Server extends DiscordCommand {
 			println(inline(guild.getAfkChannel().getName()));
 		else if (input.equals(""))
 			giveMe("new AFK channel");
-		else 
-			manager.setAfkChannel(
-					message.getJDA()
-						.getVoiceChannelsByName(input, true)
-						.get(0))
+		else {
+			VoiceChannel channel = message.getJDA()
+					.getVoiceChannelsByName(input, true)
+					.get(0);
+			manager.setAfkChannel(channel)
 				.applyChanges();
+			println("Set voice channel to : `%s`", channel.getName());
+		}
 	}
 	
 	private void handleVanityCode(String input) {
@@ -179,9 +191,11 @@ public class Server extends DiscordCommand {
 			println("Code: `%s`%nURL: %s", guild.getVanityCode(), guild.getVanityUrl());
 		else if (input.equals(""))
 			giveMe("new vanity code");
-		else 
+		else {
 			manager.setVanityCode(input)
 				.applyChanges();
+			println("Set vanity code to : `%s`", input);
+		}
 	}
 	
 	private <T extends Enum<T>> void handleServerEnum(String input, Supplier<ServerSetting<T>> settingsSupplier, Supplier<T> currentSupplier) {
@@ -190,10 +204,16 @@ public class Server extends DiscordCommand {
 			println(currentSupplier.get().toString());
 		else if (input.equals(""))
 			printItemsIndexed(elements);
-		else
+		else {
 			settingsSupplier.get()
 				.select(input)
 				.applyChanges();
+			Optional<T> element = settingsSupplier.get().find(input);
+			if (element.isEmpty()) 
+				println("No elements matched");
+			else 
+				println("Updated to : %s", element.get());
+		}
 	}
 	
 	private void onRetrieveInvites(List<Invite> invites) {

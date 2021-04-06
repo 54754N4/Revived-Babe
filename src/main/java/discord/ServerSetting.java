@@ -37,13 +37,18 @@ public class ServerSetting<T extends Enum<T>>  extends ServerRestAction {
 		if (StringLib.isInteger(match)) 
 			set(elements.get(Integer.parseInt(match)));
 		else {
-			Optional<T> element = elements.stream()
-					.filter(t -> StringLib.matchSimplified(accessor.apply(t), match))
-					.findFirst();
+			Optional<T> element = find(match);
 			if (element.isPresent()) 
 				set(element.get());
 		}
 		return this;
+	}
+	
+	public Optional<T> find(String match) {
+		return retrieve()
+			.stream()
+			.filter(t -> StringLib.matchSimplified(accessor.apply(t), match))
+			.findFirst();
 	}
 	
 	public T set(T element) {

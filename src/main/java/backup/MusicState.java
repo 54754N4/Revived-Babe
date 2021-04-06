@@ -23,7 +23,6 @@ import audio.TrackScheduler;
 import audio.track.handlers.TrackLoadHandler;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
-import commands.model.ThreadSleep;
 import database.DBManager;
 import database.Query;
 import database.TableManager;
@@ -127,11 +126,6 @@ public abstract class MusicState {
 		final AudioPlayerManager playerManager = bot.getPlayerManager(guild);
 		List<Future<Void>> loaders = new ArrayList<>();
 		urls.forEach((name, value) -> loaders.add(playerManager.loadItemOrdered(playerManager, value, handler)));
-		try {
-			ThreadSleep.waitFor(loaders).call();
-		} catch (Exception e) {
-			logger.error("Could not wait for tracks", e);
-		}
 		return urls.size();
 	}
 	
