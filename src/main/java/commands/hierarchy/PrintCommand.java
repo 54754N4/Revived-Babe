@@ -39,8 +39,8 @@ public abstract class PrintCommand extends Command {
 			.toString();
 	}
 	
-	private String returnOrFormat(String format, Object... args) {
-		return (args.length == 0) ? format : String.format(format, args);
+	private String format(String format, Object... args) {
+		return String.format(format, args);
 	}
 	
 	public void println() {
@@ -48,7 +48,7 @@ public abstract class PrintCommand extends Command {
 	}
 	
 	public void print(String format, Object... args) { 
-		stdout.append(returnOrFormat(format, args));
+		stdout.append(format(format, args));
 	}
 	
 	public void println(String format, Object... args) {
@@ -61,7 +61,7 @@ public abstract class PrintCommand extends Command {
 	
 	public void printIndependently(String format, Object... args) {
 		if (format.equals("")) return;
-		channel.sendMessage(returnOrFormat(format, args))
+		channel.sendMessage(format(format, args))
 			.queue();
 	}
 	
