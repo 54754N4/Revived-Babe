@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import lib.Pair;
 import lib.StringLib;
 import lib.messages.ValidatingEmbedBuilder;
-import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Guild.ExplicitContentLevel;
 import net.dv8tion.jda.api.entities.Guild.MFALevel;
@@ -29,7 +28,6 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 
 public class ServerManager extends ServerRestAction {
 	private final Guild guild;
-	private final ServerSetting<Region> regions;
 	private final ServerSetting<Timeout> timeouts;
 	private final ServerSetting<NotificationLevel> notificationLevels;
 	private final ServerSetting<ExplicitContentLevel> explicitContentLevels;
@@ -39,7 +37,6 @@ public class ServerManager extends ServerRestAction {
 	private ServerManager(final Guild guild) {
 		super(guild.getManager());
 		this.guild = guild;
-		regions = new ServerSetting<>(Region.class, manager::setRegion, manager, Region::isVip);
 		timeouts = new ServerSetting<>(Timeout.class, manager::setAfkTimeout, manager);
 		mfaLevels = new ServerSetting<>(MFALevel.class, manager::setRequiredMFALevel, manager);
 		verificationLevels = new ServerSetting<>(VerificationLevel.class, manager::setVerificationLevel, manager);
@@ -86,11 +83,6 @@ public class ServerManager extends ServerRestAction {
 		return this;
 	}
 
-	public ServerManager setVanityCode(String code) {
-		manager.setVanityCode(code);
-		return this;
-	}
-
 	public ServerSetting<Timeout> timeouts() {
 		return timeouts;
 	}
@@ -101,10 +93,6 @@ public class ServerManager extends ServerRestAction {
 	
 	public ServerSetting<ExplicitContentLevel> explicitContentLevels() {
 		return explicitContentLevels;
-	}
-	
-	public ServerSetting<Region> regions() {
-		return regions;
 	}
 	
 	public ServerSetting<MFALevel> mfaLevels() {

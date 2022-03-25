@@ -17,6 +17,9 @@ import discord.ServerManager;
 import discord.ServerManager.InvitesParser;
 import discord.ServerRestAction;
 import discord.ServerSetting;
+import lib.StringLib;
+import net.dv8tion.jda.api.Region;
+import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.Message;
@@ -84,12 +87,12 @@ public class Server extends DiscordCommand {
 			handleServerEnum(input, manager::notificationLevels, guild::getDefaultNotificationLevel);
 		else if (hasArgs("-ex", "--explicit")) 
 			handleServerEnum(input, manager::explicitContentLevels, guild::getExplicitContentLevel);
-		else if (hasArgs("-re", "--region")) 
-			handleServerEnum(input, manager::regions, guild::getRegion);
 		else if (hasArgs("-mf", "--mfa")) 
 			handleServerEnum(input, manager::mfaLevels, guild::getRequiredMFALevel);
 		else if (hasArgs("-ve", "--verification")) 
 			handleServerEnum(input, manager::verificationLevels, guild::getVerificationLevel);
+		else if (hasArgs("-re", "--region")) 
+			handleRegion(input);
 		else if (hasArgs("-in", "--invite")) 
 			manager.retrieveInvites(this::onRetrieveInvites);
 		else 
@@ -191,11 +194,8 @@ public class Server extends DiscordCommand {
 			println("Code: `%s`%nURL: %s", guild.getVanityCode(), guild.getVanityUrl());
 		else if (input.equals(""))
 			giveMe("new vanity code");
-		else {
-			manager.setVanityCode(input)
-				.applyChanges();
-			println("Set vanity code to : `%s`", input);
-		}
+		else
+			println("Cannot set vanity code anymore in v5");
 	}
 	
 	private <T extends Enum<T>> void handleServerEnum(String input, Supplier<ServerSetting<T>> settingsSupplier, Supplier<T> currentSupplier) {
@@ -209,10 +209,32 @@ public class Server extends DiscordCommand {
 				.select(input)
 				.applyChanges();
 			Optional<T> element = settingsSupplier.get().find(input);
-			if (element.isEmpty()) 
-				println("No elements matched");
-			else 
+			if (element.isPresent()) 
 				println("Updated to : %s", element.get());
+			else 
+				println("No elements matched");
+		}
+	}
+	
+	private void handleRegion(String input) {
+		AudioChannel channel = message.getMember().getVoiceState().getChannel();
+		if (channel == null)
+			println("You have to be in a voice channel to change it's region.");
+		else if (wantsCurrent())
+			println(channel.getRegion().toString());
+		else if (input.equals(""))
+			printItemsIndexed(Region.values());
+		else { 
+			Region found = null;
+			for (Region region : Region.values())
+				if (StringLib.matchSimplified(region.getName(), input))
+					found = region;
+			if (found == null)
+				println("No regions matched your selection: "+input);
+			else {
+				channel.getManager().setRegion(found);
+				println("Region changed to: "+found);
+			}
 		}
 	}
 	
@@ -234,7 +256,7 @@ public class Server extends DiscordCommand {
 				.forEach(AuditableRestAction::queue);
 		else
 			stream.map(InvitesParser::toEmbed)
-				.map(channel::sendMessage)
+				.map(channel::sendMessageEmbeds)
 				.forEach(MessageAction::queue);
 	}
 }

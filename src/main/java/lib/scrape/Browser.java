@@ -136,7 +136,7 @@ public class Browser implements Closeable {
 	}
 	
 	public WebElement waitFor(By by, long timeout) {
-		return new WebDriverWait(driver, timeout)
+		return new WebDriverWait(driver, Duration.ofMillis(timeout))
 				.until(driver -> driver.findElement(by));
 	}
 	

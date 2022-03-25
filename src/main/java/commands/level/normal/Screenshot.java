@@ -32,9 +32,9 @@ public class Screenshot extends DiscordCommand {
 					browser.screenshotFullAsFile();
 			channel.sendFile(screenshot).queue();
 			if (!screenshot.delete())
-				logger.error("Could not delete temporary screenshot file.");
+				println("Could not delete temporary screenshot file.");
 		} catch (Exception e) {
-			println("Could not access page");
+			println("Could not access url.");
 		}
 	}
 }

@@ -2,10 +2,10 @@ package commands.hierarchy.fsm;
 
 import java.util.function.Predicate;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public final class Conditions {
-	public static final Predicate<GuildMessageReceivedEvent> 
+	public static final Predicate<MessageReceivedEvent> 
 		ALWAYS = event -> true,
 		NEVER = event -> false,
 		EXIT = event -> 

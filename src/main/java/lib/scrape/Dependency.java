@@ -48,12 +48,7 @@ public enum Dependency {
 	}
 	
 	public static String latestNAS() {
-		return Browser.getInstance()
-			.visit("https://api.bintray.com/packages/sedmelluq/com.sedmelluq/jda-nas")
-			.waitFor(By.cssSelector("tbody > tr.treeRow.stringRow.opened:nth-child(23) > .treeValueCell.stringCell > span > .objectBox.objectBox-string"))
-			.getText()
-			.replace('"', ' ')
-			.trim();
+		return latestMaven("https://mvnrepository.com/artifact/com.sedmelluq/jda-nas?repo=jcenter");
 	}
 	
 	public static String latestLogback() {
@@ -129,8 +124,8 @@ public enum Dependency {
 	
 	public static void main(String[] args) throws Exception {
 		try { 
-//			checkUpdates(Dependency::defaultVersionHandler);
-			System.out.println(latestMaven("org.dyn4j", "dyn4j"));
+			checkUpdates(Dependency::defaultVersionHandler);
+//			System.out.println(latestMaven("org.dyn4j", "dyn4j"));
 		} finally { Browser.getInstance().close(); }
 	}
 }

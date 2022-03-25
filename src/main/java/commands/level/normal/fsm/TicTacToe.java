@@ -10,7 +10,7 @@ import game.tictactoe.Type;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class TicTacToe extends FSMCommand {
 	private Game game;
@@ -42,7 +42,7 @@ public class TicTacToe extends FSMCommand {
 	}
 	
 	@Override
-	protected boolean shouldHandleEvent(GuildMessageReceivedEvent event) {
+	protected boolean shouldHandleEvent(MessageReceivedEvent event) {
 		long id = event.getAuthor().getIdLong();
 		String input = event.getMessage().getContentDisplay();
 		if (input.startsWith("Invalid coordinates"))	// don't handle printed errors
@@ -102,26 +102,26 @@ public class TicTacToe extends FSMCommand {
 		isFirst = !isFirst;
 	}
 	
-	private boolean isReset(GuildMessageReceivedEvent event) {
+	private boolean isReset(MessageReceivedEvent event) {
 		return event.getMessage().getContentDisplay().toLowerCase().startsWith("reset");
 	}
 	
-	private void reset(GuildMessageReceivedEvent event) {
+	private void reset(MessageReceivedEvent event) {
 		destructibleMessage("Game has been reset").queue();
 		game.reset();
 		printState();
 		event.getMessage().delete().queue();
 	}
 	
-	private boolean isFirst(GuildMessageReceivedEvent event) {
+	private boolean isFirst(MessageReceivedEvent event) {
 		return isFirst && event.getAuthor().getIdLong() == first.getIdLong() && !isError(event) && !matches(event, "reset") && !matches(event, "exit");
 	}
 	
-	private boolean isSecond(GuildMessageReceivedEvent event) {
+	private boolean isSecond(MessageReceivedEvent event) {
 		return !isFirst && event.getAuthor().getIdLong() == second.getIdLong() && !isError(event) && !matches(event, "reset") && !matches(event, "exit");
 	}
 	
-	private void handle(GuildMessageReceivedEvent event, Type type) {
+	private void handle(MessageReceivedEvent event, Type type) {
 		game.set(event.getMessage().getContentDisplay(), type);
 		event.getMessage().delete().queue();
 		verifyDraw(verifyWinner());
@@ -129,7 +129,7 @@ public class TicTacToe extends FSMCommand {
 		printState();
 	}
 	
-	private boolean isError(GuildMessageReceivedEvent event) {
+	private boolean isError(MessageReceivedEvent event) {
 		return !event.getMessage().getContentDisplay().matches("[a-zA-Z]+[0-9]+") 
 				|| !game.isValid(event.getMessage().getContentDisplay());
 	}
@@ -157,6 +157,6 @@ public class TicTacToe extends FSMCommand {
 		for (int x = 0; x < game.map.length; x++)
 			for (int y = 0; y < game.map[x].length; y++) 
 				builder.addField(game.map[x][y].toString(), "", y != game.size);
-		printable.editMessage(builder.build()).queue();
+		printable.editMessageEmbeds(builder.build()).queue();
 	}
 }

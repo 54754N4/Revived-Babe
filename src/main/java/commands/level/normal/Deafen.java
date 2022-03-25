@@ -1,5 +1,9 @@
 package commands.level.normal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
@@ -19,11 +23,17 @@ public class Deafen extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
+		List<String> toggled = new ArrayList<>();
 		MusicBot bot = getMusicBot();
-		if (mentioned.members.size() != 0)
-			for (Member member : mentioned.members)
+		if (mentioned.members.size() != 0) {
+			for (Member member : mentioned.members) { 
 				bot.toggleDeafen(member);
-		else 
+				toggled.add(member.getAsMention());
+			}
+		} else {
+			toggled.add(bot.getAsMention());
 			bot.toggleDeafen(guild);
+		}
+		println("Toggled deafened state of : %s", Arrays.toString(toggled.toArray()));
 	}
 }

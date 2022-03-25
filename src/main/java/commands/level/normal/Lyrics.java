@@ -27,7 +27,10 @@ public class Lyrics extends DiscordCommand {
 		treated[0] = urlEncode(split[0] = split[0].trim());
 		treated[1] = urlEncode(split[1] = split[1].trim());
 		LyricsOVHResult result = restRequest(LyricsOVHResult.class, API_FORMAT, treated[0], treated[1]);
-		channel.sendMessage(new EmbedBuilder()
+		if (result.lyrics == null || result.lyrics.equals(""))
+			println("Couldn't find lyrics");
+		else 
+			channel.sendMessageEmbeds(new EmbedBuilder()
 				.setTitle(String.format("%s - %s", split[0], split[1]))
 				.setDescription(result.lyrics)
 				.build())

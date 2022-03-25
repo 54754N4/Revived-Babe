@@ -14,6 +14,7 @@ import json.TimeResult;
 import lib.HTTP.ResponseHandler;
 import lib.StringLib;
 import lib.messages.ValidatingEmbedBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
@@ -35,8 +36,10 @@ public class Time extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		if (TIMEZONES == null)
+		if (TIMEZONES == null) {
+			println("Retrieving list of timezone codes (only done first time #lazyLoading)");
 			TIMEZONES = getTimezones();
+		}
 		if (hasArgs("-l", "--list")) 
 			TIMEZONES.forEach(this::println);
 		else 
@@ -44,7 +47,8 @@ public class Time extends DiscordCommand {
 				.stream()
 				.map(Time::getTime)
 				.map(Time::buildEmbed)
-				.map(embed -> channel.sendMessage(embed.build()))
+				.map(EmbedBuilder::build)
+				.map(channel::sendMessageEmbeds)
 				.forEach(MessageAction::queue);
 	}
 	

@@ -19,7 +19,7 @@ public class Exit extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		printlnIndependently("Farewell!");
+		printlnIndependently("Exiting");
 		Thread.sleep(2000);
 		bot.kill(hasArgs("-n", "--now"));
 	}

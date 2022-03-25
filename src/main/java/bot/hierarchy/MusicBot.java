@@ -25,9 +25,9 @@ import backup.MusicState;
 import commands.model.ThreadSleep;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
+import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
@@ -222,18 +222,19 @@ public abstract class MusicBot extends UserBot {
 	
 	/* Joining & leaving */
 	
-	public MusicBot connect(VoiceChannel channel) {
+	public MusicBot connect(AudioChannel channel) {
 		setupAudio(channel.getGuild())
 			.getManager(channel.getGuild())
 			.openAudioConnection(channel);
 		return this;
 	}
 	
-	public MusicBot disconnect(Guild guild) {
-		setupAudio(guild)
-			.getManager(guild)
-			.closeAudioConnection();
-		return this;
+	public AudioChannel disconnect(Guild guild) {
+		AudioManager manager = setupAudio(guild)
+			.getManager(guild);
+		AudioChannel channel = manager.getConnectedChannel();
+		manager.closeAudioConnection();
+		return channel;
 	}
 	
 	/* Deafening */
@@ -586,39 +587,39 @@ public abstract class MusicBot extends UserBot {
 	
 	/* Remove */
 	
-	public MusicBot remove(Guild guild, Collection<Integer> indices) {
+	public Stream<AudioTrack> remove(Guild guild, Collection<Integer> indices) {
 		return remove(guild.getIdLong(), indices);
 	}
 	
-	public MusicBot remove(long guildID, Collection<Integer> indices) {
+	public Stream<AudioTrack> remove(long guildID, Collection<Integer> indices) {
 		return remove(guildID, indices.toArray(new Integer[0]));
 	}
 	
-	public MusicBot remove(Guild guild, Integer...indices) {
+	public Stream<AudioTrack> remove(Guild guild, Integer...indices) {
 		return remove(guild.getIdLong(), indices);
 	}
 	
-	public MusicBot remove(long guildID, Integer...indices) {
+	public Stream<AudioTrack> remove(long guildID, Integer...indices) {
 		return remove(guildID, Arrays.stream(indices));
 	}
 	
-	public MusicBot remove(Guild guild, Stream<Integer> indices) {
+	public Stream<AudioTrack> remove(Guild guild, Stream<Integer> indices) {
 		return remove(guild.getIdLong(), indices);
 	}
 	
-	public MusicBot remove(long guildID, Stream<Integer> indices) {
+	public Stream<AudioTrack> remove(long guildID, Stream<Integer> indices) {
 		return remove(guildID, indices.mapToInt(i -> i).toArray());
 	}
 	
-	public MusicBot remove(Guild guild, IntStream indices) {
+	public Stream<AudioTrack> remove(Guild guild, IntStream indices) {
 		return remove(guild.getIdLong(), indices);
 	}
 	
-	public MusicBot remove(long guildID, IntStream indices) {
+	public Stream<AudioTrack> remove(long guildID, IntStream indices) {
 		return remove(guildID, indices.toArray());
 	}
 	
-	public MusicBot remove(Guild guild, int...indices) {
+	public Stream<AudioTrack> remove(Guild guild, int...indices) {
 		return remove(guild.getIdLong(), indices);
 	}
 	
@@ -628,17 +629,16 @@ public abstract class MusicBot extends UserBot {
 	 * allows us to avoid removing the wrong tracks, all 
 	 * the while ignoring the initial (potentially 
 	 * corrupting) ordering.								*/
-	public MusicBot remove(long guildID, int...indices) {
+	public Stream<AudioTrack> remove(long guildID, int...indices) {
 		TrackScheduler scheduler = setupAudio(guildID)
 			.controller(guildID)
 			.getScheduler();
 		int max = scheduler.getQueue().size();
-		Arrays.stream(indices)
-			.filter(i -> 0 <= i && i < max)	// in queue range
-			.boxed()	// convert from primitive to Integer
-			.sorted(Comparator.reverseOrder())
-			.forEachOrdered(scheduler::remove);
-		return this;
+		return Arrays.stream(indices)
+				.filter(i -> 0 <= i && i < max)	// in queue range
+				.boxed()	// convert from primitive to Integer
+				.sorted(Comparator.reverseOrder())
+				.map(scheduler::remove);
 	}
 	
 }

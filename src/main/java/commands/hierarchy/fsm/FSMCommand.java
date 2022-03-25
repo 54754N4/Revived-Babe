@@ -11,7 +11,7 @@ import lib.FSMVisualizer;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public abstract class FSMCommand extends DiscordCommand {
 	private static final String DEFAULT_SCALING = "2";
@@ -40,7 +40,7 @@ public abstract class FSMCommand extends DiscordCommand {
 	}
 	
 	@Override
-	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+	public void onMessageReceived(MessageReceivedEvent event) {
 		if (!shouldHandleEvent(event))
 			return;
 		message = event.getMessage();	// overrides every new reply
@@ -71,12 +71,12 @@ public abstract class FSMCommand extends DiscordCommand {
 	// FSM don't need execute so replace with setup
 	protected abstract void setup(); 
 	
-	protected void onEnd(GuildMessageReceivedEvent event) {
+	protected void onEnd(MessageReceivedEvent event) {
 		removeListener();
 		finished.set(true);
 	}
 	
-	protected boolean shouldHandleEvent(GuildMessageReceivedEvent event) {
+	protected boolean shouldHandleEvent(MessageReceivedEvent event) {
 		return issuers.stream().anyMatch(id -> id == event.getAuthor().getIdLong());
 	}
 
@@ -97,7 +97,7 @@ public abstract class FSMCommand extends DiscordCommand {
 		printlnIndependently(format, args);
 	}
 
-	protected static boolean matches(GuildMessageReceivedEvent event, String match) {
+	protected static boolean matches(MessageReceivedEvent event, String match) {
 		return StringLib.matchSimplified(event.getMessage().getContentDisplay(), match);
 	}
 	

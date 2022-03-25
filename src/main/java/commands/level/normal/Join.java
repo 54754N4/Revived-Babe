@@ -3,8 +3,8 @@ package commands.level.normal;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
+import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 
 public class Join extends DiscordCommand {
 
@@ -23,7 +23,7 @@ public class Join extends DiscordCommand {
 			println("Sadly music commands only work in guilds/servers, not from private/group messages.");
 			return;
 		}
-		VoiceChannel channel = message.getMember().getVoiceState().getChannel();
+		AudioChannel channel = message.getMember().getVoiceState().getChannel();
 		if (channel == null) {
 			println("You have to be in a voice channel so i can join =v..");
 			return;

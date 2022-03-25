@@ -62,7 +62,7 @@ public class Update extends DiscordCommand {
 			final EmbedBuilder embed = new EmbedBuilder();
 			embed.setTitle("Report for "+report);
 			TestReportsParser.parse(new File(TEST_RESULTS_DIR+"/"+report), testHandler(embed));
-			channel.sendMessage(embed.build()).queue();
+			channel.sendMessageEmbeds(embed.build()).queue();
 		}
 	}
 	

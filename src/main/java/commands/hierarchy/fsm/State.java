@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class State implements Cloneable {
 	private String name;
@@ -31,7 +31,7 @@ public class State implements Cloneable {
 		return transitions;
 	}
 	
-	public State check(GuildMessageReceivedEvent event) {
+	public State check(MessageReceivedEvent event) {
 		if (sort) {
 			Collections.sort(transitions);
 			sort = false;

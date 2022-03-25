@@ -42,6 +42,10 @@ public class Play extends DiscordCommand {
 	
 	private void play(String input) throws NumberFormatException, InterruptedException, ExecutionException {
 		MusicBot bot = getMusicBot();
+		if (input.equals("")) {
+			println(helpMessage());
+			return;
+		}
 		if (!bot.isConnected(guild))
 			bot.connect(message.getMember().getVoiceState().getChannel());
 		if (StringLib.isInteger(input)) {

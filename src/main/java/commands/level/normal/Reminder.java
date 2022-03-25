@@ -49,6 +49,7 @@ public class Reminder extends DiscordCommand {
 		logger.info(input);
 		Reminders.Reminder reminder = new Reminders.Reminder(message.getAuthor().getAsMention()+" "+input);
 		Reminders.add(date, reminder, channel);
+		println("Event@%s#%s: %s", date.toString(), channel.getName(), reminder.message);
 	}
 	
 	public static LocalDateTime getTime(long fromSeconds) {

@@ -26,6 +26,7 @@ import bot.hierarchy.UserBot;
 import database.DBManager;
 import database.Query;
 import database.TableManager;
+import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -174,7 +175,7 @@ public abstract class MusicState {
 		AudioManager manager = bot.getManager(guild);
 		if (manager == null) 
 			return;
-		VoiceChannel channel = manager.getConnectedChannel();
+		AudioChannel channel = manager.getConnectedChannel();
 		if (channel == null)
 			return;
 		logger.info("Setting last voice channel to {}", channel.getId());

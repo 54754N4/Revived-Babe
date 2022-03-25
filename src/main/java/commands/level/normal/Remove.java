@@ -3,6 +3,8 @@ package commands.level.normal;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
@@ -30,9 +32,17 @@ public class Remove extends DiscordCommand {
 			println("Command only works on music bots.");
 			return;
 		}
+		long guildId = message.getGuild().getIdLong();
 		IntStream indices = Arrays.stream(input.split(SEPARATOR))
 				.filter(StringLib::isInteger)
 				.mapToInt(Integer::parseInt);	// parses + un-boxes to primitive type
-		getMusicBot().remove(message.getGuild().getIdLong(), indices);
+		print("Removed:%n");
+		getMusicBot().remove(guildId, indices)	// returns removed tracks
+			.map(Remove::prettyPrintTrack)
+			.forEach(this::println);
+	}
+	
+	private static String prettyPrintTrack(AudioTrack track) {
+		return String.format("\t%s -> %s", track.getInfo().title, track.getInfo().uri);
 	}
 }

@@ -35,7 +35,7 @@ public class Recipe extends DiscordCommand {
 				page = hasArgs("--page") ? params.named.get("--page") : "";
 		FoodRecipeResults response = getRecipes(ingredients, search, page);
 		for (Result result : response.results) 
-			channel.sendMessage(buildEmbed(result).build()).queue();
+			channel.sendMessageEmbeds(buildEmbed(result).build()).queue();
 	}
 	
 	public static EmbedBuilder buildEmbed(Result result) {

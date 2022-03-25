@@ -11,7 +11,7 @@ import commands.model.ThreadsManager;
 import commands.name.Command;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class CommandLine extends FSMCommand {
 
@@ -38,11 +38,11 @@ public class CommandLine extends FSMCommand {
 				.build());
 	}
 
-	protected boolean isNotForBot(GuildMessageReceivedEvent event) {
+	protected boolean isNotForBot(MessageReceivedEvent event) {
 		return !StringLib.startsWith(event.getMessage().getContentDisplay(), bot.getPrefixes());
 	}
 	
-	private void onExecuteCommand(GuildMessageReceivedEvent event) {
+	private void onExecuteCommand(MessageReceivedEvent event) {
 		String[] input = event.getMessage().getContentDisplay().split(" ");
 		try {
 			Process process = ThreadsManager.execute(input);

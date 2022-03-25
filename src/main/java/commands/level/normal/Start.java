@@ -21,10 +21,10 @@ public class Start extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		if (input.startsWith("slave"))
-			Bot.Slaves.newSlave();
+		if (input.startsWith("slave")) 
+			println("Created %s", Bot.Slaves.newSlave());
 		else if (input.startsWith("echo"))
-			Bot.startEcho();
+			println("Created %s", Bot.startEcho());
 		else 
 			println("Cannot find bot with that name.");
 	}

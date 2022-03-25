@@ -50,7 +50,7 @@ public class TraceMoe extends DiscordCommand {
 			result = restRequest(TraceMoeResult.class, API_FORMAT, "?url=" + Encoder.encodeURL(input));
 		List<Package> packages = buildEmbed(result);
 		for (Package pkg : packages)
-			channel.sendMessage(pkg.builder.build())
+			channel.sendMessageEmbeds(pkg.builder.build())
 				.queue(new ReactionsHandler(bot)
 						.handle(0x25B6, pkg.consumer));
 	}

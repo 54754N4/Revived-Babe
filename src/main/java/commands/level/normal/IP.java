@@ -1,18 +1,24 @@
 package commands.level.normal;
 
+import java.io.File;
+
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.BabeIPResult;
 import json.GeolocateResult;
+import lib.GPS;
+import lib.encode.Encoder;
 import lib.messages.ValidatingEmbedBuilder;
+import lib.scrape.Browser;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 
 public class IP extends DiscordCommand {
 	public static final String IP_FORMAT = "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$";
 	private static final String API_FORMAT = "https://get.geojs.io/v1/ip/geo/%s.json",
-			BABE_IP_API_CALL = "https://get.geojs.io/v1/ip.json";
+			BABE_IP_API_CALL = "https://get.geojs.io/v1/ip.json",
+			GOOGLE_MAPS_FORMAT = "https://www.google.com/maps/place/%s";
 
 	public IP(UserBot bot, Message message) {
 		super(bot, message, Command.IP.names);
@@ -31,7 +37,14 @@ public class IP extends DiscordCommand {
 			return;
 		if (input.matches(IP_FORMAT)) {
 			GeolocateResult geolocation = restRequest(GeolocateResult.class, API_FORMAT, input);
-			channel.sendMessage(buildEmbed(geolocation).build()).queue();
+			// Get map location from latitude and longitude
+			String gps = GPS.toString(Float.parseFloat(geolocation.latitude), Float.parseFloat(geolocation.longitude));
+			File map = Browser.getInstance()
+				.visit(String.format(GOOGLE_MAPS_FORMAT, Encoder.encodeURL(gps)))
+				.screenshotFullAsFile();
+			channel.sendMessageEmbeds(buildEmbed(geolocation).build())
+				.addFile(map)
+				.queue();
 		} else 
 			println("Invalid ip format..");
 	}

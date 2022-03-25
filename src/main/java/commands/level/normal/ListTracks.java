@@ -88,7 +88,7 @@ public class ListTracks extends DiscordCommand {
 			return;
 		}
 		GuildVoiceState state = member.getVoiceState();
-		if (!state.inVoiceChannel()) 
+		if (state.getChannel() == null) 
 			println("%s You should be in a voice channel before you ask me to join =v.");
 		else
 			getMusicBot().connect(state.getChannel());

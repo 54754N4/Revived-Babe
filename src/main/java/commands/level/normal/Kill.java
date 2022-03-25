@@ -28,9 +28,11 @@ public class Kill extends DiscordCommand {
 			Bot slave = Bot.Slaves.get(Integer.parseInt(input.trim())-1);
 			getLogger().info("Killing {} ..", slave);
 			Bot.Slaves.killSlave(slave, now);
-		} else if (input.startsWith("echo")) 
+			println("Killed %s.", slave);
+		} else if (input.startsWith("echo")) { 
 			Bot.killEcho(now);
-		else {
+			println("Killed echo.");
+		} else {
 			println("I need an integer or name.");
 		}
 	}

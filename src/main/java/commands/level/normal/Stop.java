@@ -1,5 +1,6 @@
 package commands.level.normal;
 
+import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
@@ -18,7 +19,10 @@ public class Stop extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		getMusicBot().stop(guild);
+		MusicBot musicBot = getMusicBot();
+		boolean wasPaused = musicBot.isPaused(guild);
+		musicBot.stop(guild);
+		println(wasPaused ? "I am paused anyways.." : "Stopped playing tracks");
 	}
 
 }

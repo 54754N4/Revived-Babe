@@ -1,5 +1,9 @@
 package commands.level.normal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
@@ -20,12 +24,18 @@ public class Mute extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
+		List<String> toggled = new ArrayList<>();
 		MusicBot bot = getMusicBot();
-		if (mentioned.members.size() != 0)
-			for (Member member : mentioned.members)
+		if (mentioned.members.size() != 0) {
+			for (Member member : mentioned.members) {
 				bot.toggleMute(member);
-		else 
+				toggled.add(member.getAsMention());
+			}
+		} else {
 			bot.toggleMute(guild);
+			toggled.add(bot.getAsMention());
+		}
+		println("Muted : %s", Arrays.toString(toggled.toArray()));
 	}
 
 }

@@ -45,7 +45,7 @@ public class ExchangeRates extends DiscordCommand {
 				API_FORMAT,
 				target, 
 				HTTP.getParamsString(dict, "&", true));
-		channel.sendMessage(buildEmbed(result).build()).queue();;
+		channel.sendMessageEmbeds(buildEmbed(result).build()).queue();;
 	}
 	
 	private static EmbedBuilder buildEmbed(ExchangeRatesResult result) {

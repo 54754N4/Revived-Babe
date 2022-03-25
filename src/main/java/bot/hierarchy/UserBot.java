@@ -216,12 +216,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	public long getIdLong() {
 		return getAccount().getIdLong();
 	}
-
-	@Override
-	public boolean isFake() {
-		return true;
-	}
-
+	
 	@Override
 	public String getName() {
 		return getAccount().getName();
@@ -262,7 +257,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 		return getAccount().getMutualGuilds(); 
 	}
 
-		@Override
+	@Override
 	public EnumSet<UserFlag> getFlags() {
 		return getAccount().getFlags();
 	}
@@ -270,5 +265,20 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	@Override
 	public int getFlagsRaw() {
 		return getAccount().getFlagsRaw();
+	}
+	
+	@Override
+	public RestAction<Profile> retrieveProfile() {
+		return getAccount().retrieveProfile();
+	}
+
+	@Override
+	public boolean isSystem() {
+		return getAccount().isSystem();
+	}
+	
+	@Override
+	public String toString() {
+		return bot.toString();
 	}
 }

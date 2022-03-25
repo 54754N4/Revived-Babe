@@ -52,11 +52,11 @@ public class Speak extends DiscordCommand {
 		// Connect to channel
 		MusicBot bot = getMusicBot();
 		boolean connected = bot.isConnected(guild),
-				authorConnected = message.getMember().getVoiceState().inVoiceChannel();
+				authorConnected = message.getMember().getVoiceState().inAudioChannel();
 		if (!connected && !authorConnected) {
 			println("I have to be in a voice channel to talk.. So you also have to be in one so I can join you lol..");
 			return;
-		} else if (!connected) 
+		} else if (!connected)
 			bot.connect(message.getMember().getVoiceState().getChannel());
 		// Generate WAV from API
 		try (ResponseHandler handler = restRequest(API_FORMAT, API_KEY, URLEncoder.encode(input, "UTF-8"), 
