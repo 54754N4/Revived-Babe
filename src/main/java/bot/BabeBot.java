@@ -35,13 +35,14 @@ public class BabeBot extends MusicBot {
 
 	@Override 
 	protected void preKill(boolean now) throws Exception {
-		getReactionsTracker().stopTracking();
-		ThreadsManager.kill(now);
-		TypingWatchdog.kill();
-		Browser.getInstance().kill();
-		Reminders.backup();
-		SpellingCorrector.serialize(Invoker.getCorrector());
-		Bot.killAll(now, bot -> MusicState.backup(bot));
+		safeRunChain(
+				getReactionsTracker()::stopTracking,
+				() -> ThreadsManager.kill(now),
+				TypingWatchdog::kill,
+				Reminders::backup,
+				() -> SpellingCorrector.serialize(Invoker.getCorrector()),
+				() -> Bot.killAll(now, bot -> MusicState.backup(bot)),
+				() -> Browser.getInstance().kill());
 		super.preKill(now);
 	}
 }

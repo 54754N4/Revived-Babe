@@ -1,6 +1,7 @@
 package commands.hierarchy;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -85,8 +86,8 @@ public abstract class DiscordCommand extends ListenerCommand {
 	
 	/* Rest + multipart/form requests convenience methods */
 	
-	protected String urlEncode(String input) {
-		return URLEncoder.encode(input, StandardCharsets.UTF_8);
+	protected String urlEncode(String input) throws UnsupportedEncodingException {
+		return URLEncoder.encode(input, StandardCharsets.UTF_8.toString());
 	}
 	
 	public static <T> T restRequest(Class<T> cls, String apiFormat, Object... args) throws IOException {

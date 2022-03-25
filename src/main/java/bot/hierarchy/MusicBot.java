@@ -85,16 +85,17 @@ public abstract class MusicBot extends UserBot {
 	
 	@Override
 	protected void preKill(boolean now) throws Exception {
-		MusicState.backup(this);
-		controllers.values()
-			.stream()
-			.map(MusicController::getPlayer)
-			.forEach(AudioPlayer::destroy);
-		controllers.values()
-			.stream()
-			.map(MusicController::getManager)
-			.forEach(AudioManager::closeAudioConnection);
-		controllers.clear(); // Allow GC
+		safeRunChain(
+			() -> MusicState.backup(this),
+			() -> controllers.values()
+				.stream()
+				.map(MusicController::getPlayer)
+				.forEach(AudioPlayer::destroy),
+			() -> controllers.values()
+				.stream()
+				.map(MusicController::getManager)
+				.forEach(AudioManager::closeAudioConnection),
+			controllers::clear);
 		super.preKill(now);
 	}
 	

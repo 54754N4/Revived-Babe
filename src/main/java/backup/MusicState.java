@@ -93,10 +93,10 @@ public abstract class MusicState {
 		if (guild == null) 
 			return;
 		bot.setupAudio(guildID);
-		restorePlaylist(table, bot, guild);
+		int restored = restorePlaylist(table, bot, guild);
 		restoreVoiceChannel(table, bot);
 		restoreVolumeAndPause(table, bot, guild);
-		restoreSongAndPosition(table, bot, guild);
+		restoreSongAndPosition(table, bot, guild, restored);
 	}
 	
 	/* Backup/restore: Playlists */
@@ -144,7 +144,7 @@ public abstract class MusicState {
 		}
 	}
 	
-	private static void restoreSongAndPosition(TableManager table, MusicBot bot, Guild guild) {
+	private static void restoreSongAndPosition(TableManager table, MusicBot bot, Guild guild, int restored) {
 		try {
 			String current = table.retrieve(CURRENT, "");
 			if (current.equals("")) 
@@ -163,7 +163,19 @@ public abstract class MusicState {
 			long position = table.retrieveLong(POSITION, -1);
 			if (position == -1)
 				return;
-			bot.seekTo(guild,  position);
+			// Delay for up to 5s for songs to load
+			CircularDeque queue = bot.getScheduler(guild).getQueue();
+			boolean error = false;
+			long time = System.currentTimeMillis(), MAX_DELAY = 5000;
+			while (queue.size() != restored) {
+				Thread.sleep(1000);
+				if (System.currentTimeMillis() - time > MAX_DELAY) {
+					error = true;
+					break;
+				}
+			}
+			if (!error)
+				bot.seekTo(guild, position);
 		} catch (Exception e) {
 			logger.error("Could not retrieve last song's position", e);
 		}

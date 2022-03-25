@@ -168,6 +168,28 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 		System.exit(flag ? RESTART_CODE : EXIT_SUCCESS);
 	}
 	
+	// Convenience exception wrapping methods
+	
+	protected final void safeRunChain(ThrowableRunnable...runnables) {
+		safeRunChain(runnables, 0);
+	}
+	
+	private final void safeRunChain(ThrowableRunnable[] runnables, int current) {
+		try {
+			runnables[current++].run();
+		} catch (Exception e) {
+			logger.error("Error during chain execution at step #"+current, e);
+		} finally {
+			if (current < runnables.length)
+				safeRunChain(runnables, current);
+		}
+	}
+	
+	@FunctionalInterface
+	public static interface ThrowableRunnable {
+		void run() throws Exception;
+	}
+	
 	/* Utility methods */
 	
 	public UserBot delay(long milli) throws InterruptedException {

@@ -34,9 +34,9 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 /* Finds the appropriate command based on string command 
  * and appropriate role based on package names			 */
 public class Invoker {
-	private static final String NORMAL_NAME = Echo.class.getPackageName(),
-			ADMIN_NAME = Exit.class.getPackageName(),
-			ALL_NAME = All.class.getPackageName();
+	private static final String NORMAL_NAME = Echo.class.getPackage().getName(),
+			ADMIN_NAME = Exit.class.getPackage().getName(),
+			ALL_NAME = All.class.getPackage().getName();
 	
 	private static final SpellingCorrector corrector = SpellingCorrector.deserialize();
 	private static final Logger logger = LoggerFactory.getLogger(Invoker.class);
@@ -92,10 +92,10 @@ public class Invoker {
 		public static enum Type { 
 			NORMAL(
 				NORMAL_NAME,
-				cls -> cls.getPackageName().startsWith(NORMAL_NAME)),
+				cls -> cls.getPackage().getName().startsWith(NORMAL_NAME)),
 			ADMIN(
 				ADMIN_NAME,
-				cls -> cls.getPackageName().startsWith(ADMIN_NAME)),
+				cls -> cls.getPackage().getName().startsWith(ADMIN_NAME)),
 			ALL(
 				ALL_NAME,
 				cls -> true);
@@ -151,7 +151,7 @@ public class Invoker {
 			logger.info("Type = {} dictionary = {}", type, Arrays.toString(classes.toArray()));
 			try {
 				for (Class<? extends Command> commandClass : classes) {
-					if (!commandClass.getPackageName().startsWith(type.name))
+					if (!commandClass.getPackage().getName().startsWith(type.name))
 						continue;
 					Constructor<? extends Command> constructor = commandClass.getConstructor(UserBot.class, Message.class);
 					Command command = constructor.newInstance(null, null);		// we just need names
