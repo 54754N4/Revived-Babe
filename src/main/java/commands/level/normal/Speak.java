@@ -69,7 +69,7 @@ public class Speak extends DiscordCommand {
 		if (languages == null) {	// lazy loading
 			Map<String, String> map = new TreeMap<>();
 			WebElement table = Browser.getInstance().visit(API)
-				.waitFor(By.cssSelector(".api-content > section:nth-child(6) > div.table"));
+				.waitGet(By.cssSelector(".api-content > section:nth-child(6) > div.table"));
 			List<String> names = table.findElements(By.cssSelector(".table-row > .table-cell:nth-child(1)"))
 					.stream()
 					.map(WebElement::getText)
@@ -89,7 +89,7 @@ public class Speak extends DiscordCommand {
 		if (voices == null) {
 			Map<String, String> map = new TreeMap<>();
 			WebElement table = Browser.getInstance().visit("http://www.voicerss.org/api/")
-					.waitFor(By.cssSelector(".api-content > section:nth-child(7) > div.table"));
+					.waitGet(By.cssSelector(".api-content > section:nth-child(7) > div.table"));
 			int size = table.findElements(By.cssSelector(".table-row")).size();
 			String tableCellAccessor = ".table-row:nth-child(%d) > .table-cell:nth-child(%d)",
 				lang, name, previous = "ERROR";

@@ -32,7 +32,7 @@ public enum Dependency {
 	public static String latestLavaplayer() {
 		return Browser.getInstance()
 			.visit("https://github.com/sedmelluq/lavaplayer/tags")
-			.waitFor(By.cssSelector(".Box-row:nth-child(2) > .flex-auto > .commit > .d-flex > .flex-auto > a"))
+			.waitGet(By.cssSelector(".Box-row:nth-child(2) > .flex-auto > .commit > .d-flex > .flex-auto > a"))
 			.getText()
 			.trim();
 	}
@@ -40,7 +40,7 @@ public enum Dependency {
 	public static String latestJDA() {
 		return Browser.getInstance()
 			.visit("https://ci.dv8tion.net/job/JDA/lastSuccessfulBuild")
-			.waitFor(By.cssSelector(".fileList > tbody > tr:nth-child(6) > td:nth-child(2) > a"))
+			.waitGet(By.cssSelector(".fileList > tbody > tr:nth-child(6) > td:nth-child(2) > a"))
 			.getText()
 			.trim()
 			.replace("JDA-", "")
@@ -87,7 +87,7 @@ public enum Dependency {
 	public static String latestMaven(String url) {	
 		return Browser.getInstance()
 			.visit(url)
-			.waitFor(By.cssSelector(".vbtn.release"))
+			.waitGet(By.cssSelector(".vbtn.release"))
 			.getText();
 	}
 
@@ -98,7 +98,7 @@ public enum Dependency {
 	public static String latestMaven(String groupID, String artifactID, String repo) {
 		return Browser.getInstance()
 				.visit(String.format("https://mvnrepository.com/artifact/%s/%s?repo=%s", groupID, artifactID, repo))
-				.waitFor(By.cssSelector(".vbtn.release"))
+				.waitGet(By.cssSelector(".vbtn.release"))
 				.getText();
 	}
 	

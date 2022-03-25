@@ -41,7 +41,8 @@ public class Help extends DiscordCommand {
 		if (hasArgs("-r", "--read")) println(helpRead());
 		if (hasArgs("-f", "--full")) 
 			for (Entry<List<String>, Class<? extends Command>> entry : dict.entrySet()) 
-				print(instantiate(Reflector.find(entry.getKey().get(0), type)).helpMessage());
+				try { print(instantiate(Reflector.find(entry.getKey().get(0), type)).helpMessage()); }
+				catch (Exception e) { logger.error("Command "+entry+"threw exception", e); }
 		else if (!input.equals(""))
 			for (Entry<List<String>, Class<? extends Command>> entry : dict.entrySet())
 				if (entry.getKey().stream().anyMatch(key -> key.contains(input)))
