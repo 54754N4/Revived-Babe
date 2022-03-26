@@ -57,7 +57,8 @@ public enum Command {
 	REMINDER("reminder", "remind", "rem"),
 	DISCONNECT("disconnect", "dc"), 
 	REMOVE("remove", "rm"), 
-	SERVER("server", "srv", "sv");
+	SERVER("server", "srv", "sv"),
+	ENCODE("encode", "enc");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
