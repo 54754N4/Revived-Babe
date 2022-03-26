@@ -2,304 +2,105 @@ package json;
 
 import java.io.Serializable;
 
-
 public final class TraceMoeResult implements Serializable {
 	private static final long serialVersionUID = 1L;
-	public long RawDocsCount;
-	public boolean CacheHit;
-	public String[] strings;
-	public Doc[] docs;
-	public long limit_ttl;
-	public long RawDocsSearchTime;
-	public long quota;
-	public long limit;
-	public long ReRankSearchTime;
-	public long quota_ttl;
-	public long trial;
+	public Result[] result;
+	public int frameCount;
+	public String error;
 
-	public TraceMoeResult(long RawDocsCount, boolean CacheHit, String[] strings, Doc[] docs, long limit_ttl, long RawDocsSearchTime, long quota, long limit, long ReRankSearchTime, long quota_ttl, long trial) {
-		this.RawDocsCount = RawDocsCount;
-		this.CacheHit = CacheHit;
-		this.strings = strings;
-		this.docs = docs;
-		this.limit_ttl = limit_ttl;
-		this.RawDocsSearchTime = RawDocsSearchTime;
-		this.quota = quota;
-		this.limit = limit;
-		this.ReRankSearchTime = ReRankSearchTime;
-		this.quota_ttl = quota_ttl;
-		this.trial = trial;
+	public TraceMoeResult(Result[] result, int frameCount, String error) {
+		this.result = result;
+		this.frameCount = frameCount;
+		this.error = error;
 	}
 
-	public long getRawDocsCount() {
-		return RawDocsCount;
+	public Result[] getResult() {
+		return result;
 	}
 
-	public boolean getCacheHit() {
-		return CacheHit;
+	public int getFrameCount() {
+		return frameCount;
 	}
 
-	public String[] getStrings() {
-		return strings;
+	public String getError() {
+		return error;
 	}
 
-	public Doc[] getDocs() {
-		return docs;
+	public void setResult(Result[] result) {
+		this.result = result;
 	}
 
-	public long getLimit_ttl() {
-		return limit_ttl;
+	public void setFrameCount(int frameCount) {
+		this.frameCount = frameCount;
 	}
 
-	public long getRawDocsSearchTime() {
-		return RawDocsSearchTime;
-	}
-
-	public long getQuota() {
-		return quota;
-	}
-
-	public long getLimit() {
-		return limit;
-	}
-
-	public long getReRankSearchTime() {
-		return ReRankSearchTime;
-	}
-
-	public long getQuota_ttl() {
-		return quota_ttl;
-	}
-
-	public long getTrial() {
-		return trial;
-	}
-
-	public void setRawDocsCount(long RawDocsCount) {
-		this.RawDocsCount = RawDocsCount;
-	}
-
-	public void setCacheHit(boolean CacheHit) {
-		this.CacheHit = CacheHit;
-	}
-
-	public void setStrings(String[] strings) {
-		this.strings = strings;
-	}
-
-	public void setDocs(Doc[] docs) {
-		this.docs = docs;
-	}
-
-	public void setLimit_ttl(long limit_ttl) {
-		this.limit_ttl = limit_ttl;
-	}
-
-	public void setRawDocsSearchTime(long RawDocsSearchTime) {
-		this.RawDocsSearchTime = RawDocsSearchTime;
-	}
-
-	public void setQuota(long quota) {
-		this.quota = quota;
-	}
-
-	public void setLimit(long limit) {
-		this.limit = limit;
-	}
-
-	public void setReRankSearchTime(long ReRankSearchTime) {
-		this.ReRankSearchTime = ReRankSearchTime;
-	}
-
-	public void setQuota_ttl(long quota_ttl) {
-		this.quota_ttl = quota_ttl;
-	}
-
-	public void setTrial(long trial) {
-		this.trial = trial;
+	public void setError(String error) {
+		this.error = error;
 	}
 
 	@Override
 	public String toString() {
 		return new StringBuilder()
 			.append(getClass().getName()).append("{\n")
-			.append("RawDocsCount: ").append(RawDocsCount+",\n")
-			.append("CacheHit: ").append(CacheHit+",\n")
-			.append("strings: ").append(strings+",\n")
-			.append("docs: ").append(docs+",\n")
-			.append("limit_ttl: ").append(limit_ttl+",\n")
-			.append("RawDocsSearchTime: ").append(RawDocsSearchTime+",\n")
-			.append("quota: ").append(quota+",\n")
-			.append("limit: ").append(limit+",\n")
-			.append("ReRankSearchTime: ").append(ReRankSearchTime+",\n")
-			.append("quota_ttl: ").append(quota_ttl+",\n")
-			.append("trial: ").append(trial+",\n")
+			.append("result: ").append(result+",\n")
+			.append("frameCount: ").append(frameCount+",\n")
+			.append("error: ").append(error+",\n")
 			.append("\n}").toString();
 	}
 
 	public static class Builder {
-		public long RawDocsCount;
-		public boolean CacheHit;
-		public String[] strings;
-		public Doc[] docs;
-		public long limit_ttl;
-		public long RawDocsSearchTime;
-		public long quota;
-		public long limit;
-		public long ReRankSearchTime;
-		public long quota_ttl;
-		public long trial;
+		public Result[] result;
+		public int frameCount;
+		public String error;
 
-		public Builder setRawDocsCount(long RawDocsCount) {
-			this.RawDocsCount = RawDocsCount;
+		public Builder setResult(Result[] result) {
+			this.result = result;
 			return this;
 		}
 
-		public Builder setCacheHit(boolean CacheHit) {
-			this.CacheHit = CacheHit;
+		public Builder setFrameCount(int frameCount) {
+			this.frameCount = frameCount;
 			return this;
 		}
 
-		public Builder setStrings(String[] strings) {
-			this.strings = strings;
-			return this;
-		}
-
-		public Builder setDocs(Doc[] docs) {
-			this.docs = docs;
-			return this;
-		}
-
-		public Builder setLimit_ttl(long limit_ttl) {
-			this.limit_ttl = limit_ttl;
-			return this;
-		}
-
-		public Builder setRawDocsSearchTime(long RawDocsSearchTime) {
-			this.RawDocsSearchTime = RawDocsSearchTime;
-			return this;
-		}
-
-		public Builder setQuota(long quota) {
-			this.quota = quota;
-			return this;
-		}
-
-		public Builder setLimit(long limit) {
-			this.limit = limit;
-			return this;
-		}
-
-		public Builder setReRankSearchTime(long ReRankSearchTime) {
-			this.ReRankSearchTime = ReRankSearchTime;
-			return this;
-		}
-
-		public Builder setQuota_ttl(long quota_ttl) {
-			this.quota_ttl = quota_ttl;
-			return this;
-		}
-
-		public Builder setTrial(long trial) {
-			this.trial = trial;
+		public Builder setError(String error) {
+			this.error = error;
 			return this;
 		}
 
 		public TraceMoeResult build() {
-			return new TraceMoeResult(RawDocsCount,CacheHit,strings,docs,limit_ttl,RawDocsSearchTime,quota,limit,ReRankSearchTime,quota_ttl,trial);
+			return new TraceMoeResult(result,frameCount,error);
 		}
 	}
 
-	public static final class Doc implements Serializable {
+	public static final class Result implements Serializable {
 		private static final long serialVersionUID = 1L;
-		public String title_chinese;
-		public String title_native;
-		public String[] synonyms;
-		public String title_romaji;
-		public String episode;
-		public long mal_id;
-		public String title;
-		public long anilist_id;
-		public boolean is_adult;
-		public String tokenthumb;
-		public String[] synonyms_chinese;
-		public double at;
+		public int anilist;
+		public String image;
 		public String filename;
 		public double similarity;
-		public String season;
-		public String title_english;
+		public int episode;
 		public double from;
 		public double to;
-		public String anime;
+		public String video;
 
-		public Doc(String title_chinese, String title_native, String[] synonyms, String title_romaji, String episode, long mal_id, String title, long anilist_id, boolean is_adult, String tokenthumb, String[] synonyms_chinese, double at, String filename, double similarity, String season, String title_english, double from, double to, String anime) {
-			this.title_chinese = title_chinese;
-			this.title_native = title_native;
-			this.synonyms = synonyms;
-			this.title_romaji = title_romaji;
-			this.episode = episode;
-			this.mal_id = mal_id;
-			this.title = title;
-			this.anilist_id = anilist_id;
-			this.is_adult = is_adult;
-			this.tokenthumb = tokenthumb;
-			this.synonyms_chinese = synonyms_chinese;
-			this.at = at;
+		public Result(int anilist, String image, String filename, double similarity, int episode, double from, double to, String video) {
+			this.anilist = anilist;
+			this.image = image;
 			this.filename = filename;
 			this.similarity = similarity;
-			this.season = season;
-			this.title_english = title_english;
+			this.episode = episode;
 			this.from = from;
 			this.to = to;
-			this.anime = anime;
+			this.video = video;
 		}
 
-		public String getTitle_chinese() {
-			return title_chinese;
+		public int getAnilist() {
+			return anilist;
 		}
 
-		public String getTitle_native() {
-			return title_native;
-		}
-
-		public String[] getSynonyms() {
-			return synonyms;
-		}
-
-		public String getTitle_romaji() {
-			return title_romaji;
-		}
-
-		public String getEpisode() {
-			return episode;
-		}
-
-		public long getMal_id() {
-			return mal_id;
-		}
-
-		public String getTitle() {
-			return title;
-		}
-
-		public long getAnilist_id() {
-			return anilist_id;
-		}
-
-		public boolean getIs_adult() {
-			return is_adult;
-		}
-
-		public String getTokenthumb() {
-			return tokenthumb;
-		}
-
-		public String[] getSynonyms_chinese() {
-			return synonyms_chinese;
-		}
-
-		public double getAt() {
-			return at;
+		public String getImage() {
+			return image;
 		}
 
 		public String getFilename() {
@@ -310,12 +111,8 @@ public final class TraceMoeResult implements Serializable {
 			return similarity;
 		}
 
-		public String getSeason() {
-			return season;
-		}
-
-		public String getTitle_english() {
-			return title_english;
+		public Object getEpisode() {
+			return episode;
 		}
 
 		public double getFrom() {
@@ -326,56 +123,16 @@ public final class TraceMoeResult implements Serializable {
 			return to;
 		}
 
-		public String getAnime() {
-			return anime;
+		public String getVideo() {
+			return video;
 		}
 
-		public void setTitle_chinese(String title_chinese) {
-			this.title_chinese = title_chinese;
+		public void setAnilist(int anilist) {
+			this.anilist = anilist;
 		}
 
-		public void setTitle_native(String title_native) {
-			this.title_native = title_native;
-		}
-
-		public void setSynonyms(String[] synonyms) {
-			this.synonyms = synonyms;
-		}
-
-		public void setTitle_romaji(String title_romaji) {
-			this.title_romaji = title_romaji;
-		}
-
-		public void setEpisode(String episode) {
-			this.episode = episode;
-		}
-
-		public void setMal_id(long mal_id) {
-			this.mal_id = mal_id;
-		}
-
-		public void setTitle(String title) {
-			this.title = title;
-		}
-
-		public void setAnilist_id(long anilist_id) {
-			this.anilist_id = anilist_id;
-		}
-
-		public void setIs_adult(boolean is_adult) {
-			this.is_adult = is_adult;
-		}
-
-		public void setTokenthumb(String tokenthumb) {
-			this.tokenthumb = tokenthumb;
-		}
-
-		public void setSynonyms_chinese(String[] synonyms_chinese) {
-			this.synonyms_chinese = synonyms_chinese;
-		}
-
-		public void setAt(double at) {
-			this.at = at;
+		public void setImage(String image) {
+			this.image = image;
 		}
 
 		public void setFilename(String filename) {
@@ -386,12 +143,8 @@ public final class TraceMoeResult implements Serializable {
 			this.similarity = similarity;
 		}
 
-		public void setSeason(String season) {
-			this.season = season;
-		}
-
-		public void setTitle_english(String title_english) {
-			this.title_english = title_english;
+		public void setEpisode(int episode) {
+			this.episode = episode;
 		}
 
 		public void setFrom(double from) {
@@ -402,114 +155,42 @@ public final class TraceMoeResult implements Serializable {
 			this.to = to;
 		}
 
-		public void setAnime(String anime) {
-			this.anime = anime;
+		public void setVideo(String video) {
+			this.video = video;
 		}
 
 		@Override
 		public String toString() {
 			return new StringBuilder()
 				.append(getClass().getName()).append("{\n")
-				.append("title_chinese: ").append(title_chinese+",\n")
-				.append("title_native: ").append(title_native+",\n")
-				.append("synonyms: ").append(synonyms+",\n")
-				.append("title_romaji: ").append(title_romaji+",\n")
-				.append("episode: ").append(episode+",\n")
-				.append("mal_id: ").append(mal_id+",\n")
-				.append("title: ").append(title+",\n")
-				.append("anilist_id: ").append(anilist_id+",\n")
-				.append("is_adult: ").append(is_adult+",\n")
-				.append("tokenthumb: ").append(tokenthumb+",\n")
-				.append("synonyms_chinese: ").append(synonyms_chinese+",\n")
-				.append("at: ").append(at+",\n")
+				.append("anilist: ").append(anilist+",\n")
+				.append("image: ").append(image+",\n")
 				.append("filename: ").append(filename+",\n")
 				.append("similarity: ").append(similarity+",\n")
-				.append("season: ").append(season+",\n")
-				.append("title_english: ").append(title_english+",\n")
+				.append("episode: ").append(episode+",\n")
 				.append("from: ").append(from+",\n")
 				.append("to: ").append(to+",\n")
-				.append("anime: ").append(anime+",\n")
+				.append("video: ").append(video+",\n")
 				.append("\n}").toString();
 		}
 
 		public static class Builder {
-			public String title_chinese;
-			public String title_native;
-			public String[] synonyms;
-			public String title_romaji;
-			public String episode;
-			public long mal_id;
-			public String title;
-			public long anilist_id;
-			public boolean is_adult;
-			public String tokenthumb;
-			public String[] synonyms_chinese;
-			public double at;
+			public int anilist;
+			public String image;
 			public String filename;
 			public double similarity;
-			public String season;
-			public String title_english;
+			public int episode;
 			public double from;
 			public double to;
-			public String anime;
+			public String video;
 
-			public Builder setTitle_chinese(String title_chinese) {
-				this.title_chinese = title_chinese;
+			public Builder setAnilist(int anilist) {
+				this.anilist = anilist;
 				return this;
 			}
 
-			public Builder setTitle_native(String title_native) {
-				this.title_native = title_native;
-				return this;
-			}
-
-			public Builder setSynonyms(String[] synonyms) {
-				this.synonyms = synonyms;
-				return this;
-			}
-
-			public Builder setTitle_romaji(String title_romaji) {
-				this.title_romaji = title_romaji;
-				return this;
-			}
-
-			public Builder setEpisode(String episode) {
-				this.episode = episode;
-				return this;
-			}
-
-			public Builder setMal_id(long mal_id) {
-				this.mal_id = mal_id;
-				return this;
-			}
-
-			public Builder setTitle(String title) {
-				this.title = title;
-				return this;
-			}
-
-			public Builder setAnilist_id(long anilist_id) {
-				this.anilist_id = anilist_id;
-				return this;
-			}
-
-			public Builder setIs_adult(boolean is_adult) {
-				this.is_adult = is_adult;
-				return this;
-			}
-
-			public Builder setTokenthumb(String tokenthumb) {
-				this.tokenthumb = tokenthumb;
-				return this;
-			}
-
-			public Builder setSynonyms_chinese(String[] synonyms_chinese) {
-				this.synonyms_chinese = synonyms_chinese;
-				return this;
-			}
-
-			public Builder setAt(double at) {
-				this.at = at;
+			public Builder setImage(String image) {
+				this.image = image;
 				return this;
 			}
 
@@ -523,13 +204,8 @@ public final class TraceMoeResult implements Serializable {
 				return this;
 			}
 
-			public Builder setSeason(String season) {
-				this.season = season;
-				return this;
-			}
-
-			public Builder setTitle_english(String title_english) {
-				this.title_english = title_english;
+			public Builder setEpisode(int episode) {
+				this.episode = episode;
 				return this;
 			}
 
@@ -543,16 +219,15 @@ public final class TraceMoeResult implements Serializable {
 				return this;
 			}
 
-			public Builder setAnime(String anime) {
-				this.anime = anime;
+			public Builder setVideo(String video) {
+				this.video = video;
 				return this;
 			}
 
-			public Doc build() {
-				return new Doc(title_chinese,title_native,synonyms,title_romaji,episode,mal_id,title,anilist_id,is_adult,tokenthumb,synonyms_chinese,at,filename,similarity,season,title_english,from,to,anime);
+			public Result build() {
+				return new Result(anilist,image,filename,similarity,episode,from,to,video);
 			}
 		}
-
 	}
 
 }

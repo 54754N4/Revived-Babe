@@ -1,6 +1,7 @@
 package commands.level.normal;
 
 import java.io.File;
+import java.net.URL;
 
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
@@ -38,9 +39,10 @@ public class IP extends DiscordCommand {
 		if (input.matches(IP_FORMAT)) {
 			GeolocateResult geolocation = restRequest(GeolocateResult.class, API_FORMAT, input);
 			// Get map location from latitude and longitude
-			String gps = GPS.toString(Float.parseFloat(geolocation.latitude), Float.parseFloat(geolocation.longitude));
+			String gps = GPS.toString(Float.parseFloat(geolocation.latitude), Float.parseFloat(geolocation.longitude)),
+				url = String.format(GOOGLE_MAPS_FORMAT, Encoder.encodeURL(gps));
 			File map = Browser.getInstance()
-				.visit(String.format(GOOGLE_MAPS_FORMAT, Encoder.encodeURL(gps)))
+				.visit(new URL(url))
 				.screenshotFullAsFile();
 			channel.sendMessageEmbeds(buildEmbed(geolocation).build())
 				.addFile(map)

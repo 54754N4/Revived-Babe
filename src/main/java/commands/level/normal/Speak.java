@@ -14,13 +14,13 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.HTTP.ResponseHandler;
+import lib.encode.Encoder;
 import lib.scrape.Browser;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Speak extends DiscordCommand {
 	public static final String API = "http://www.voicerss.org/api/",  
 			API_FORMAT = "http://api.voicerss.org/?key=%s&src=%s&hl=%s&f=%s&r=%s&v=%s&c=MP3",
-			API_KEY = System.getenv("VOICE_RSS_API"),
 			DEFAULT_FILE_FORMAT = "48khz_16bit_stereo",
 			DEFAULT_LANGUAGE = "en-us",
 			DEFAULT_RATE = "0",
@@ -61,12 +61,14 @@ public class Speak extends DiscordCommand {
 		// Generate WAV from API
 		try (ResponseHandler handler = restRequest(
 				API_FORMAT, 
-				API_KEY, 
-				URLEncoder.encode(input, "UTF-8"), 
+				System.getenv("VOICE_RSS_API"),
+				Encoder.encodeURL(input), 
 				language, 
 				DEFAULT_FILE_FORMAT, 
 				rate, 
 				voice)) {
+			logger.info("REST URL IS :");
+			logger.info(String.format(API_FORMAT, System.getenv("VOICE_RSS_API"), URLEncoder.encode(input, "UTF-8"), language, DEFAULT_FILE_FORMAT, rate, voice));
 			if (!handler.isOk()) {
 				println("HTTP error code %d", handler.status);
 				handler.forEachResponseLine(this::println);

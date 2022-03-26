@@ -28,5 +28,10 @@ public class Test extends DiscordCommand {
 			channel.sendMessage("Loading..")
 				.queue(new PagedHandler<>(bot, getMusicBot().getPlaylist(guild)));
 		}
+		if (hasArgs("--api")) {
+			println("VRSS getenv: %s", System.getenv("VOICE_RSS_API"));
+			println("VRSS getProperty: %s", System.getenv("VOICE_RSS_API"));
+			println("Babe: %s", System.getenv("BABE_BOT"));
+		}
 	}
 }
