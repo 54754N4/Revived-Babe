@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.TrackScheduler;
+import lambda.StatusUpdater;
 import lib.ListUtil;
 import lib.StringLib;
 
@@ -80,10 +81,5 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 					+ ".\tQueuing " + track.getInfo().title
 					+ " (" + StringLib.millisToTime(track.getDuration()) + ")");
 		}
-	}
-	
-	@FunctionalInterface
-	public static interface StatusUpdater {
-		void println(String message);
 	}
 }

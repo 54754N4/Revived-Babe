@@ -24,6 +24,7 @@ import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.managers.channel.middleman.AudioChannelManager;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
@@ -223,16 +224,20 @@ public class Server extends DiscordCommand {
 		else if (wantsCurrent())
 			println(channel.getRegion().toString());
 		else if (input.equals(""))
-			printItemsIndexed(Region.values());
+			printItemsIndexed(Stream.of(Region.values())
+					.filter(r -> !r.isVip())
+					.toArray());
 		else { 
 			Region found = null;
 			for (Region region : Region.values())
-				if (StringLib.matchSimplified(region.getName(), input))
+				if (!region.isVip() && StringLib.matchSimplified(region.getName(), input))
 					found = region;
 			if (found == null)
 				println("No regions matched your selection: "+input);
 			else {
-				channel.getManager().setRegion(found);
+				channel.getManager()
+					.setRegion(found)
+					.queue();
 				println("Region changed to: "+found);
 			}
 		}

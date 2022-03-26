@@ -1,5 +1,8 @@
 package commands.level.normal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
@@ -24,9 +27,18 @@ public class Echo extends DiscordCommand {
 		String output = hasArgs("-n", "--no") ? command : codeBlock(command);
 		if (mentioned.users.size() == 0)
 			print(output);
-		else for (User user : mentioned.users)
-			user.openPrivateChannel()
-				.queue(channel -> channel.sendMessage(output).queue());
+		else {
+			List<User> users = new ArrayList<>(mentioned.users);
+			for (User user : mentioned.users)
+				if (user.isBot())
+					users.remove(user);
+			if (users.size() == 0)
+				println("No non-bot user mentioned.");
+			else 
+				for (User user : users)
+					user.openPrivateChannel()
+						.queue(channel -> channel.sendMessage(output).queue());
+		}
 	}
 	
 }

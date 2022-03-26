@@ -25,16 +25,17 @@ public class Kill extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		boolean now = hasArgs("-n", "--now");
 		if (StringLib.isInteger(input)) {
-			Bot slave = Bot.Slaves.get(Integer.parseInt(input.trim())-1);
+			int num = Integer.parseInt(input.trim())-1;
+			String mention = Bot.Slaves.getBot(num).getAsMention();
+			Bot slave = Bot.Slaves.get(num);
 			getLogger().info("Killing {} ..", slave);
 			Bot.Slaves.killSlave(slave, now);
-			println("Killed %s.", slave);
-		} else if (input.startsWith("echo")) { 
+			println("Killed %s.", mention);
+		} else if (input.startsWith("echo")) {
+			String mention = Bot.getEcho().getAsMention();
 			Bot.killEcho(now);
-			println("Killed echo.");
-		} else {
+			println("Killed %s.", mention);
+		} else
 			println("I need an integer or name.");
-		}
 	}
-
 }

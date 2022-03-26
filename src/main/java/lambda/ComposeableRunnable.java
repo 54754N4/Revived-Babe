@@ -1,4 +1,4 @@
-package lib;
+package lambda;
 
 @FunctionalInterface
 public interface ComposeableRunnable extends Runnable {

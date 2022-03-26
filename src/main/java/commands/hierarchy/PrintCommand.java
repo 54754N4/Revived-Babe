@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import audio.track.handlers.TrackLoadHandler.StatusUpdater;
 import bot.hierarchy.UserBot;
+import lambda.StatusUpdater;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.RestAction;

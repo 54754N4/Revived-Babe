@@ -8,6 +8,8 @@ import org.openqa.selenium.By;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lambda.VersionCheckHandler;
+
 public enum Dependency {
 	LAVAPLAYER(Dependency::latestLavaplayer), 
 	JDA(Dependency::latestJDA), 
@@ -115,11 +117,6 @@ public enum Dependency {
 	
 	public static void defaultVersionHandler(String name, String latest, boolean isUpdated) {
 		logger.info("Fetched {} for {}: {}.", latest, name, isUpdated ? "updated" : "NEEDS UPDATE");
-	}
-	
-	@FunctionalInterface
-	public static interface VersionCheckHandler {
-		void handle(String name, String latest, boolean isUpdated);
 	}
 	
 	public static void main(String[] args) throws Exception {

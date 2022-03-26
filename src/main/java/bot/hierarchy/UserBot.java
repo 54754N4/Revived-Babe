@@ -16,6 +16,7 @@ import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import commands.level.normal.Restarter;
 import commands.model.ThreadsManager;
 import lambda.OnLoadListener;
+import lambda.ThrowableRunnable;
 import lib.messages.ReactionsDispatcher;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -183,11 +184,6 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 			if (current < runnables.length)
 				safeRunChain(runnables, current);
 		}
-	}
-	
-	@FunctionalInterface
-	public static interface ThrowableRunnable {
-		void run() throws Exception;
 	}
 	
 	/* Utility methods */

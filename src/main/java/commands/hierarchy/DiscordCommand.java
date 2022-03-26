@@ -257,9 +257,4 @@ public abstract class DiscordCommand extends ListenerCommand {
 			channel.sendMessage(token)
 				.queue();
 	}
-	
-	@FunctionalInterface
-	public static interface Executable {
-		void invoke() throws Exception;
-	}
 }

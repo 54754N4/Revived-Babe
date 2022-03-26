@@ -41,7 +41,7 @@ public abstract class ListenerCommand extends RoleCommand {
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		boolean isBot = event.getAuthor().isBot();
-		boolean isAuthor = event.getAuthor().getIdLong() == this.message.getAuthor().getIdLong();
+		boolean isAuthor = event.getAuthor().getIdLong() == message.getAuthor().getIdLong();
 		String message = event.getMessage().getContentDisplay();
 		handlers.forEach(handler -> dispatch(handler, isBot, isAuthor, message));
 	}

@@ -4,6 +4,7 @@ import bot.hierarchy.Bot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
+import lambda.ThrowableSupplier;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Start extends DiscordCommand {
@@ -22,11 +23,17 @@ public class Start extends DiscordCommand {
 	@Override
 	protected void execute(String input) throws Exception {
 		if (input.startsWith("slave")) 
-			println("Created %s", Bot.Slaves.newSlave());
+			start(Bot.Slaves::newSlave);
 		else if (input.startsWith("echo"))
-			println("Created %s", Bot.startEcho());
+			start(Bot::startEcho);
 		else 
 			println("Cannot find bot with that name.");
 	}
 
+	
+	private UserBot start(ThrowableSupplier<UserBot> supplier) throws Exception {
+		UserBot created = supplier.get();
+		created.addOnLoadListener(bot -> printlnIndependently("Created %s", bot));
+		return created;
+	}
 }

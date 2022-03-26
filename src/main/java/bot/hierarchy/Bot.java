@@ -17,7 +17,7 @@ import bot.SlaveBot.NoMoreSlavesException;
 public enum Bot {
 	BABE, ECHO, MIRROR, SLAVE_1, SLAVE_2, SLAVE_3, SLAVE_4, SLAVE_5, SLAVE_6, SLAVE_7, SLAVE_8, SLAVE_9;
 	
-	public static EchoBot echo;
+	private static EchoBot echo;
 	public final String key;
 	
 	private Bot() {
@@ -36,6 +36,10 @@ public enum Bot {
 		return echo;
 	}
 	
+	public static EchoBot getEcho() {
+		return echo;
+	}
+	
 	public static void killEcho(boolean now) {
 		if (echo != null)
 			echo.kill(now);
@@ -48,6 +52,11 @@ public enum Bot {
 	public static void killAll(boolean now, @Nullable Consumer<? super MusicBot> consumer) {
 		killEcho(now);
 		Slaves.killSlaves(now, consumer);
+	}
+	
+	@Override
+	public String toString() {
+		return key;
 	}
 	
 	public static final class Slaves {
@@ -113,6 +122,10 @@ public enum Bot {
 		
 		public static Bot get(int i) {
 			return slaves[i];
+		}
+		
+		public static SlaveBot getBot(int i) {
+			return alive.get(i);
 		}
 		
 		public static Bot[] all() {

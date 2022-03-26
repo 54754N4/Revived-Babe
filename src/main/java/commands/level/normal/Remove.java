@@ -1,10 +1,10 @@
 package commands.level.normal;
 
 import java.util.Arrays;
-import java.util.stream.IntStream;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import audio.CircularDeque;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
@@ -33,9 +33,16 @@ public class Remove extends DiscordCommand {
 			return;
 		}
 		long guildId = message.getGuild().getIdLong();
-		IntStream indices = Arrays.stream(input.split(SEPARATOR))
+		CircularDeque queue = getMusicBot().getPlaylist(guild);
+		int[] indices = Arrays.stream(input.split(SEPARATOR))
 				.filter(StringLib::isInteger)
-				.mapToInt(Integer::parseInt);	// parses + un-boxes to primitive type
+				.mapToInt(Integer::parseInt)	// parses + un-boxes to primitive type
+				.filter(i -> i >= 0 && i < queue.size())
+				.toArray();
+		if (indices.length == 0) {
+			println("No valid indices found");
+			return;
+		}
 		print("Removed:%n");
 		getMusicBot().remove(guildId, indices)	// returns removed tracks
 			.map(Remove::prettyPrintTrack)

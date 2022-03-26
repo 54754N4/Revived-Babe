@@ -29,10 +29,10 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.print.PrintOptions;
+import org.openqa.selenium.remote.AbstractDriverOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.locators.RelativeLocator;
 import org.openqa.selenium.support.locators.RelativeLocator.RelativeBy;
@@ -41,7 +41,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
+import lib.scrape.BrowserConfigurator.Builder;
 
 /* Creates a browser using Selenium that follows the builder pattern
  * to ease with chained calls/actions.
@@ -49,25 +49,37 @@ import io.github.bonigarcia.wdm.WebDriverManager;
  */
 public class Browser implements Closeable, Cloneable {
     public static final long DEFAULT_TIMEOUT = 15, DEFAULT_POLLING = 5;		// in seconds
-    private static Browser INSTANCE;
     private RemoteWebDriver driver;
+    private BrowserConfigurator<? extends AbstractDriverOptions<?>> configurator;
     
-    static {
-    	// Makes sure firefox driver exists or downloads it
-    	WebDriverManager.firefoxdriver().arch64().setup();
-    }
+    private static Browser INSTANCE;
 
     public Browser(RemoteWebDriver driver) {
         this.driver = driver;
     }
     
+    public <K extends AbstractDriverOptions<?>> Browser(BrowserConfigurator<K> configurator) {
+    	this(configurator.createDriver());
+    	this.configurator = configurator;
+    }
+    
     public static synchronized Browser getInstance() {
     	if (INSTANCE == null) {
-    		INSTANCE = new Browser(new FirefoxDriver(new FirefoxOptions()
-    				.setHeadless(true)
-    				.setAcceptInsecureCerts(true)));
+//    		Builder<FirefoxOptions> builder = Configurators.firefox()
+//    				.config(Options.FIREFOX::defaultSettings);
+//    				.config(Options.FIREFOX::debugging);
+    		Builder<ChromeOptions> builder = Configurators.chrome()
+    				.config(Options.CHROME::defaultSettings);
+    		INSTANCE = new Browser(builder.build());
     	}
     	return INSTANCE;
+    }
+    
+    @Override
+    public Browser clone() {
+    	if (configurator == null)
+    		throw new IllegalCallerException("This browser wasn't created through a configurator");
+    	return new Browser(configurator);
     }
     
     @Override
@@ -383,7 +395,7 @@ public class Browser implements Closeable, Cloneable {
         waitFor().until(isTrue);
         return this;
     }
-    
+
     public Browser waitFor(By by, Collection<Consumer<WebElement>> consumers) {
         WebElement element = waitFor().until(driver -> driver.findElement(by));
         return handle(element, consumers);

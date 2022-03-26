@@ -11,12 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bot.hierarchy.UserBot;
-import commands.hierarchy.DiscordCommand.Executable;
 import commands.hierarchy.DiscordCommand.Global;
 import commands.model.Mentions;
 import commands.model.Params;
 import commands.model.ThreadsManager;
 import commands.model.TypingWatchdog;
+import lambda.Executable;
 import lib.Consumers;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Guild;
