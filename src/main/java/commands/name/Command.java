@@ -58,7 +58,8 @@ public enum Command {
 	DISCONNECT("disconnect", "dc"), 
 	REMOVE("remove", "rm"), 
 	SERVER("server", "srv", "sv"),
-	ENCODE("encode", "enc");
+	ENCODE("encode", "enc"), 
+	SHUFFLE("shuffle", "sh");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
