@@ -189,7 +189,7 @@ public abstract class DiscordCommand extends ListenerCommand {
 	
 	@Override
 	public Command start(String command) {
-		if (bot != null) {	// since commands can be instantiated using dummy data
+		if (bot != null && message.getChannelType().isGuild()) {	// since commands can be instantiated using dummy data
 			message.getChannel().sendTyping().queue(Consumers::ignore, Consumers::ignore);
 			long id = message.getGuild().getIdLong();
 			GUILDS_VISITED.putIfAbsent(bot, new HashSet<>());
