@@ -12,20 +12,17 @@ public class CircularDeque extends ArrayList<AudioTrack> {
 	public static final int UNINITIALISED = -1;
 	
 	private int current;
-	private boolean autoplay, circular, repeatSong;
-//	private AudioManager manager;
+	private boolean circular, repeatSong;
 	
-	public CircularDeque() {	// AudioManager manager
-		this(true);  // ConfigManager.getInstance().retrieveBool("DEFAULT_REPEAT_QUEUE", true), manager
+	public CircularDeque() {
+		this(true);
 	}
 	
-	public CircularDeque(boolean circular) {	// , AudioManager manager
+	public CircularDeque(boolean circular) {
 		super(new ArrayList<>());
-//		this.manager = manager;
 		this.circular = circular;
 		current = UNINITIALISED;
-		autoplay = false;
-		repeatSong = false; // ConfigManager.getInstance().retrieveBool("DEFAULT_REPEAT_SONG", false);
+		repeatSong = false;
 	}
 	
 	public boolean isValid(int index) {
@@ -33,26 +30,26 @@ public class CircularDeque extends ArrayList<AudioTrack> {
 	}
 	
 	@Override
-	public boolean add(AudioTrack data) {
+	public synchronized boolean add(AudioTrack data) {
 		if (current == UNINITIALISED) current = 0;
 		return super.add(data);
 	}
 	
 	@Override
-	public void add(int index, AudioTrack data) {
+	public synchronized void add(int index, AudioTrack data) {
 		if (current == UNINITIALISED) current = index;
 		else if (index <= current) current++;
 		super.add(index, data);
 	}
 	
 	@Override
-	public void clear() {
+	public synchronized void clear() {
 		current = UNINITIALISED;
 		super.clear();
 	}
 	
 	@Override
-	public AudioTrack remove(int i) {
+	public synchronized AudioTrack remove(int i) {
 		if (i<current) current--;
 		return super.remove(i);
 	}
@@ -61,59 +58,36 @@ public class CircularDeque extends ArrayList<AudioTrack> {
 	 * Since can't play the same instance of a track, so just
 	 * make a clone if we ever need it again and update list
 	 * @param i
-	 * @return
+	 * @return track
 	 */
-	public AudioTrack getAndUpdate(int i) { 
+	public synchronized AudioTrack getAndUpdate(int i) { 
 		if (i < 0 || i >= size()) return null;
-		set(i, get(i).makeClone());	// 
+		set(i, get(i).makeClone());
 		return get(i);
 	}
 	
-	public AudioTrack next() {
+	public synchronized AudioTrack next() {
 		if (repeatSong) return getAndUpdate(current);
 		else if (current + 1 < size()) return getAndUpdate(++current);
 		else {
-			if (isAutoplay()) return getNextAutoplay();
-			else if (circular) return getAndUpdate(current = 0);
+			if (circular) return getAndUpdate(current = 0);
 			current = UNINITIALISED;
 			return null;
 		}
 	}
-	
-	public boolean isAutoplay() {
-		return autoplay; 	// ConfigManager.getInstance().retrieveBool("AUTOPLAY", true);
-	}
-	
-	private AudioTrack getNextAutoplay() {
-//		String current = get(this.current).getInfo().uri;
-//		try {
-//			AutoplayResult next = YoutubeScraper.retrieveAutoplayOf(current);
-//			AutoplayTrackLoadHandler atlh = new AutoplayTrackLoadHandler(next.url, bot); 
-//			manager.loadItemOrdered(manager, next.url, atlh);
-//			atlh.load(true);
-//			this.current++;
-//			AudioTrack track;
-//			add(track = atlh.nextTrack());
-//			return track;
-			return null;
-//		} catch (IOException | InterruptedException e) { 
-//			this.current = UNINITIALISED;
-//			return null; 
-//		}
-	}
 
-	public AudioTrack previous() {
+	public synchronized AudioTrack previous() {
 		if (current - 1 >= 0) return getAndUpdate(--current);
 		else if (circular) return getAndUpdate(current = size() - 1);
 		current = UNINITIALISED;
 		return null;
 	}
 	
-	public void stopTrack() {
+	public synchronized void stopTrack() {
 		current = UNINITIALISED;
 	}
 	
-	public void shuffle() {
+	public synchronized void shuffle() {
 		int hash = get(getCurrent()).hashCode();
 		if (size() != 0) 
 			Collections.shuffle(this);
@@ -125,7 +99,7 @@ public class CircularDeque extends ArrayList<AudioTrack> {
 		}
 	}
 	
-	public void clearExceptCurrent() {
+	public synchronized void clearExceptCurrent() {
 		if (current != UNINITIALISED) {
 			AudioTrack track = get(current);	// store current
 			clear();							// delete all
@@ -133,35 +107,35 @@ public class CircularDeque extends ArrayList<AudioTrack> {
 		} else clear();
 	}
 	
-	public boolean setLooping(boolean loop) {
+	public synchronized boolean setLooping(boolean loop) {
 		return this.circular = loop;
 	}
 	
-	public boolean setRepeating(boolean repeat) {
+	public synchronized boolean setRepeating(boolean repeat) {
 		return this.repeatSong = repeat;	
 	}
 
-	public boolean isLooping() {
+	public synchronized boolean isLooping() {
 		return circular;
 	}
 	
-	public boolean isRepeating() {
+	public synchronized boolean isRepeating() {
 		return repeatSong;
 	}
 	
-	public boolean toggleLooping() {
+	public synchronized boolean toggleLooping() {
 		return circular = !circular;
 	}
 	
-	public boolean toggleRepeating() {
+	public synchronized boolean toggleRepeating() {
 		return repeatSong = !repeatSong;
 	}
 	
-	public int getCurrent() {
+	public synchronized int getCurrent() {
 		return current;
 	}
 
-	public void setCurrent(int i) {
+	public synchronized void setCurrent(int i) {
 		current = i;
 	}
 	
