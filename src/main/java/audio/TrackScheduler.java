@@ -54,6 +54,23 @@ public class TrackScheduler extends AudioEventAdapter {
 		return this;
 	}
 	
+	/* Queuing methods */
+	
+	public void queue(AudioTrack track) {	// Add the next track to queue or play right away if nothing is in the queue.
+		player.startTrack(track, true);
+		queue.add(track);					//the track to add or play
+	}
+	
+	public void queueNext(AudioTrack track) {
+		player.startTrack(track, true);
+		queue.add(queue.getCurrent()+1, track);
+	}
+	
+	public void queueTop(AudioTrack track) {
+		player.startTrack(track, true);
+		queue.add(0, track);
+	}
+	
 	/* Track handling methods */
 	
 	public CircularDeque getQueue() {
@@ -192,24 +209,6 @@ public class TrackScheduler extends AudioEventAdapter {
 		AudioTrack temp = queue.get(from);
 		queue.set(from, queue.get(to));
 		queue.set(to, temp);
-		notifyObservers();
-	}
-	
-	public void queue(AudioTrack track) {	// Add the next track to queue or play right away if nothing is in the queue.
-		player.startTrack(track, true);
-		queue.add(track);					//the track to add or play
-		notifyObservers();
-	}
-	
-	public void queueNext(AudioTrack track) {
-		player.startTrack(track, true);
-		queue.add(queue.getCurrent()+1, track);
-		notifyObservers();
-	}
-	
-	public void queueTop(AudioTrack track) {
-		player.startTrack(track, true);
-		queue.add(0, track);
 		notifyObservers();
 	}
 	

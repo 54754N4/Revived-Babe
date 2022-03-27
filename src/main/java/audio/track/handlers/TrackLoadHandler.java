@@ -43,6 +43,7 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 		if (top) scheduler.queueTop(track);
 		else if (next) scheduler.queueNext(track);
 		else scheduler.queue(track);
+		scheduler.notifyObservers();
 	}
 
 	@Override
@@ -53,6 +54,7 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 		int i = 0;
 		if (!playlist) loadSongs(tracks);
 		else for (AudioTrack track : tracks) handle(track, i++);
+		scheduler.notifyObservers();
 	}
 
 	@Override
