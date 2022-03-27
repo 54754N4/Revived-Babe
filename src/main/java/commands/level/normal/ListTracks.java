@@ -10,6 +10,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
@@ -68,7 +69,7 @@ public class ListTracks extends DiscordCommand {
 		final MusicBot bot = getMusicBot();	// give lambdas already casted
 		final TrackScheduler scheduler = bot.getScheduler(guild);
 		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler, true)
-				.setTitleSuffix(() -> String.format("Vol: %d", getMusicBot().getPlayer(guild).getVolume()))
+				.setTitleSuffix(this::getCurrentStats)
 				.handle(0x23EF, event -> scheduler.togglePause())
 				.handle(0x23EE, event -> scheduler.previousTrack())
 				.handle(0x23ED, event -> scheduler.nextTrack())
@@ -83,6 +84,18 @@ public class ListTracks extends DiscordCommand {
 				.handle(0x23CF, event -> bot.disconnect(guild));
 		channel.sendMessage("Loading..")
 			.queue(handler);
+	}
+	
+	private String getCurrentStats() {
+		final MusicBot bot = getMusicBot();
+		final AudioPlayer player = bot.getPlayer(guild);
+		final CircularDeque queue = bot.getPlaylist(guild);
+		StringBuilder sb = new StringBuilder("| ");
+		sb.append("Vol: " + player.getVolume() + " | ");
+		sb.append("Pause: " + player.isPaused() + " | ");
+		sb.append("Repeat Song: " + queue.isRepeating() + " | ");
+		sb.append("Repeat Queue: " + queue.isLooping());
+		return sb.toString();
 	}
 	
 	private void currentUrl(MessageReactionAddEvent event) {

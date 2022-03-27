@@ -35,6 +35,26 @@ public class TrackScheduler extends AudioEventAdapter {
 		nextPaused = false;
 		observers = new ArrayList<>();
 	}
+
+	/* Observer handling methods */
+	
+	public TrackScheduler addObserver(PagedHandler<?> observer) {
+		observers.add(observer);
+		return this;
+	}
+	
+	public TrackScheduler removeObserver(PagedHandler<?> observer) {
+		observers.remove(observer);
+		return this;
+	}
+	
+	public TrackScheduler notifyObservers() {
+		for (PagedHandler<?> observer : observers)
+			observer.update();
+		return this;
+	}
+	
+	/* Track handling methods */
 	
 	public CircularDeque getQueue() {
 		return queue;
@@ -57,11 +77,15 @@ public class TrackScheduler extends AudioEventAdapter {
 	}
 	
 	public boolean toggleRepeating() {
-		return queue.toggleRepeating();
+		boolean repeat = queue.toggleRepeating();
+		notifyObservers();
+		return repeat;
 	}
 	
 	public boolean toggleLooping() {
-		return queue.toggleLooping();
+		boolean loop = queue.toggleLooping();
+		notifyObservers();
+		return loop;
 	}
 	
 	public boolean seekTo(long position) {
@@ -234,7 +258,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		notifyObservers();
 	}
 	
-	// Events
+	/* Events */
 	
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
@@ -243,23 +267,5 @@ public class TrackScheduler extends AudioEventAdapter {
 			nextTrack();
 			notifyObservers();
 		}
-	}
-	
-	// Observer handling
-	
-	public TrackScheduler addObserver(PagedHandler<?> observer) {
-		observers.add(observer);
-		return this;
-	}
-	
-	public TrackScheduler removeObserver(PagedHandler<?> observer) {
-		observers.remove(observer);
-		return this;
-	}
-	
-	public TrackScheduler notifyObservers() {
-		for (PagedHandler<?> observer : observers)
-			observer.update();
-		return this;
 	}
 }
