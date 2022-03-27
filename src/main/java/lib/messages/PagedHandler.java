@@ -91,23 +91,22 @@ public class PagedHandler<T> extends ReactionsHandler {
 	}
 	
 	private void onNext(MessageReactionAddEvent reaction) {
-		if (page + 1 > (data.size()-1)/count) {
+		if (page + 1 > (data.size()-1)/count)
 			page = 0;
-			return;
-		}
-		page++;
+		else 
+			page++;
 		update(false);
 	}
 	
 	private void onPrev(MessageReactionAddEvent reaction) {
-		if (page - 1 < 0) {
+		if (page - 1 < 0)
 			page = totalPages() - 1;
-			return;
+		else {
+			// Since the total count of elements might have changed
+			do { 
+				page--;
+			} while (page * count > data.size());
 		}
-		// Since the total count of elements might have changed
-		do { 
-			page--;
-		} while (page * count > data.size());
 		update(false);
 	}
 	
