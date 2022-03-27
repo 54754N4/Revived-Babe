@@ -34,7 +34,10 @@ public class Get extends DiscordCommand {
 			println("Index cannot be outside the range [0,%d]", queue.size());
 			return;
 		}
-		println(queue.get(index).getInfo().uri);
+		String url = queue.get(index).getInfo().uri;
+		if (url.startsWith(StringLib.MUSIC_PATH))
+			url = StringLib.obfuscateMusicFolder(url);
+		println(url);
 	}
 
 }

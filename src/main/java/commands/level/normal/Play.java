@@ -27,6 +27,7 @@ public class Play extends DiscordCommand {
 				"-pl or --playlist\t retrieves all songs of a playlist",
 				"-sc or --soundcloud\t  searches keywords using SoundCloud",
 				"-yt or --youtube\t\t searches keywords using YouTube",
+				"-l or --local\t\tmakes me play from local directory",
 				"--count=V\t\t\t\tretrieves V tracks from playlists (URLs) or keyword searches",
 				"-n or --next\t\t\t adds new song next in the current queue",
 				"-t or --top\t\t\t  adds new song the top of the current queue");
@@ -37,7 +38,7 @@ public class Play extends DiscordCommand {
 		if (input.equals(""))
 			return;
 		for (String term : input.split(","))
-			play(term);
+			play(term.trim());
 	}
 	
 	private void play(String input) throws NumberFormatException, InterruptedException, ExecutionException {
@@ -59,10 +60,12 @@ public class Play extends DiscordCommand {
 				println("Loading song #%d", bot.play(guild, index));
 			return;
 		}
-		if (StringLib.isKeyword(input)) {
+		if (hasArgs("-l", "--local"))
+			input = StringLib.deobfuscateMusicFolder(input);
+		else if (StringLib.isKeyword(input)) {
 			if (hasArgs("-sc", "--soundcloud"))
 				input = SearchPrefix.SOUNDCLOUD.prefix(input);
-			else 
+			else
 				input = SearchPrefix.YOUTUBE.prefix(input);
 		}
 		getLogger().info("Loading track(s) from: {}", input);
@@ -73,13 +76,13 @@ public class Play extends DiscordCommand {
 			channel.sendMessage("Loading...")
 				.queue(handler.enableHandlerButtons());
 		} else 
-			bot.play(guild, 
-				input, 
-				hasArgs("--top", "-t"), 
-				hasArgs("--next", "-n"), 
-				hasArgs("--count") ? Integer.parseInt(params.named.get("--count")) : 1, 
-				hasArgs("-pl", "--playlist"), 
-				hasArgs("-v", "--verbose") ? getPrinter() : null)
+			bot.play(guild,
+				input,
+				hasArgs("--top", "-t"),
+				hasArgs("--next", "-n"),
+				hasArgs("--count") ? Integer.parseInt(params.named.get("--count")) : 1,
+				hasArgs("-pl", "--playlist"),
+				hasArgs("-v", "--verbose") ? getPrinter() : logger::info)
 			.get();
 	}
 	

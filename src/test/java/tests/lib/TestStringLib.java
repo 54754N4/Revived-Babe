@@ -61,7 +61,7 @@ public class TestStringLib {
 				"www.google.com",
 				"https://www.google.com/1234qwerqw4"
 		};
-    	transform(input, StringLib::deobfuscatePath);
+    	transform(input, StringLib::deobfuscateMusicFolder);
     	assertArrayEquals(input, expected);
     }
     

@@ -22,6 +22,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 	protected Message tracked;
 	private int page, count;
 	private Supplier<String> titleSuffix;
+	private Consumer<T> onSelection;
 	
 	public PagedHandler(UserBot bot, List<T> data) {
 		this(bot, data, 10);
@@ -33,8 +34,13 @@ public class PagedHandler<T> extends ReactionsHandler {
 		handlerButtons = false;
 		defaultBehaviour = true;
 		page = 0;
-		this.count = count;	// code block + digit reactions can't handle more
+		this.count = count;	// e.g. items per page
 		titleSuffix = () -> "";
+	}
+	
+	public PagedHandler<T> setOnSelectionConsumer(Consumer<T> onSelection) {
+		this.onSelection = onSelection;
+		return this;
 	}
 	
 	public PagedHandler<T> setTitleSuffix(Supplier<String> suffix) {
@@ -78,12 +84,10 @@ public class PagedHandler<T> extends ReactionsHandler {
 		return t.toString();
 	}
 	
+	// Either overriden by child type or used with onSelection consumer and anonymous classes
 	protected void onSelect(T element) {
-		// do something with element
-	}
-	
-	protected void onUpdate(MessageReactionAddEvent reaction) {
-		print();
+		if (onSelection != null)
+			onSelection.accept(element);
 	}
 	
 	private void onNext(MessageReactionAddEvent reaction) {
@@ -155,6 +159,6 @@ public class PagedHandler<T> extends ReactionsHandler {
 	}
 	
 	private Consumer<MessageReactionAddEvent> wrap(Consumer<MessageReactionAddEvent> consumer) {
-		return consumer.andThen(this::onUpdate);
+		return consumer.andThen(e -> print());
 	}
 }

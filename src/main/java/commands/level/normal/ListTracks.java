@@ -1,5 +1,15 @@
 package commands.level.normal;
 
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
@@ -9,6 +19,7 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
+import lib.messages.PagedHandler;
 import lib.messages.PagedTracksHandler;
 import lib.messages.ReactionsHandler;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -28,6 +39,7 @@ public class ListTracks extends DiscordCommand {
 				"# Args",
 				"-c or --current\tmakes me show currently playing song",
 				"-p or --paged\tmakes me list tracks as paged results",
+				"-l or --local\tmakes me list tracks from local directory",
 				"List tracks in current queue.");
 	}
 
@@ -35,18 +47,20 @@ public class ListTracks extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		int pos = 0;
 		CircularDeque queue = getMusicBot().getPlaylist(guild);
-		if (queue.size() == 0) 
+		if (hasArgs("-l", "--local"))
+			listLocal(input);
+		else if (queue.size() == 0)
 			println("No songs queued.");
-		else if (hasArgs("-p", "--paged")) 
+		else if (hasArgs("-p", "--paged"))
 			createPlayer();
 		else if (hasArgs("-c", "--current"))
 			createCurrent();
-		else 
+		else
 			for (AudioTrack track : queue)
 				println(String.format(
 					(pos == queue.getCurrent()) ? "%d. `%s` (%s)" : "%d. %s (%s)",
-					pos++, 
-					track.getInfo().title, 
+					pos++,
+					track.getInfo().title,
 					StringLib.millisToTime(track.getInfo().length)));
 	}
 	
@@ -112,5 +126,56 @@ public class ListTracks extends DiscordCommand {
 					new ReactionsHandler(bot)
 							.handle(0x2747, reaction -> message.editMessage(printCurrent()).queue())
 							.accept(message));
+	}
+	
+	private void listLocal(String input) {
+		Path start = Paths.get(StringLib.MUSIC_PATH);
+		MusicFilesVisitor visitor = new MusicFilesVisitor(input, this);
+		try {
+			Files.walkFileTree(start, visitor);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			println("Failed to list local dir: "+e.getMessage());
+			return;
+		}
+		channel.sendMessage("Loading...")
+			.queue(new PagedHandler<>(bot, visitor.found));
+	}
+	
+	private static class MusicFilesVisitor implements FileVisitor<Path> {
+		private String input;
+		private ListTracks command;
+		private List<String> found; 
+		
+		public MusicFilesVisitor(String input, ListTracks command) {
+			this.input = input;
+			this.command = command;
+			found = new ArrayList<>();
+		}
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			String path = file.toAbsolutePath().toString();
+			if (StringLib.matchSimplified(path, input) && path.toLowerCase().endsWith("mp3")) 
+				found.add(StringLib.obfuscateMusicFolder(path));
+			return FileVisitResult.CONTINUE;
+		}
+
+		@Override
+		public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+			command.logger.error(exc.getMessage(), exc);
+			return FileVisitResult.CONTINUE;
+		}
+
+		@Override
+		public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+			return FileVisitResult.CONTINUE;
+		}
+		
+		@Override
+		public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+			return FileVisitResult.CONTINUE;
+		}
+		
 	}
 }

@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import javax.swing.filechooser.FileSystemView;
+
 public final class StringLib {
 	public static final int NOT_FOUND = -1;
-	public static final String MUSIC_PATH = "D:\\Users\\Satsana\\Desktop\\Media\\Sounds\\Music";
+	public static final String DESKTOP = FileSystemView.getFileSystemView().getHomeDirectory().getAbsolutePath(), 
+		MUSIC_PATH = DESKTOP + "\\Media\\Sounds\\Music";
 
 	public static String fromUnicode(int unicode) {
 		return new String(Character.toChars(unicode));
@@ -127,12 +130,10 @@ public final class StringLib {
 	}
 
 	public static String obfuscateMusicFolder(String path) {
-		if (isURL(path) || path.startsWith("ytsearch") || path.startsWith("scsearch")) return path;
 		return Paths.get(path).normalize().toString().replace(MUSIC_PATH, "~");
 	}
 	
-	public static String deobfuscatePath(String path) {
-		if (isURL(path) || path.startsWith("ytsearch") || path.startsWith("scsearch")) return path;
+	public static String deobfuscateMusicFolder(String path) {
 		return Paths.get(path).normalize().toString().replace("~", MUSIC_PATH);
 	}
 
@@ -143,8 +144,9 @@ public final class StringLib {
 
 	public static boolean isInteger(String input) {
 		if (input.equals("")) return false;
-		try { Integer.parseInt(input); } 
-		catch (NumberFormatException e) { return false; }
+		for (int i=0; i<input.length(); i++)
+			if (!Character.isDigit(input.charAt(i)))
+				return false;
 		return true;
 	}
 
