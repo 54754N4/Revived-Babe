@@ -96,6 +96,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 			return;
 		}
 		page++;
+		update();
 	}
 	
 	private void onPrev(MessageReactionAddEvent reaction) {
@@ -107,6 +108,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 		do { 
 			page--;
 		} while (page * count > data.size());
+		update();
 	}
 	
 	public void update() {
