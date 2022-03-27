@@ -1,14 +1,13 @@
 package backup;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.OptionalInt;
-import java.util.concurrent.Future;
+import java.util.TreeMap;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
@@ -26,6 +25,7 @@ import bot.hierarchy.UserBot;
 import database.DBManager;
 import database.Query;
 import database.TableManager;
+import lib.StringLib;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -114,19 +114,24 @@ public abstract class MusicState {
 	}
 	
 	private static int restorePlaylist(TableManager table, MusicBot bot, Guild guild) {
-		Map<String, String> urls;
+		Map<String, String> all, urls = new TreeMap<>();
 		try {
-			urls = table.selectAll();
+			all = table.selectAll();
+			all.entrySet()
+				.stream()
+				.filter(e -> StringLib.isInteger(e.getKey()))
+				.forEachOrdered(e -> urls.put(e.getKey(), e.getValue()));			
 			if (urls.size() == 0)
 				return 0;
 		} catch (SQLException e) {
 			logger.error("Could not retrieve playlist from backup", e);
 			return 0;
 		}
-		final TrackLoadHandler handler = new TrackLoadHandler(bot.getScheduler(guild));
+		final TrackLoadHandler handler = new TrackLoadHandler(bot.getScheduler(guild))
+				.setToggleCount(urls.size()-1);
 		final AudioPlayerManager playerManager = bot.getPlayerManager(guild);
-		List<Future<Void>> loaders = new ArrayList<>();
-		urls.forEach((name, value) -> loaders.add(playerManager.loadItemOrdered(playerManager, value, handler)));
+		for (Entry<String, String> entry : urls.entrySet())
+			playerManager.loadItemOrdered(playerManager, entry.getValue(), handler);
 		return urls.size();
 	}
 	
@@ -145,11 +150,22 @@ public abstract class MusicState {
 	}
 	
 	private static void restoreSongAndPosition(TableManager table, MusicBot bot, Guild guild, int restored) {
+		// Delay for up to 5s for songs to load
+		CircularDeque queue = bot.getScheduler(guild).getQueue();
+		long time = System.currentTimeMillis(), MAX_DELAY = 5000;
+		try {
+			while (queue.size() != restored) {
+				Thread.sleep(1000);
+				if (System.currentTimeMillis() - time > MAX_DELAY) 
+					break;
+			}
+		} catch (InterruptedException e) {
+			logger.error("Couldn't wait for songs to load", e);
+		}
 		try {
 			String current = table.retrieve(CURRENT, "");
 			if (current.equals("")) 
 				return;
-			CircularDeque queue = bot.getScheduler(guild).getQueue();
 			OptionalInt index = IntStream.range(0, queue.size())
 				.filter(i -> queue.get(i).getInfo().title.equals(current))
 				.findFirst();
@@ -163,19 +179,7 @@ public abstract class MusicState {
 			long position = table.retrieveLong(POSITION, -1);
 			if (position == -1)
 				return;
-			// Delay for up to 5s for songs to load
-			CircularDeque queue = bot.getScheduler(guild).getQueue();
-			boolean error = false;
-			long time = System.currentTimeMillis(), MAX_DELAY = 5000;
-			while (queue.size() != restored) {
-				Thread.sleep(1000);
-				if (System.currentTimeMillis() - time > MAX_DELAY) {
-					error = true;
-					break;
-				}
-			}
-			if (!error)
-				bot.seekTo(guild, position);
+			bot.seekTo(guild, position);
 		} catch (Exception e) {
 			logger.error("Could not retrieve last song's position", e);
 		}

@@ -17,14 +17,13 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 	private final int count, size;
 	private final boolean next, top, playlist;
 	private final TrackScheduler scheduler;
+	private boolean notify;
+	private int toggleNotify, toggleCount;
+	
 	private StatusUpdater callback;
 	
 	public TrackLoadHandler(TrackScheduler scheduler) {
-		this(scheduler, null);
-	}
-	
-	public TrackLoadHandler(TrackScheduler scheduler, StatusUpdater callback) {
-		this(false, false, 1, false, scheduler, callback);
+		this(false, false, 1, false, scheduler, null);
 	}
 	
 	public TrackLoadHandler(boolean top, boolean next, int count, boolean playlist, TrackScheduler scheduler, StatusUpdater callback) {
@@ -34,16 +33,20 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 		this.playlist = playlist;
 		this.scheduler = scheduler;
 		this.callback = callback;
+		notify = true;
+		toggleNotify = -1;
+		toggleCount = 0;
 		size = scheduler.getQueue().size();
 	}
 
 	@Override
 	public void trackLoaded(AudioTrack track) {
+		incrementToggle();
 		if (callback != null) callback.println(scheduler.getQueue().size()+". Adding to queue " + track.getInfo().title);
 		if (top) scheduler.queueTop(track);
 		else if (next) scheduler.queueNext(track);
 		else scheduler.queue(track);
-		scheduler.notifyObservers();
+		if (notify) scheduler.notifyObservers();
 	}
 
 	@Override
@@ -54,7 +57,7 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 		int i = 0;
 		if (!playlist) loadSongs(tracks);
 		else for (AudioTrack track : tracks) handle(track, i++);
-		scheduler.notifyObservers();
+		if (notify) scheduler.notifyObservers();
 	}
 
 	@Override
@@ -75,6 +78,7 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 	}
 	
 	private void handle(AudioTrack track, int num) {
+		incrementToggle();
 		if (top) scheduler.queueTop(track);
 		else if (next) scheduler.queueNext(track);
 		else scheduler.queue(track);
@@ -83,5 +87,21 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 					+ ".\tQueuing " + track.getInfo().title
 					+ " (" + StringLib.millisToTime(track.getDuration()) + ")");
 		}
+	}
+	
+	public TrackLoadHandler setNotify(boolean notify) {
+		this.notify = notify;
+		return this;
+	}
+	
+	public TrackLoadHandler setToggleCount(int toggleNotify) {
+		this.toggleNotify = toggleNotify;
+		setNotify(false);
+		return this;
+	}
+	
+	private void incrementToggle() {
+		if (++toggleCount == toggleNotify)
+			setNotify(true);
 	}
 }

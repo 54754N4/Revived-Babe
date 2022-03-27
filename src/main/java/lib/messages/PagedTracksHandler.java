@@ -72,4 +72,15 @@ public class PagedTracksHandler extends PagedHandler<AudioTrack> implements Audi
 	public void loadFailed(FriendlyException exception) {
 		tracked.editMessage("Loading failed : "+exception.getMessage()).queue();
 	}
+	
+	@Override
+	public void update(boolean stayOnCurrent) {
+		if (stayOnCurrent) {
+			int actual = scheduler.getCurrent()/count,
+				increment = page < actual ? 1 : -1;
+			while (page != actual)
+				page += increment;
+		}
+		super.update(stayOnCurrent);
+	}
 }

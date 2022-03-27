@@ -20,7 +20,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 	protected boolean handlerButtons, defaultBehaviour;
 	protected List<T> data;
 	protected Message tracked;
-	private int page, count;
+	protected int page, count;
 	private Supplier<String> titleSuffix;
 	private Consumer<T> onSelection;
 	
@@ -57,7 +57,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 		handlerButtons = true;
 		return this;
 	}
-	
+
 	@Override
 	public void accept(Message message) {
 		tracked = message;
@@ -96,7 +96,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 			return;
 		}
 		page++;
-		update();
+		update(false);
 	}
 	
 	private void onPrev(MessageReactionAddEvent reaction) {
@@ -108,10 +108,14 @@ public class PagedHandler<T> extends ReactionsHandler {
 		do { 
 			page--;
 		} while (page * count > data.size());
-		update();
+		update(false);
 	}
 	
 	public void update() {
+		update(true);
+	}
+	
+	public void update(boolean stayOnCurrent) {
 		try { tracked.editMessage(parsePage(page)).queue(Consumers::ignore, Consumers::ignore); } 
 		catch (Exception e) { logger.error("Exception trying to print paged handler", e); }
 	}
