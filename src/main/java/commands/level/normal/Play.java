@@ -27,7 +27,6 @@ public class Play extends DiscordCommand {
 				"-pl or --playlist\t retrieves all songs of a playlist",
 				"-sc or --soundcloud\t  searches keywords using SoundCloud",
 				"-yt or --youtube\t\t searches keywords using YouTube",
-				"-l or --local\t\tmakes me play from local directory",
 				"--count=V\t\t\t\tretrieves V tracks from playlists (URLs) or keyword searches",
 				"-n or --next\t\t\t adds new song next in the current queue",
 				"-t or --top\t\t\t  adds new song the top of the current queue");
@@ -60,7 +59,7 @@ public class Play extends DiscordCommand {
 				println("Loading song #%d", bot.play(guild, index));
 			return;
 		}
-		if (hasArgs("-l", "--local"))
+		if (input.startsWith("~"))
 			input = StringLib.deobfuscateMusicFolder(input);
 		else if (StringLib.isKeyword(input)) {
 			if (hasArgs("-sc", "--soundcloud"))
@@ -88,6 +87,7 @@ public class Play extends DiscordCommand {
 	
 	public static enum SearchPrefix {
 		YOUTUBE("ytsearch:"), SOUNDCLOUD("scsearch:");
+		
 		private String prefix;
 		
 		private SearchPrefix(String prefix) {
