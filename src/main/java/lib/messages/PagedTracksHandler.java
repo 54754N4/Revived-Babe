@@ -50,6 +50,7 @@ public class PagedTracksHandler extends PagedHandler<AudioTrack> implements Audi
 	@Override
 	protected void onSelect(AudioTrack element) {
 		scheduler.queue(element);
+		scheduler.notifyObservers();
 	}
 	
 	@Override
