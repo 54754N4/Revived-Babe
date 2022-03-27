@@ -1,9 +1,14 @@
 package audio;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+
+import lib.messages.PagedHandler;
 
 //This class schedules tracks for the audio player. It contains the queue of tracks.
 public class TrackScheduler extends AudioEventAdapter {
@@ -17,15 +22,18 @@ public class TrackScheduler extends AudioEventAdapter {
 	private boolean nextPaused;
 	private int volumeStep;
 	
+	private List<PagedHandler<?>> observers;
+	
 	public TrackScheduler(AudioPlayer player) {
 		this.player = player;
 		this.queue = new CircularDeque();
 		player.addListener(this);
-		player.setVolume(DEFAULT_VOLUME);		// ConfigManager.getInstance().retrieveInt("DEFAULT_VOLUME", 50)
-		volumeStep = DEFAULT_VOLUME_STEP;		// ConfigManager.getInstance().retrieveInt("DEFAULT_VOLUME_STEP", 5)
+		player.setVolume(DEFAULT_VOLUME);
+		volumeStep = DEFAULT_VOLUME_STEP;
 		nextSeek = 0;
 		nextTrack = -1;
 		nextPaused = false;
+		observers = new ArrayList<>();
 	}
 	
 	public CircularDeque getQueue() {
@@ -64,24 +72,36 @@ public class TrackScheduler extends AudioEventAdapter {
 	}
 	
 	public boolean setVolume(int volume) {
+		boolean output;
 		if (0 <= volume && volume <= MAX_VOLUME) {
 			player.setVolume(volume);
-			return true;
-		} else return false;
+			output = true;
+		} else 
+			output = false;
+		notifyObservers();
+		return output;
 	}
 	
 	public void decreaseVolume() {
 		int current = player.getVolume();
-		if (current == 0) return;
-		else if (current - volumeStep <= 0) player.setVolume(0);
-		else setVolume(current - volumeStep);
+		if (current == 0) 
+			return;
+		else if (current - volumeStep <= 0) { 
+			player.setVolume(0);
+			notifyObservers();
+		} else
+			setVolume(current - volumeStep);
 	}
 	
 	public void increaseVolume() {
 		int current = player.getVolume();
-		if (current == MAX_VOLUME) return;
-		else if (current + volumeStep >= MAX_VOLUME) player.setVolume(MAX_VOLUME);
-		else setVolume(current + volumeStep);
+		if (current == MAX_VOLUME) 
+			return;
+		else if (current + volumeStep >= MAX_VOLUME) {
+			player.setVolume(MAX_VOLUME);
+			notifyObservers();
+		} else 
+			setVolume(current + volumeStep);
 	}
 	
 	public boolean togglePause() {
@@ -91,6 +111,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	
 	public boolean setPause(boolean pause) {
 		player.setPaused(pause);
+		notifyObservers();
 		return player.isPaused();
 	}
 	
@@ -101,12 +122,15 @@ public class TrackScheduler extends AudioEventAdapter {
 	public void stop() {
 		player.stopTrack();
 		queue.stopTrack();
+		notifyObservers();
 	}
 	
 	public void clear() {
-//		BabeBot.musicState.clear();
-		if (player.getPlayingTrack() != null) queue.clearExceptCurrent();
-		else queue.clear();
+		if (player.getPlayingTrack() != null) 
+			queue.clearExceptCurrent();
+		else 
+			queue.clear();
+		notifyObservers();
 	}
 	
 	public boolean setLooping(boolean repeat) {
@@ -126,10 +150,13 @@ public class TrackScheduler extends AudioEventAdapter {
 	}
 	
 	public int play(int i) {
-		if (i<0 || i>=queue.size()) return -1;
-		if (player.isPaused()) player.setPaused(false);
+		if (i<0 || i>=queue.size()) 
+			return -1;
+		if (player.isPaused()) 
+			player.setPaused(false);
 		player.startTrack(queue.getAndUpdate(i), false);
 		queue.setCurrent(i);
+		notifyObservers();
 		return i;
 	}
 	
@@ -141,21 +168,25 @@ public class TrackScheduler extends AudioEventAdapter {
 		AudioTrack temp = queue.get(from);
 		queue.set(from, queue.get(to));
 		queue.set(to, temp);
+		notifyObservers();
 	}
 	
 	public void queue(AudioTrack track) {	// Add the next track to queue or play right away if nothing is in the queue.
 		player.startTrack(track, true);
 		queue.add(track);					//the track to add or play
+		notifyObservers();
 	}
 	
 	public void queueNext(AudioTrack track) {
 		player.startTrack(track, true);
 		queue.add(queue.getCurrent()+1, track);
+		notifyObservers();
 	}
 	
 	public void queueTop(AudioTrack track) {
 		player.startTrack(track, true);
 		queue.add(0, track);
+		notifyObservers();
 	}
 	
 	public void playThenBacktrack(AudioTrack track) { 
@@ -182,19 +213,25 @@ public class TrackScheduler extends AudioEventAdapter {
 			setPause(true);
 			nextPaused = false;
 		}
+		notifyObservers();
 	}
 	
 	public void previousTrack() {
 		player.startTrack(queue.previous(), false);
+		notifyObservers();
 	}
 
 	public AudioTrack remove(int i) {
-		if (i == queue.getCurrent()) nextTrack();
-		return queue.remove(i);
+		if (i == queue.getCurrent()) 
+			nextTrack();
+		AudioTrack removed = queue.remove(i);
+		notifyObservers();
+		return removed;
 	}
 	
 	public void shuffle() {
 		queue.shuffle();
+		notifyObservers();
 	}
 	
 	// Events
@@ -202,6 +239,27 @@ public class TrackScheduler extends AudioEventAdapter {
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		// Only start the next track if the end reason is (FINISHED or LOAD_FAILED)
-		if (endReason.mayStartNext) nextTrack();
+		if (endReason.mayStartNext) {
+			nextTrack();
+			notifyObservers();
+		}
+	}
+	
+	// Observer handling
+	
+	public TrackScheduler addObserver(PagedHandler<?> observer) {
+		observers.add(observer);
+		return this;
+	}
+	
+	public TrackScheduler removeObserver(PagedHandler<?> observer) {
+		observers.remove(observer);
+		return this;
+	}
+	
+	public TrackScheduler notifyObservers() {
+		for (PagedHandler<?> observer : observers)
+			observer.update();
+		return this;
 	}
 }

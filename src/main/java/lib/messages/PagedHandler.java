@@ -68,7 +68,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 		if (handlerButtons)
 			setupElementHandlers();
 		super.accept(message);
-		print();
+		update();
 	}
 	
 	protected void setupElementHandlers() {
@@ -109,7 +109,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 		} while (page * count > data.size());
 	}
 	
-	protected void print() {
+	public void update() {
 		try { tracked.editMessage(parsePage(page)).queue(Consumers::ignore, Consumers::ignore); } 
 		catch (Exception e) { logger.error("Exception trying to print paged handler", e); }
 	}
@@ -142,23 +142,5 @@ public class PagedHandler<T> extends ReactionsHandler {
 		for (int i=0; i<elements.size(); i++)
 			sb.append(parseElement(i, i+page*count, elements.get(i))+NEW_LINE);
 		return sb.append(CODE_BLOCK).toString();
-	}
-	
-	// Compose all consumers so we update text after every action 
-	
-	@Override
-	public ReactionsHandler handle(String name, Consumer<MessageReactionAddEvent> consumer) {
-		super.handle(name, wrap(consumer));
-		return this;
-	}
-	
-	@Override
-	public ReactionsHandler handle(int unicode, Consumer<MessageReactionAddEvent> consumer) {
-		super.handle(unicode, wrap(consumer));
-		return this;
-	}
-	
-	private Consumer<MessageReactionAddEvent> wrap(Consumer<MessageReactionAddEvent> consumer) {
-		return consumer.andThen(e -> print());
 	}
 }

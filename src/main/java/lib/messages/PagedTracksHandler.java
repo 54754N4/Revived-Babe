@@ -26,6 +26,7 @@ public class PagedTracksHandler extends PagedHandler<AudioTrack> implements Audi
 		this.listTracks = listTracks;
 		this.scheduler = scheduler;
 		loopbackIndices = false;
+		scheduler.addObserver(this);
 	}
 	
 	@Override
