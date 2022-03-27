@@ -36,10 +36,8 @@ public class Time extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		if (TIMEZONES == null) {
-			println("Retrieving list of timezone codes (only done first time #lazyLoading)");
+		if (TIMEZONES == null) 
 			TIMEZONES = getTimezones();
-		}
 		if (hasArgs("-l", "--list")) {
 			if (input.equals(""))
 				TIMEZONES.forEach(this::println);
