@@ -92,10 +92,15 @@ public class ListTracks extends DiscordCommand {
 		final CircularDeque queue = bot.getPlaylist(guild);
 		StringBuilder sb = new StringBuilder("| ");
 		sb.append("Vol: " + player.getVolume() + " | ");
-		sb.append("Pause: " + player.isPaused() + " | ");
-		sb.append("Repeat Song: " + queue.isRepeating() + " | ");
-		sb.append("Repeat Queue: " + queue.isLooping());
+		sb.append("Pause: " + convertToEmoji(player.isPaused()) + " | ");
+		sb.append("Repeat Song: " + convertToEmoji(queue.isRepeating()) + " | ");
+		sb.append("Repeat Queue: " + convertToEmoji(queue.isLooping()));
 		return sb.toString();
+	}
+	
+	private static String convertToEmoji(boolean bool) {
+		int codepoint = bool ? 0x2705 : 0x274C;
+		return new String(Character.toChars(codepoint));
 	}
 	
 	private void currentUrl(MessageReactionAddEvent event) {
