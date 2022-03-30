@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 public class TicTacToe extends FSMCommand {
 	private Game game;
 	private Message printable;
-	private boolean isFirst;
+	private boolean isFirst, finished;
 	private User first, second;
 	private State secondTurn;
 	
@@ -26,7 +26,7 @@ public class TicTacToe extends FSMCommand {
 
 	@Override
 	public String helpMessage() {
-		return helpBuilder("", 
+		return helpBuilder("<mentioned_user>", 
 			"Play tic tac toe! Give any combination of (a,b,c) for row and (0,1,2) for cols [e.g. a0 or b2 etc]",
 			"You can also type 'reset' and 'exit' to reset or stop the game respectively");
 	}
@@ -108,17 +108,26 @@ public class TicTacToe extends FSMCommand {
 	
 	private void reset(MessageReceivedEvent event) {
 		destructibleMessage("Game has been reset").queue();
+		finished = false;
 		game.reset();
 		printState();
 		event.getMessage().delete().queue();
 	}
 	
 	private boolean isFirst(MessageReceivedEvent event) {
-		return isFirst && event.getAuthor().getIdLong() == first.getIdLong() && !isError(event) && !matches(event, "reset") && !matches(event, "exit");
+		return isFirst && !finished 
+				&& event.getAuthor().getIdLong() == first.getIdLong() 
+				&& !isError(event) 
+				&& !matches(event, "reset") 
+				&& !matches(event, "exit");
 	}
 	
 	private boolean isSecond(MessageReceivedEvent event) {
-		return !isFirst && event.getAuthor().getIdLong() == second.getIdLong() && !isError(event) && !matches(event, "reset") && !matches(event, "exit");
+		return !isFirst && !finished 
+				&& event.getAuthor().getIdLong() == second.getIdLong() 
+				&& !isError(event) 
+				&& !matches(event, "reset") 
+				&& !matches(event, "exit");
 	}
 	
 	private void handle(MessageReceivedEvent event, Type type) {
@@ -142,6 +151,7 @@ public class TicTacToe extends FSMCommand {
 			case CIRCLE: who = second.getName(); break;
 			case CROSS: who = first.getName(); break;
 		}
+		finished = true;
 		printable.editMessage(String.format("%s won!", who)).queue(); 
 		return true;
 	}

@@ -72,7 +72,8 @@ public class Help extends DiscordCommand {
 			"\t" + inline("hey babe help -h"),
 			"\t" + inline("..help -h"),
 			"\t" + inline("@Babe help -h"),
-			"\n\tIn the previous examples, `-h` is what we call a global arg/parameter since every command has it, so to get any other command's docs all you need to do is `<cmd> -h`.\nOr you could just call the help command and pass the command name as argument like this `help <cmd>`."+markdown("# Note\n\tEvery command executes in a seperate thread."));
+			"\n\tIn the previous examples, `-h` is what we call a global arg/parameter since every command has it, so to get any other command's docs all you need to do is `<cmd> -h`.\nOr you could just call the help command and pass the command name as argument like this `help <cmd>`."+markdown("# Note\n\tEvery command executes in a seperate thread.")
+		);
 	}
 	
 	private static String helpGlobal() {
@@ -84,7 +85,10 @@ public class Help extends DiscordCommand {
 			inline("-d or --delete")+"\tDeletes your msg that invoked the command.",
 			inline("-s or --silent")+"\tPrevents the command from outputting anything.",
 			inline("--after=<seconds>")+"\tExecutes the command after delay in seconds.",
-			inline("--every=<seconds>")+"\tRepeats every period. If you want it to execute instantly, add a '*' before (e.g. --every=*60)");
+			inline("--every=<seconds>")+"\tRepeats every period. If you want it to execute instantly, add a '*' before (e.g. --every=*60)",
+			"**__>> Global FSM Params__**",
+			inline("--diagram=<scaling>")+"\tFSM commands can draw their state machine diagram, if scaling isn't given defaults to 2."
+		);
 	}
 	
 	/*
@@ -101,7 +105,8 @@ public class Help extends DiscordCommand {
 			"\n**_Named_** parameters can optionaly take a value as well, and these always start with double _hypens_ `--`.",
 			"Here's an example for both kinds of _named_ params :",
 			"\t- One that takes a value (1337 in this case) : `--count=1337`",
-			"\t- And one that doesn't take any : \t\t\t\t\t`--timed`");
+			"\t- And one that doesn't take any : \t\t\t\t\t`--timed`"
+		);
 	}
 
 }

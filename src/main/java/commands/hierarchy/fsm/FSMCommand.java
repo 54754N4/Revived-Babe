@@ -51,7 +51,7 @@ public abstract class FSMCommand extends DiscordCommand {
 	
 	@Override
 	protected void execute(String input) throws Exception {
-		if (hasArgs("--test")) {
+		if (hasArgs(Global.DIAGRAM.params)) {
 			printDiagram();
 			return;
 		}
@@ -103,17 +103,18 @@ public abstract class FSMCommand extends DiscordCommand {
 	
 	// For testing and printing FSMs
 	private void printDiagram() throws NumberFormatException, IOException {
-		String scaling = DEFAULT_SCALING; 
-		// Parse 3 different ways based on user preference
-		scaling = params.named.get("--test").length() != 0 ? params.named.get("--test") : scaling;
-		scaling = hasArgs("--scale") ? params.named.get("--scale") : scaling;
-		scaling = hasArgs("--scaling") ? params.named.get("--scaling") : scaling; 
+		String scaling = DEFAULT_SCALING,
+			param = Global.DIAGRAM.params[0];
+		if (hasArgs(Global.DIAGRAM.params) && !params.named.get(param).equals(""))
+			scaling = params.named.get(param); 
 		if (!StringLib.isInteger(scaling)) {
 			println("Invalid integer scaling given =v.");
 			return;
 		}
 		File diagram = FSMVisualizer.visualise(this, Integer.parseInt(scaling));
-		channel.sendMessage("This command's FSM :").addFile(diagram).queue();
+		channel.sendMessage("This command's FSM :")
+			.addFile(diagram)
+			.queue();
 		diagram.delete();
 	}
 }

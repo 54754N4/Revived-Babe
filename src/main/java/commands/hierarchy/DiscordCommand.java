@@ -37,13 +37,16 @@ public abstract class DiscordCommand extends ListenerCommand {
 	protected static final Gson gson = new Gson();
 	
 	public static enum Global {
+		// Normal commands global params
 		DELETE_USER_MESSAGE("-d", "--delete"), 
 		DISPLAY_HELP_MESSAGE("--help", "-h"),
 		PRIVATE_MESSAGE_REPLY("-rep", "--reply"),
 		SHOW_EXECUTION_TIME("--timed"),
 		HIDE_ALL_OUTPUT("-s", "--silent"),
 		DELAYED("--after"),
-		SCHEDULED("--every");
+		SCHEDULED("--every"),
+		// FSM global params
+		DIAGRAM("--diagram");
 		
 		public String[] params;
 		
