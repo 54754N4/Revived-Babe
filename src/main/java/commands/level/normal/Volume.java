@@ -21,20 +21,36 @@ public class Volume extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		if (input.trim().equals(""))
+		if (hasUnnamedDigit())
+			handleRelativeNegative();
+		else if (input.equals(""))
 			printCurrentVolume();
-		else if (input.startsWith("+") || input.startsWith("-"))
-			handleRelative(input);
+		else if (input.startsWith("+"))
+			handleRelative(input, true);
 		else if (!StringLib.isInteger(input)) 
 			handleText(input);
 		else 
 			handleInt(Integer.parseInt(input));
 	}
 	
-	private void handleRelative(String input) {
+	private boolean hasUnnamedDigit() {
+		for (String unnamed : params.unnamed)
+			if (StringLib.isInteger(unnamed.substring(1)))
+				return true;
+		return false;
+	}
+	
+	private void handleRelativeNegative() {
+		for (String unnamed : params.unnamed)
+			if (StringLib.isInteger(unnamed.substring(1)))
+				handleRelative(unnamed, false);
+	}
+	
+	private void handleRelative(String input, boolean increment) {
 		int volume = getMusicBot().getVolume(guild),
-			dv = Integer.parseInt(input.substring(1));
-		getMusicBot().setVolume(guild, volume + dv);
+			dv = Integer.parseInt(input.substring(1)),
+			after = increment ? volume + dv : volume - dv;
+		getMusicBot().setVolume(guild, after);
 	}
 
 	private void printCurrentVolume() {
