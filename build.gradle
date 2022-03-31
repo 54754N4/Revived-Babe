@@ -8,7 +8,7 @@ mainClassName = 'main.Run'
 
 version = '2.0'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.17
 
 repositories {
   mavenCentral()
@@ -42,8 +42,8 @@ dependencies {
   implementation 'org.seleniumhq.selenium:selenium-java:4.1.2'		// selenium browser automation
   implementation 'io.github.bonigarcia:webdrivermanager:5.1.0'		// driver
   implementation 'org.xerial:sqlite-jdbc:3.34.0'					// sqlite jdbc
-  implementation 'org.jgrapht:jgrapht-core:1.5.0'					// graphs
-  implementation 'org.jgrapht:jgrapht-ext:1.5.0'					// graph visualisation
+  implementation 'org.jgrapht:jgrapht-core:1.5.1'					// graphs
+  implementation 'org.jgrapht:jgrapht-ext:1.5.1'					// graph visualisation
   implementation 'org.graalvm.js:js:20.3.0'							// js scripting engine
   implementation 'org.graalvm.js:js-scriptengine:21.0.0.2'			// engine implementation
   
