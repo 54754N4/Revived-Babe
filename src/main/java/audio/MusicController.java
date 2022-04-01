@@ -45,6 +45,12 @@ public class MusicController {
 		AudioSourceManagers.registerLocalSource(playerManager);
 		return playerManager;
 	}
+	
+	public MirroredSendHandler getMirroredSendHandler() {
+		if (MirroredSendHandler.class.isInstance(sender))
+			return MirroredSendHandler.class.cast(sender);
+		return null;
+	}
 
 	public AudioPlayerManager getPlayerManager() {
 		return playerManager;
