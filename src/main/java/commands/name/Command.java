@@ -59,7 +59,9 @@ public enum Command {
 	REMOVE("remove", "rm"), 
 	SERVER("server", "srv", "sv"),
 	ENCODE("encode", "enc"), 
-	SHUFFLE("shuffle", "sh");
+	SHUFFLE("shuffle", "sh"), 
+	SYNONYMS("synonyms", "syn"), 
+	QR_CODE("qr");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
