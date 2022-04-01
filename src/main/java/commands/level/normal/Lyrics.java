@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Lyrics extends DiscordCommand {
+	// https://lyricsovh.docs.apiary.io/#reference
 	private static final String API_FORMAT = "https://api.lyrics.ovh/v1/%s/%s";
 
 	public Lyrics(UserBot bot, Message message) {
@@ -23,12 +24,13 @@ public class Lyrics extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		String[] split = input.split("-"), 
-			treated = new String[2];
-		treated[0] = Encoder.encodeURL(split[0] = split[0].trim());
-		treated[1] = Encoder.encodeURL(split[1] = split[1].trim());
-		LyricsOVHResult result = restRequest(LyricsOVHResult.class, API_FORMAT, treated[0], treated[1]);
-		if (result.lyrics == null || result.lyrics.equals(""))
+		String[] split = input.split("-");
+		if (split.length < 2) {
+			println("Give me artist AND title name");
+			return;
+		}
+		LyricsOVHResult result = getLyrics(split[0].trim(), split[1].trim());
+		if (result == null || result.lyrics == null|| result.lyrics.equals(""))
 			println("Couldn't find lyrics");
 		else 
 			channel.sendMessageEmbeds(new EmbedBuilder()
@@ -36,6 +38,14 @@ public class Lyrics extends DiscordCommand {
 				.setDescription(fixSpacing(result.lyrics))
 				.build())
 			.queue();
+	}
+	
+	private LyricsOVHResult getLyrics(String artist, String title) {
+		try {
+			return restRequest(LyricsOVHResult.class, API_FORMAT, Encoder.encodeURL(artist), Encoder.encodeURL(title));
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private String fixSpacing(String lyrics) {
