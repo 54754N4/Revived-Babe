@@ -53,8 +53,8 @@ public class Synonyms extends DiscordCommand {
 		for (Response r : response.response) {
 			builder = new EmbedBuilder();
 			builder.setTitle("Synonyms for "+input);
-			builder.addField("Category", r.list.category, false);
-			builder.addField("Synonyms", r.list.synonyms, false);
+			builder.addField("Category", r.list.category, true);
+			builder.addField("Synonyms", r.list.synonyms, true);
 			channel.sendMessageEmbeds(builder.build()).queue();
 		}
 	}
