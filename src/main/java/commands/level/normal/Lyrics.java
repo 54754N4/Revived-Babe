@@ -4,6 +4,7 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.LyricsOVHResult;
+import lib.encode.Encoder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 
@@ -24,8 +25,8 @@ public class Lyrics extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		String[] split = input.split("-"), 
 			treated = new String[2];
-		treated[0] = urlEncode(split[0] = split[0].trim());
-		treated[1] = urlEncode(split[1] = split[1].trim());
+		treated[0] = Encoder.encodeURL(split[0] = split[0].trim());
+		treated[1] = Encoder.encodeURL(split[1] = split[1].trim());
 		LyricsOVHResult result = restRequest(LyricsOVHResult.class, API_FORMAT, treated[0], treated[1]);
 		if (result.lyrics == null || result.lyrics.equals(""))
 			println("Couldn't find lyrics");

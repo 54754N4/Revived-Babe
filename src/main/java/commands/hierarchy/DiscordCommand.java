@@ -1,12 +1,12 @@
 package commands.hierarchy;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Type;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -15,11 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import backup.MusicState;
 import backup.Reminders;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
+import commands.model.Invoker;
+import commands.model.Invoker.Reflector;
 import commands.model.ThreadSleep;
 import lib.Consumers;
 import lib.HTTP.Method;
@@ -87,23 +90,12 @@ public abstract class DiscordCommand extends ListenerCommand {
 		message.delete().queue(Consumers::ignore, Consumers::ignore);
 	}
 	
+	public void eval(String input) {
+		Reflector.Type type = isOwner() ? Reflector.Type.ALL : Reflector.Type.NORMAL;
+		Invoker.invoke(bot, message, input, type);
+	}
+	
 	/* Rest + multipart/form requests convenience methods */
-	
-	protected String urlEncode(String input) throws UnsupportedEncodingException {
-		return URLEncoder.encode(input, StandardCharsets.UTF_8.toString());
-	}
-	
-	public static <T> T restRequest(Class<T> cls, String apiFormat, Object... args) throws IOException {
-		try (ResponseHandler handler = restRequest(apiFormat, args)) {
-			return gson.fromJson(handler.getResponse(), cls);
-		}
-	}
-	
-	public static <T> T formRequest(Class<T> cls, Consumer<MultipartRequestBuilder> setup, String apiFormat, Object...args) throws IOException {
-		try (ResponseHandler handler = formRequest(setup, apiFormat, args)) {
-			return gson.fromJson(handler.getResponse(), cls);
-		}
-	}
 	
 	public static ResponseHandler restRequest(String apiFormat, Object...args) throws IOException {
 		try (RequestBuilder builder = new RequestBuilder(String.format(apiFormat, args))) {
@@ -116,6 +108,18 @@ public abstract class DiscordCommand extends ListenerCommand {
 			builder.setMethod(Method.POST);
 			setup.accept(builder);
 			return new ResponseHandler(builder.build());
+		}
+	}
+	
+	public static <T> T restRequest(Class<T> cls, String apiFormat, Object... args) throws IOException {
+		try (ResponseHandler handler = restRequest(apiFormat, args)) {
+			return gson.fromJson(handler.getResponse(), cls);
+		}
+	}
+	
+	public static <T> T formRequest(Class<T> cls, Consumer<MultipartRequestBuilder> setup, String apiFormat, Object...args) throws IOException {
+		try (ResponseHandler handler = formRequest(setup, apiFormat, args)) {
+			return gson.fromJson(handler.getResponse(), cls);
 		}
 	}
 	
