@@ -1,14 +1,15 @@
 package backup;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.OptionalInt;
 import java.util.TreeMap;
-import java.util.stream.IntStream;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 
 public abstract class MusicState {
 	private static final String LAST_CHANNEL = "lastVoiceChannel",
-			CURRENT = "current", POSITION = "position", 
-			VOLUME = "lastVolume", PAUSED = "wasPaused";
+			POSITION = "position", VOLUME = "lastVolume", PAUSED = "wasPaused";
 	private static final Logger logger = LoggerFactory.getLogger(MusicState.class);
 	
 	public static void backup(MusicBot bot) {
@@ -93,10 +93,10 @@ public abstract class MusicState {
 		if (guild == null) 
 			return;
 		bot.setupAudio(guildID);
-		int restored = restorePlaylist(table, bot, guild);
-		restoreVoiceChannel(table, bot);
+		restorePlaylist(table, bot, guild);
+		restoreVoiceChannel(table, bot, guild);
 		restoreVolumeAndPause(table, bot, guild);
-		restoreSongAndPosition(table, bot, guild, restored);
+		restoreSongPosition(table, bot, guild);
 	}
 	
 	/* Backup/restore: Playlists */
@@ -105,7 +105,15 @@ public abstract class MusicState {
 		if (queue.size() == 0)
 			return;
 		Map<String, Object> playlist = new HashMap<>();
-		queue.forEachIndexed((i, track) -> playlist.put(i+"", track.getInfo().uri));
+		// Backup starting from current song and then loop over
+		int c = 0, 
+			middle = queue.getCurrent();	
+		if (middle == CircularDeque.UNINITIALISED)
+			middle = 0;
+		for (int i=queue.getCurrent(); i<queue.size(); i++) 
+			playlist.put(String.valueOf(c++), queue.get(i).getInfo().uri);
+		for (int i=0; i<queue.getCurrent(); i++)
+			playlist.put(String.valueOf(c++), queue.get(i).getInfo().uri);
 		try {
 			table.insertOrUpdate(playlist);
 		} catch (SQLException e) {
@@ -113,7 +121,7 @@ public abstract class MusicState {
 		}
 	}
 	
-	private static int restorePlaylist(TableManager table, MusicBot bot, Guild guild) {
+	private static void restorePlaylist(TableManager table, MusicBot bot, Guild guild) {
 		Map<String, String> all, urls = new TreeMap<>();
 		try {
 			all = table.selectAll();
@@ -122,17 +130,23 @@ public abstract class MusicState {
 				.filter(e -> StringLib.isInteger(e.getKey()))
 				.forEachOrdered(e -> urls.put(e.getKey(), e.getValue()));			
 			if (urls.size() == 0)
-				return 0;
+				return;
 		} catch (SQLException e) {
 			logger.error("Could not retrieve playlist from backup", e);
-			return 0;
+			return;
 		}
 		final TrackLoadHandler handler = new TrackLoadHandler(bot.getScheduler(guild))
 				.setToggleCount(urls.size()-1);
 		final AudioPlayerManager playerManager = bot.getPlayerManager(guild);
+		List<Future<Void>> futures = new ArrayList<>();
 		for (Entry<String, String> entry : urls.entrySet())
-			playerManager.loadItemOrdered(playerManager, entry.getValue(), handler);
-		return urls.size();
+			futures.add(playerManager.loadItemOrdered(playerManager, entry.getValue(), handler));
+		try {
+			logger.info("Waiting for {} to get first song in guild {}", bot, guild);
+			futures.get(0).get(1, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			logger.error("Couldn't wait for first song to load", e);
+		}
 	}
 	
 	/* Backup/restore: Song index + position */
@@ -142,43 +156,19 @@ public abstract class MusicState {
 		if (current == CircularDeque.UNINITIALISED)
 			return;
 		try {
-			table.insertOrUpdate(CURRENT, queue.get(current).getInfo().title);
 			table.insertOrUpdate(POSITION, queue.get(current).getPosition());
 		} catch (SQLException e) {
 			logger.error("Could not backup current track index + position", e);
 		}
 	}
 	
-	private static void restoreSongAndPosition(TableManager table, MusicBot bot, Guild guild, int restored) {
-		// Delay for up to 5s for songs to load
-		CircularDeque queue = bot.getScheduler(guild).getQueue();
-		long time = System.currentTimeMillis(), MAX_DELAY = 5000;
+	private static void restoreSongPosition(TableManager table, MusicBot bot, Guild guild) {
 		try {
-			while (queue.size() != restored) {
-				Thread.sleep(1000);
-				if (System.currentTimeMillis() - time > MAX_DELAY) 
-					break;
-			}
-		} catch (InterruptedException e) {
-			logger.error("Couldn't wait for songs to load", e);
-		}
-		try {
-			String current = table.retrieve(CURRENT, "");
-			if (current.equals("")) 
-				return;
-			OptionalInt index = IntStream.range(0, queue.size())
-				.filter(i -> queue.get(i).getInfo().title.equals(current))
-				.findFirst();
-			if (index.isPresent())
-				bot.play(guild, index.getAsInt());
-		} catch (NumberFormatException | SQLException e) {
-			logger.error("Could not retrieve last song index", e);
-			return;
-		}
-		try {
+			bot.play(guild, 0);
 			long position = table.retrieveLong(POSITION, -1);
 			if (position == -1)
 				return;
+			logger.info("Seeking for {} in song for guild {}", bot, guild);
 			bot.seekTo(guild, position);
 		} catch (Exception e) {
 			logger.error("Could not retrieve last song's position", e);
@@ -202,7 +192,7 @@ public abstract class MusicState {
 		}
 	}
 	
-	private static void restoreVoiceChannel(TableManager table, MusicBot bot) {
+	private static void restoreVoiceChannel(TableManager table, MusicBot bot, Guild guild) {
 		try {
 			long channelID = table.retrieveLong(LAST_CHANNEL, -1);
 			if (channelID == -1)
@@ -212,7 +202,7 @@ public abstract class MusicState {
 				return;
 			bot.connect(channel);
 		} catch (NumberFormatException | SQLException e) {
-			logger.error("Could not retrieve last channel ID", e);
+			logger.error("Could not retrieve or connect to last channel ID", e);
 		}
 	}
 	
