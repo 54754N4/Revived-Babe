@@ -33,9 +33,15 @@ public class Lyrics extends DiscordCommand {
 		else 
 			channel.sendMessageEmbeds(new EmbedBuilder()
 				.setTitle(String.format("%s - %s", split[0], split[1]))
-				.setDescription(result.lyrics)
+				.setDescription(fixSpacing(result.lyrics))
 				.build())
 			.queue();
 	}
 
+	private String fixSpacing(String lyrics) {
+		lyrics = lyrics.replaceAll("\n{3,}", "PLACEHOLDER");
+		lyrics = lyrics.replaceAll("\n{2,}", "\n");
+		lyrics = lyrics.replace("PLACEHOLDER", "\n\n");
+		return lyrics;
+	}
 }

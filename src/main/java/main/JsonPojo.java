@@ -124,4 +124,18 @@ public abstract class JsonPojo {
 							System.currentTimeMillis() - duration));
 		}
 	}
+	
+	public static void test() {
+//		JsonParser parser = new JsonParser(lexer);
+//		AST tree = parser.parse();
+//		System.out.println(tree);
+//		JsonPrintInterpreter interpreter = new JsonPrintInterpreter(input);
+//		interpreter.interpret();
+		
+//		System.out.println(input);
+		
+//		JsonGenerator generator = new JsonGenerator("ExchangeRate", input);
+//		StringBuilder sb = generator.interpret();
+//		System.out.println(sb);
+	}
 }
