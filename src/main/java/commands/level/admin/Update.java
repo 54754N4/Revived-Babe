@@ -31,8 +31,8 @@ public class Update extends DiscordCommand {
 	public String helpMessage() {
 		return helpBuilder("", 
 			"-cmds or --commands\tMakes me re-discover newly created commands (without restart)",
-			"-t or --tests\tMakes me print build test results", 	// TODO
-			"-g or --gradle\tChecks gradle for updates",
+//			"-t or --tests\tMakes me print build test results",
+//			"-g or --gradle\tChecks gradle for updates",
 			"Used for updating specific things. No shit lol.");
 	}
 
@@ -41,10 +41,11 @@ public class Update extends DiscordCommand {
 		if (hasArgs("-cmds", "--commands")) {
 			Invoker.Reflector.update();
 			println("Successfully updated commands list.");
-		} else if (hasArgs("-g", "--gradle"))
-			handleGradle();
-		else if (hasArgs("-t", "--tests"))
-			handleTests();
+		}
+//		else if (hasArgs("-g", "--gradle"))
+//			handleGradle();
+//		else if (hasArgs("-t", "--tests"))
+//			handleTests();
 		else 
 			println("Please give me a parameter.");
 	}

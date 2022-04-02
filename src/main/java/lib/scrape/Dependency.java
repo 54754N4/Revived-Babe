@@ -50,7 +50,7 @@ public enum Dependency {
 	}
 	
 	public static String latestNAS() {
-		return latestMaven("https://mvnrepository.com/artifact/com.sedmelluq/jda-nas?repo=jcenter");
+		return latestMaven("https://mvnrepository.com/artifact/com.sedmelluq/jda-nas", "jcenter");
 	}
 	
 	public static String latestLogback() {
@@ -94,7 +94,10 @@ public enum Dependency {
 	}
 
 	public static String latestMaven(String groupID, String artifactID) {
-		return latestMaven(groupID, artifactID, "jcenter");
+		return Browser.getInstance()
+				.visit(String.format("https://mvnrepository.com/artifact/%s/%s", groupID, artifactID))
+				.waitGet(By.cssSelector(".vbtn.release"))
+				.getText();
 	}
 	
 	public static String latestMaven(String groupID, String artifactID, String repo) {
@@ -108,11 +111,15 @@ public enum Dependency {
 		if (callback == null)
 			return;
 		String gradle = Files.readString(Paths.get("build.gradle")), version;
-		for (Dependency dependency : Dependency.values()) 
-			callback.handle(
-					dependency.name(), 
-					version = dependency.latest.call(), 
+		for (Dependency dependency : Dependency.values())
+			try {
+				callback.handle(
+					dependency.name(),
+					version = dependency.latest.call(),
 					gradle.contains(version));
+			} catch (Exception e) {
+				callback.handle(dependency.name()+" "+e.getMessage(), null, false);
+			}
 	}
 	
 	public static void defaultVersionHandler(String name, String latest, boolean isUpdated) {
@@ -121,8 +128,9 @@ public enum Dependency {
 	
 	public static void main(String[] args) throws Exception {
 		try { 
-			checkUpdates(Dependency::defaultVersionHandler);
+//			checkUpdates(Dependency::defaultVersionHandler);
 //			System.out.println(latestMaven("org.dyn4j", "dyn4j"));
+			System.out.println(latestMaven("http://mvnrepository.com/artifact/ch.qos.logback/logback-classic"));
 		} finally { Browser.getInstance().close(); }
 	}
 }

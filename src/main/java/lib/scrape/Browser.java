@@ -70,6 +70,7 @@ public class Browser implements Closeable, Cloneable {
 //    				.config(Options.FIREFOX::debugging);
     		Builder<ChromeOptions> builder = Configurators.chrome()
     				.config(Options.CHROME::defaultSettings);
+//    				.config(Options.CHROME::debugging);
     		INSTANCE = new Browser(builder.build());
     	}
     	return INSTANCE;

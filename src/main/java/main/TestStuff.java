@@ -1,14 +1,27 @@
 package main;
 
+import java.io.IOException;
+import java.util.Scanner;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
 import com.google.gson.Gson;
 
 import json.LyricsOVHResult;
 import lib.HTTP.RequestBuilder;
 import lib.HTTP.ResponseHandler;
 import lib.encode.Encoder;
+import lib.scrape.Browser;
+import lib.scrape.Dependency;
 
 public abstract class TestStuff {
 	public static void main(String[] args) throws Exception {
+//		testLyrics();
+		testDependencies();
+	}
+
+	public static void testLyrics() throws IOException {
 		Gson gson = new Gson();
 		String api = String.format(
 				"https://api.lyrics.ovh/v1/%s/%s", 
@@ -23,6 +36,14 @@ public abstract class TestStuff {
 				lyrics = lyrics.replace("PLACEHOLDER", "\n\n");
 				System.out.println(lyrics);
 			}
+		}
+	}
+	
+	public static void testDependencies() throws Exception {
+		try (Browser b = Browser.getInstance()) {
+//			WebElement e = b.waitGet(By.cssSelector(".vbtn.release"));
+//			System.out.println(e.getText());
+			Dependency.checkUpdates(Dependency::defaultVersionHandler);
 		}
 	}
 }
