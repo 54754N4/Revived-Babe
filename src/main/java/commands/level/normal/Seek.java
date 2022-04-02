@@ -18,24 +18,35 @@ public class Seek extends DiscordCommand {
 	@Override
 	public String helpMessage() {
 		return helpBuilder("<time>",
-			"Seeks to the position given (e.g. 02:23 or 1:2:1)");
+			"Seeks to the position given (e.g. 3600 or 2:23 or 1:2:1)");
 	}
 	
 	@Override
 	public void execute(String command) {
 		MusicBot bot = getMusicBot();
-		if (!command.equals("")) {
-			AudioTrack current = bot.getCurrentTrack(guild); 
-			if (current != null) {			
-				String time = command;
-				long position = StringLib.timeToSeconds(time)*1000, 
-					duration = current.getDuration();
-				if (position < duration) {
-					bot.seekTo(guild, position);
-					print("Seeked to position "+StringLib.padTime(time)+"/"+StringLib.millisToTime(duration)+" (e.g. "+position+"/"+duration+")");
-				} else print("Seeked too far.. Max for current song is "+StringLib.millisToTime(duration));
-			} else print("You need to be playing a song..");
-		} else print("You fucked up =v, here : "+helpMessage());
+		AudioTrack current = bot.getCurrentTrack(guild);
+		if (command.equals("")) {
+			println("Give me time to seek to.");
+			return;
+		} else if (current == null) {
+			println("You need to be playing a song..");
+			return;
+		}
+		String time = command;
+		long duration = current.getDuration(), position;
+		if (StringLib.isInteger(time))
+			position = Integer.parseInt(time)*1000;
+		else 
+			position = StringLib.timeToSeconds(time)*1000;
+		if (position < duration) {
+			bot.seekTo(guild, position);
+			print("Seeked to position %s/%s (%s/%s)",
+					StringLib.millisToTime(position),
+					StringLib.millisToTime(duration),
+					position,
+					duration);
+		} else 
+			println("Seeked too far.. Max for current song is %s", StringLib.millisToTime(duration));
 	}
 
 }
