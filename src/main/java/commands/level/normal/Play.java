@@ -69,6 +69,10 @@ public class Play extends DiscordCommand {
 		}
 		getLogger().info("Loading track(s) from: {}", input);
 		if (hasArgs("-p", "--paged")) {
+			if (StringLib.isURL(input)) {
+				println("`-p` and `--paged` is only listing search results. You can't use urls with this.");
+				return;
+			}
 			PagedTracksHandler handler = new PagedTracksHandler(bot, getMusicBot().getScheduler(guild))
 					.loopbackIndices();		// indices always between [0,9]
 			bot.play(guild, input, handler).get();

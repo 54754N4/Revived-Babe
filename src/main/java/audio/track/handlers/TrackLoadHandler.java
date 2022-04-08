@@ -42,22 +42,33 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 	@Override
 	public void trackLoaded(AudioTrack track) {
 		incrementToggle();
-		if (callback != null) callback.println(scheduler.getQueue().size()+". Adding to queue " + track.getInfo().title);
-		if (top) scheduler.queueTop(track);
-		else if (next) scheduler.queueNext(track);
-		else scheduler.queue(track);
-		if (notify) scheduler.notifyObservers();
+		if (callback != null) 
+			callback.println(scheduler.getQueue().size()+". Adding to queue " + track.getInfo().title);
+		if (top) 
+			scheduler.queueTop(track);
+		else if (next) 
+			scheduler.queueNext(track);
+		else 
+			scheduler.queue(track);
+		if (notify) 
+			scheduler.notifyObservers();
 	}
 
 	@Override
 	public void playlistLoaded(AudioPlaylist pl) {
-		if (callback != null) callback.println("Playlist name : "+pl.getName());
+		if (callback != null) 
+			callback.println("Playlist name : "+pl.getName());
 		List<AudioTrack> tracks = pl.getTracks();
-		if (next) Collections.reverse(tracks);
+		if (next || top) 
+			Collections.reverse(tracks);
 		int i = 0;
-		if (!playlist) loadSongs(tracks);
-		else for (AudioTrack track : tracks) handle(track, i++);
-		if (notify) scheduler.notifyObservers();
+		if (!playlist) 
+			loadSongs(tracks);
+		else 
+			for (AudioTrack track : tracks) 
+				handle(track, i++);
+		if (notify) 
+			scheduler.notifyObservers();
 	}
 
 	@Override
@@ -71,7 +82,8 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 	}
 	
 	private void loadSongs(List<AudioTrack> tracks) {
-		if (count < tracks.size()) tracks = ListUtil.subset(tracks, 0, count);
+		if (count < tracks.size()) 
+			tracks = ListUtil.subset(tracks, 0, count);
 		int i=0;
 		for (AudioTrack track : tracks)
 			handle(track, i++);
@@ -79,9 +91,12 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 	
 	private void handle(AudioTrack track, int num) {
 		incrementToggle();
-		if (top) scheduler.queueTop(track);
-		else if (next) scheduler.queueNext(track);
-		else scheduler.queue(track);
+		if (top) 
+			scheduler.queueTop(track);
+		else if (next) 
+			scheduler.queueNext(track);
+		else 
+			scheduler.queue(track);
 		if (callback != null) {
 			callback.println((size + num)
 					+ ".\tQueuing " + track.getInfo().title
