@@ -75,7 +75,7 @@ public abstract class MusicBot extends UserBot {
 	}
 	
 	// pays cost once, further calls cost 0
-	private MusicBot setupAudio(Guild guild) {
+	public MusicBot setupAudio(Guild guild) {
 		long id = guild.getIdLong();
 		if (guild == null || controllers.get(id) != null)
 			return this;
