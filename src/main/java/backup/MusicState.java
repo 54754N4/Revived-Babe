@@ -143,7 +143,7 @@ public abstract class MusicState {
 			futures.add(playerManager.loadItemOrdered(playerManager, entry.getValue(), handler));
 		try {
 			logger.info("Waiting for {} to get first song in guild {}", bot, guild);
-			futures.get(0).get(1, TimeUnit.SECONDS);
+			futures.get(0).get(5, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			logger.error("Couldn't wait for first song to load", e);
 		}
@@ -166,7 +166,7 @@ public abstract class MusicState {
 		try {
 			bot.play(guild, 0);
 			long position = table.retrieveLong(POSITION, -1);
-			if (position == -1)
+			if (position == -1 || bot.getPlayer(guild).getPlayingTrack() == null)
 				return;
 			logger.info("Seeking for {} in song for guild {}", bot, guild);
 			bot.seekTo(guild, position);
