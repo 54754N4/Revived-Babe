@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -13,8 +15,6 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.model.Invoker;
 import commands.name.Command;
-import lib.scrape.Dependency;
-import lib.xml.TestReportsParser;
 import lib.xml.XMLHandler;
 import lib.xml.XMLHandler.Action;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -31,8 +31,7 @@ public class Update extends DiscordCommand {
 	public String helpMessage() {
 		return helpBuilder("", 
 			"-cmds or --commands\tMakes me re-discover newly created commands (without restart)",
-//			"-t or --tests\tMakes me print build test results",
-//			"-g or --gradle\tChecks gradle for updates",
+			"-t or --tests\tMakes me print build test results",
 			"Used for updating specific things. No shit lol.");
 	}
 
@@ -41,18 +40,10 @@ public class Update extends DiscordCommand {
 		if (hasArgs("-cmds", "--commands")) {
 			Invoker.Reflector.update();
 			println("Successfully updated commands list.");
-		}
-//		else if (hasArgs("-g", "--gradle"))
-//			handleGradle();
-//		else if (hasArgs("-t", "--tests"))
-//			handleTests();
+		} else if (hasArgs("-t", "--tests"))
+			handleTests();
 		else 
 			println("Please give me a parameter.");
-	}
-
-	private void handleGradle() throws Exception {
-		Dependency.checkUpdates((name, latest, updated) -> 
-			printlnIndependently(updated ? "%s already updated." : "%s needs to be updated to version : `%s`", name, latest));
 	}
 	
 	private void handleTests() throws ParserConfigurationException, SAXException, IOException {
@@ -62,7 +53,7 @@ public class Update extends DiscordCommand {
 		for (String report : reports) {
 			final EmbedBuilder embed = new EmbedBuilder();
 			embed.setTitle("Report for "+report);
-			TestReportsParser.parse(new File(TEST_RESULTS_DIR+"/"+report), testHandler(embed));
+			parse(new File(TEST_RESULTS_DIR+"/"+report), testHandler(embed));
 			channel.sendMessageEmbeds(embed.build()).queue();
 		}
 	}
@@ -83,6 +74,12 @@ public class Update extends DiscordCommand {
 				.handle("classname", classname -> embed.addField("Class Name", classname, true))
 				.build())
 			.build();
+	}
+	
+	public static <T extends DefaultHandler> void parse(File file, T handler) throws ParserConfigurationException, SAXException, IOException {
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParser parser = factory.newSAXParser();
+		parser.parse(file, handler);
 	}
 	
 	public static boolean xmlOnly(File dir, String name) {
