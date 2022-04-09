@@ -28,7 +28,7 @@ test {
 	excludeTags 'template'
   }
   reports {
-    //junitXml.enabled = false
+    junitXml.enabled = true
     html.required = true
   }  
   maxHeapSize = '1G'
@@ -51,7 +51,7 @@ dependencies {
   implementation 'org.graalvm.js:js-scriptengine:21.0.0.2'			// engine implementation
   
   // Testing
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 

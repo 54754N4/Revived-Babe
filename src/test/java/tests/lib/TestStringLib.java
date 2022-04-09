@@ -53,13 +53,9 @@ public class TestStringLib {
     @Test
     public void onDeobfuscation_selectivelyHide() {
     	String[] input = { 
-    			"~\\Audio\\Songs\\Backstreet Boys\\Millennium\\Show Me the Meaning of Being Lonely.mp3",
-				"www.google.com",
-				"https://www.google.com/1234qwerqw4" 
+    			"~\\Audio\\Songs\\Backstreet Boys\\Millennium\\Show Me the Meaning of Being Lonely.mp3"
 		}, expected = {
-				"D:\\Users\\Satsana\\Desktop\\Media\\Sounds\\Music\\Audio\\Songs\\Backstreet Boys\\Millennium\\Show Me the Meaning of Being Lonely.mp3",
-				"www.google.com",
-				"https://www.google.com/1234qwerqw4"
+				StringLib.MUSIC_PATH + "\\Audio\\Songs\\Backstreet Boys\\Millennium\\Show Me the Meaning of Being Lonely.mp3"
 		};
     	transform(input, StringLib::deobfuscateMusicFolder);
     	assertArrayEquals(input, expected);
