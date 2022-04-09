@@ -48,7 +48,7 @@ public class Lyrics extends DiscordCommand {
 		}
 	}
 
-	private String fixSpacing(String lyrics) {
+	public static String fixSpacing(String lyrics) {
 		lyrics = lyrics.replaceAll("\n{3,}", "PLACEHOLDER");
 		lyrics = lyrics.replaceAll("\n{2,}", "\n");
 		lyrics = lyrics.replace("PLACEHOLDER", "\n\n");
