@@ -19,7 +19,7 @@ public abstract class PrintCommand extends Command {
 	}
 	
 	public static String markdown(String input) {
-		return "```markdown\n"+input+"\n```";
+		return "```markdown%n"+input+"%n```";
 	}
 	
 	public static String inline(String input) {
@@ -44,7 +44,7 @@ public abstract class PrintCommand extends Command {
 	}
 	
 	public void println() {
-		print("\n");
+		print("%n");
 	}
 	
 	public void print(String format, Object... args) { 
@@ -52,11 +52,11 @@ public abstract class PrintCommand extends Command {
 	}
 	
 	public void println(String format, Object... args) {
-		print(format+"\n", args);
+		print(format+"%n", args);
 	}
 	
 	public void printlnIndependently() {
-		printIndependently("\n");
+		printIndependently("%n");
 	}
 	
 	public void printIndependently(String format, Object... args) {
@@ -66,7 +66,7 @@ public abstract class PrintCommand extends Command {
 	}
 	
 	public void printlnIndependently(String format, Object... args) {
-		printIndependently(format+"\n", args);
+		printIndependently(format+"%n", args);
 	}
 	
 	public void printCentered(String text) {
@@ -78,26 +78,25 @@ public abstract class PrintCommand extends Command {
 	}
 	
 	protected <T> void printItems(Collection<T> list) {
-		for (T item : list) print(markdown(item.toString()));
+		printItems(list.toArray());
 	}
 	
 	protected <T> void printItemsIndexed(Collection<T> list) {
-		int i = 0;
-		for (T item : list) print(markdown(i+++".\t"+item.toString()));
+		printItemsIndexed(list.toArray());
 	}
 	
 	protected <T> void printItems(T[] list) {
-		for (T item : list) print(markdown(item.toString()));
+		for (T item : list) print(markdown("%s"), item.toString());
 	}
 	
 	protected <T> void printItemsIndexed(T[] list) {
 		int i = 0;
-		for (T item : list) print(markdown(i+++".\t"+item.toString()));
+		for (T item : list) print(markdown("%d.\t%s"), i++, item.toString());
 	}
 	
 	protected <K, V> void printMap(Map<K, V> map) {
 		for (Entry<K, V> entry : map.entrySet()) 
-			print(markdown(entry.getKey()+" = "+entry.getValue()));
+			print(markdown("%s = %s"), entry.getKey(), entry.getValue());
 	}
 	
 	protected void printBlock(Collection<String> lines) {

@@ -26,7 +26,7 @@ public class Test extends DiscordCommand {
 					.handle("\u0030\uFE0F\u20E3", reaction -> printlnIndependently("I am extended unicode native")));
 		if (hasArgs("--page")) {
 			channel.sendMessage("Loading..")
-				.queue(new PagedHandler<>(bot, getMusicBot().getPlaylist(guild)));
+				.queue(new PagedHandler<>(bot, () -> getMusicBot().getPlaylist(guild)));
 		}
 		if (hasArgs("--api")) {
 			println("VRSS getenv: %s", System.getenv("VOICE_RSS_API"));

@@ -16,21 +16,22 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 public class PagedHandler<T> extends ReactionsHandler {
 	public static final Logger logger = LoggerFactory.getLogger(PagedHandler.class);
+	public static final int DEFAULT_COUNT = 10;	// code-blocks can't handle a lot
 	
 	protected boolean handlerButtons, defaultBehaviour;
-	protected List<T> data;
+	protected Supplier<List<T>> supplier;
 	protected Message tracked;
 	protected int page, count;
 	private Supplier<String> titleSuffix;
 	private Consumer<T> onSelection;
 	
-	public PagedHandler(UserBot bot, List<T> data) {
-		this(bot, data, 10);
+	public PagedHandler(UserBot bot, Supplier<List<T>> supplier) {
+		this(bot, supplier, 10);
 	}
 	
-	public PagedHandler(UserBot bot, List<T> data, int count) {
+	public PagedHandler(UserBot bot, Supplier<List<T>> supplier, int count) {
 		super(bot);
-		this.data = data;
+		this.supplier = supplier;
 		handlerButtons = false;
 		defaultBehaviour = true;
 		page = 0;
@@ -56,6 +57,10 @@ public class PagedHandler<T> extends ReactionsHandler {
 	public PagedHandler<T> enableHandlerButtons() {
 		handlerButtons = true;
 		return this;
+	}
+	
+	public List<T> data() {
+		return supplier.get();
 	}
 
 	@Override
@@ -91,7 +96,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 	}
 	
 	private void onNext(MessageReactionAddEvent reaction) {
-		if (page + 1 > (data.size()-1)/count)
+		if (page + 1 > (data().size()-1)/count)
 			page = 0;
 		else 
 			page++;
@@ -105,7 +110,7 @@ public class PagedHandler<T> extends ReactionsHandler {
 			// Since the total count of elements might have changed
 			do { 
 				page--;
-			} while (page * count > data.size());
+			} while (page * count > data().size());
 		}
 		update(false);
 	}
@@ -120,30 +125,30 @@ public class PagedHandler<T> extends ReactionsHandler {
 	}
 	
 	protected void handleElement(int index) {
-		if (data == null || index < 0 || index >= getPage(page).size())
+		if (data() == null || index < 0 || index >= getPage(page).size())
 			return;
 		onSelect(getPage(page).get(index));
 	}
 	
 	protected int totalPages() {
-		if (data == null) 
+		if (data() == null) 
 			return 0;
-		double residue = (double) data.size() / (double) count;
-		return (int) ((residue == data.size()/count) ? residue : residue+1);	// +1 since we're using 0 based indices
+		double residue = (double) data().size() / (double) count;
+		return (int) ((residue == data().size()/count) ? residue : residue+1);	// +1 since we're using 0 based indices
 	}
 	
 	protected List<T> getPage(int page) {
 		int start = page*count;
-		return (data == null || page < 0 || start >= data.size()) ? 
+		return (data() == null || page < 0 || start >= data().size()) ? 
 			new ArrayList<>() : 
-			ListUtil.subset(data, start, count);
+			ListUtil.subset(data(), start, count);
 	}
 	
 	protected String parsePage(int page) {
 		String NEW_LINE = "\n", CODE_BLOCK = "```", CODE_BLOCK_START = CODE_BLOCK + "md";
 		List<T> elements = getPage(page);
 		StringBuilder sb = new StringBuilder(CODE_BLOCK_START+NEW_LINE);
-		sb.append("#Page "+(page+1)+"/"+totalPages()+" ("+data.size()+" results) "+titleSuffix.get()+NEW_LINE);
+		sb.append("#Page "+(page+1)+"/"+totalPages()+" ("+data().size()+" results) "+titleSuffix.get()+NEW_LINE);
 		for (int i=0; i<elements.size(); i++)
 			sb.append(parseElement(i, i+page*count, elements.get(i))+NEW_LINE);
 		return sb.append(CODE_BLOCK).toString();

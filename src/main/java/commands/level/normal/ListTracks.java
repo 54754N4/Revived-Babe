@@ -68,7 +68,7 @@ public class ListTracks extends DiscordCommand {
 	private void createPlayer() {
 		final MusicBot bot = getMusicBot();	// give lambdas already casted
 		final TrackScheduler scheduler = bot.getScheduler(guild);
-		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler, true)
+		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler)
 				.setTitleSuffix(this::getCurrentStats)
 				.handle(0x23EF, event -> scheduler.togglePause())
 				.handle(0x23EE, event -> scheduler.previousTrack())
@@ -89,8 +89,10 @@ public class ListTracks extends DiscordCommand {
 	private String getCurrentStats() {
 		final MusicBot bot = getMusicBot();
 		final AudioPlayer player = bot.getPlayer(guild);
+		final TrackScheduler scheduler = bot.getScheduler(guild);
 		final CircularDeque queue = bot.getPlaylist(guild);
 		StringBuilder sb = new StringBuilder("| ");
+		sb.append("Playlist: " + scheduler.getCurrentPlaylist() + " | ");
 		sb.append("Vol: " + player.getVolume() + " | ");
 		sb.append("Pause: " + convertToEmoji(player.isPaused()) + " | ");
 		sb.append("Repeat Song: " + convertToEmoji(queue.isRepeating()) + " | ");
@@ -157,7 +159,7 @@ public class ListTracks extends DiscordCommand {
 			return;
 		}
 		channel.sendMessage("Loading...")
-			.queue(new PagedHandler<>(bot, visitor.found));
+			.queue(new PagedHandler<>(bot, visitor::getFound));
 	}
 	
 	private static class MusicFilesVisitor implements FileVisitor<Path> {
@@ -169,6 +171,10 @@ public class ListTracks extends DiscordCommand {
 			this.input = input;
 			this.command = command;
 			found = new ArrayList<>();
+		}
+		
+		public List<String> getFound() {
+			return found;
 		}
 
 		@Override

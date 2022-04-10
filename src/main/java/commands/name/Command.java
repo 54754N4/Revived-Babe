@@ -61,7 +61,8 @@ public enum Command {
 	ENCODE("encode", "enc"), 
 	SHUFFLE("shuffle", "sh"), 
 	SYNONYMS("synonyms", "syn"), 
-	QR_CODE("qr");
+	QR_CODE("qr"), 
+	PLAYLIST("playlist", "pl");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
@@ -81,10 +82,12 @@ public enum Command {
 				}
 			}
 		}
+		logger.info("------------------------------------------------------------");
 		logger.info(
 			"Command name duplicates verification: {}. (duration: {})", 
 			fail ? "FAILED" : "PASS", 
 			StringLib.millisToTime(System.currentTimeMillis() - duration));
+		logger.info("------------------------------------------------------------");
 	}
 	
 	private Command(final String...names) {

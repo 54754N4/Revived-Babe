@@ -63,7 +63,7 @@ public abstract class DiscordCommand extends ListenerCommand {
 	}
 	
 	public boolean fromMusicBot() {
-		return bot instanceof MusicBot;
+		return MusicBot.class.isInstance(bot);
 	}
 	
 	public MusicBot getMusicBot() {
@@ -199,8 +199,9 @@ public abstract class DiscordCommand extends ListenerCommand {
 			Set<Long> visited = GUILDS_VISITED.get(bot);
 			if (!visited.contains(id)) { // only restore backups if not visited
 				visited.add(id);
-				MusicState.restore(bot);
 				Reminders.restoreAll(message.getChannel());
+				if (fromMusicBot())
+					MusicState.restore(getMusicBot());
 			}
 		}
 		return super.start(command);

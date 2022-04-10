@@ -1,5 +1,6 @@
 package commands.level.normal;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import bot.hierarchy.MusicBot;
@@ -73,7 +74,7 @@ public class Play extends DiscordCommand {
 				println("`-p` and `--paged` is only listing search results. You can't use urls with this.");
 				return;
 			}
-			PagedTracksHandler handler = new PagedTracksHandler(bot, getMusicBot().getScheduler(guild))
+			PagedTracksHandler handler = new PagedTracksHandler(bot, getMusicBot().getScheduler(guild), new ArrayList<>())
 					.loopbackIndices();		// indices always between [0,9]
 			bot.play(guild, input, handler).get();
 			channel.sendMessage("Loading...")

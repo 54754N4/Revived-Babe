@@ -2,6 +2,9 @@ package audio;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
@@ -12,11 +15,14 @@ import lib.messages.PagedHandler;
 
 //This class schedules tracks for the audio player. It contains the queue of tracks.
 public class TrackScheduler extends AudioEventAdapter {
+	public static final String DEFAULT_PLAYLIST = "default";
 	public static final int MAX_VOLUME = 200, 	 // in %
 		DEFAULT_VOLUME = 100,
 		DEFAULT_VOLUME_STEP = 5;
 	private final AudioPlayer player;
-	private final CircularDeque queue;
+	private final Map<String, CircularDeque> queues;
+	private String playlist;
+	private CircularDeque queue;
 	private long nextSeek; 
 	private int nextTrack;
 	private boolean nextPaused;
@@ -26,7 +32,10 @@ public class TrackScheduler extends AudioEventAdapter {
 	
 	public TrackScheduler(AudioPlayer player) {
 		this.player = player;
-		this.queue = new CircularDeque();
+		queues = new ConcurrentHashMap<>();
+		queue = new CircularDeque();
+		playlist = DEFAULT_PLAYLIST;
+		queues.put(playlist, queue);
 		player.addListener(this);
 		player.setVolume(DEFAULT_VOLUME);
 		volumeStep = DEFAULT_VOLUME_STEP;
@@ -36,6 +45,61 @@ public class TrackScheduler extends AudioEventAdapter {
 		observers = new ArrayList<>();
 	}
 
+	/* Queue/playlist swapping methods */
+	
+	public Set<String> getPlaylistNames() {
+		return queues.keySet();
+	}
+	
+	public String getCurrentPlaylist() {
+		return playlist;
+	}
+	
+	public TrackScheduler swapPlaylist(String name) {
+		if (queues.containsKey(name)) {
+			playlist = name;
+			queue = queues.get(name);
+			if (queue.size() == 0)
+				stop();
+			else {
+				int current = queue.getCurrent();
+				if (current == CircularDeque.UNINITIALISED)
+					current = 0;
+				play(current);
+			}
+		}
+		return this;
+	}
+	
+	public TrackScheduler createPlaylist(String name) {
+		queues.putIfAbsent(name, new CircularDeque());
+		return this;
+	}
+	
+	public TrackScheduler clearPlaylists() {
+		queue = queues.get(DEFAULT_PLAYLIST);
+		queues.clear();
+		queues.put(DEFAULT_PLAYLIST, queue);
+		playlist = DEFAULT_PLAYLIST;
+		return this;
+	}
+	
+	public boolean hasPlaylist(String name) {
+		return queues.containsKey(name);
+	}
+	
+	public TrackScheduler removePlaylist(String name) {
+		if (name.equals(DEFAULT_PLAYLIST))
+			return this;
+		if (queues.containsKey(name))
+			queues.remove(name);
+		return this;
+	}
+	
+	public Map<String, CircularDeque> getPlaylists() {
+		return queues;
+	}
+	
 	/* Observer handling methods */
 	
 	public TrackScheduler addObserver(PagedHandler<?> observer) {
@@ -191,9 +255,9 @@ public class TrackScheduler extends AudioEventAdapter {
 	}
 	
 	public int play(int i) {
-		if (i<0 || i>=queue.size()) 
+		if (i<0 || i>=queue.size())
 			return -1;
-		if (player.isPaused()) 
+		if (player.isPaused())
 			player.setPaused(false);
 		player.startTrack(queue.getAndUpdate(i), false);
 		queue.setCurrent(i);

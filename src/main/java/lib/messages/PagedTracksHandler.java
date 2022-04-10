@@ -1,6 +1,6 @@
 package lib.messages;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -17,14 +17,18 @@ public class PagedTracksHandler extends PagedHandler<AudioTrack> implements Audi
 	private boolean loopbackIndices;
 	private TrackScheduler scheduler;
 	
-	public PagedTracksHandler(UserBot bot, TrackScheduler scheduler) {
-		this(bot, scheduler, false);
+	public PagedTracksHandler(UserBot bot, TrackScheduler scheduler, final List<AudioTrack> list) {
+		super(bot, () -> list);
+		this.scheduler = scheduler;
+		listTracks = false;
+		loopbackIndices = false;
+		scheduler.addObserver(this);
 	}
 	
-	public PagedTracksHandler(UserBot bot, TrackScheduler scheduler, boolean listTracks) {
-		super(bot, listTracks ? scheduler.getQueue() : new ArrayList<>());
-		this.listTracks = listTracks;
+	public PagedTracksHandler(UserBot bot, TrackScheduler scheduler) {
+		super(bot, scheduler::getQueue);
 		this.scheduler = scheduler;
+		listTracks = true;
 		loopbackIndices = false;
 		scheduler.addObserver(this);
 	}
@@ -55,12 +59,12 @@ public class PagedTracksHandler extends PagedHandler<AudioTrack> implements Audi
 	
 	@Override
 	public void trackLoaded(AudioTrack track) {
-		data.add(track);
+		data().add(track);
 	}
 
 	@Override
 	public void playlistLoaded(AudioPlaylist playlist) {
-		data.addAll(playlist.getTracks());
+		data().addAll(playlist.getTracks());
 	}
 
 	@Override
