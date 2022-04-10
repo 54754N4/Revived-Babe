@@ -13,6 +13,8 @@ import bot.hierarchy.UserBot;
 import lib.StringLib;
 
 public class PagedTracksHandler extends PagedHandler<AudioTrack> implements AudioLoadResultHandler {
+	public static final String NOTES_EMOJI = new String(Character.toChars(0x1F3B6));
+	
 	private final boolean listTracks;
 	private boolean loopbackIndices;
 	private TrackScheduler scheduler;
@@ -37,8 +39,10 @@ public class PagedTracksHandler extends PagedHandler<AudioTrack> implements Audi
 	protected String parseElement(int index, int queueIndex, AudioTrack track) {
 		CircularDeque queue = scheduler.getQueue();
 		String prefix = "", postfix = "";
-		if (listTracks && queueIndex == queue.getCurrent())
-			prefix = postfix = new String(Character.toChars(0x1F3B6));
+		if (listTracks && queueIndex == queue.getCurrent()) {
+			prefix = NOTES_EMOJI + NOTES_EMOJI;
+			postfix = NOTES_EMOJI + NOTES_EMOJI;
+		}
 		return (loopbackIndices ? index : queueIndex) + ". " 
 				+ prefix 
 				+ track.getInfo().title 
