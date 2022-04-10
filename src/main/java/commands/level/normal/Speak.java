@@ -13,10 +13,10 @@ import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
-import lib.HTTP.ResponseHandler;
 import lib.encode.Encoder;
 import lib.scrape.Browser;
 import net.dv8tion.jda.api.entities.Message;
+import okhttp3.Response;
 
 public class Speak extends DiscordCommand {
 	public static final String API = "http://www.voicerss.org/api/",  
@@ -59,22 +59,20 @@ public class Speak extends DiscordCommand {
 		} else if (!connected)
 			bot.connect(message.getMember().getVoiceState().getChannel());
 		// Generate WAV from API
-		try (ResponseHandler handler = restRequest(
+		Response response = restRequest(
 				API_FORMAT, 
 				System.getenv("VOICE_RSS_API"),
 				Encoder.encodeURL(input), 
 				language, 
 				DEFAULT_FILE_FORMAT, 
 				rate, 
-				voice)) {
-			logger.info("REST URL IS :");
-			logger.info(String.format(API_FORMAT, System.getenv("VOICE_RSS_API"), URLEncoder.encode(input, "UTF-8"), language, DEFAULT_FILE_FORMAT, rate, voice));
-			if (!handler.isOk()) {
-				println("HTTP error code %d", handler.status);
-				handler.forEachResponseLine(this::println);
-			} else
-				bot.play(guild, handler.saveResponse("speak/out.mp3"));
-		}
+				voice);
+		logger.info(String.format(API_FORMAT, System.getenv("VOICE_RSS_API"), URLEncoder.encode(input, "UTF-8"), language, DEFAULT_FILE_FORMAT, rate, voice));
+		if (!response.isSuccessful()) {
+			println("HTTP error code %d", response.code());
+			response.body().string().lines().forEach(this::println);
+		} else 
+			bot.play(guild, writeFile(response, "speak/out.mp3"));
 	}
 	
 	private void languages() {

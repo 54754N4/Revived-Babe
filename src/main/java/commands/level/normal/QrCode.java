@@ -7,10 +7,12 @@ import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.QrCodeResult;
 import json.QrCodeResult.Symbol;
-import lib.HTTP.ResponseHandler;
 import lib.StringLib;
 import lib.encode.Encoder;
 import net.dv8tion.jda.api.entities.Message;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class QrCode extends DiscordCommand {
 	// https://goqr.me/api/doc/read-qr-code/
@@ -39,7 +41,9 @@ public class QrCode extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		if (message.getAttachments().size() != 0) {
 			File attached = message.getAttachments().get(0).downloadToFile().get();
-			QrCodeResult[] result = formRequest(QrCodeResult[].class, builder -> builder.addFile("file", attached), API_DECODE_FILE);
+			QrCodeResult[] result = formRequest(QrCodeResult[].class,
+					builder -> builder.addFormDataPart("file", attached.getName(), RequestBody.create(MediaType.parse("application/octet-stream"), attached)), 
+					API_DECODE_FILE);
 			handle(result);
 			attached.delete();
 			return;
@@ -58,11 +62,10 @@ public class QrCode extends DiscordCommand {
 			color = params.named.get("--color");
 		if (hasArgs("--bgcolor"))
 			bgcolor = params.named.get("--bgcolor");
-		try (ResponseHandler handler = restRequest(API_ENCODE, data, color, bgcolor)) {
-			File file = handler.saveResponse("download/qr.png");
-			channel.sendFile(file)
-				.queue(e -> file.delete(), t -> file.delete());
-		}
+		Response response = restRequest(API_ENCODE, data, color, bgcolor);
+		File file = writeFile(response, "download/qr.png");
+		channel.sendFile(file)
+			.queue(e -> file.delete(), t -> file.delete());
 	}
 
 	private void handle(QrCodeResult[] result) {

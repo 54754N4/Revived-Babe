@@ -1,6 +1,5 @@
 package bot;
 
-import backup.MusicState;
 import backup.Reminders;
 import backup.SpellingCorrector;
 import bot.hierarchy.Bot;
@@ -41,7 +40,7 @@ public class BabeBot extends MusicBot {
 				TypingWatchdog::kill,
 				Reminders::backup,
 				() -> SpellingCorrector.serialize(Invoker.getCorrector()),
-				() -> Bot.killAll(now), 	// () -> Bot.killAll(now, bot -> MusicState.backup(bot)),
+				() -> Bot.killAll(now),
 				() -> Browser.getInstance().kill());
 		super.preKill(now);
 	}

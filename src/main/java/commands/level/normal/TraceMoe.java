@@ -15,6 +15,8 @@ import lib.messages.ValidatingEmbedBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 
 public class TraceMoe extends DiscordCommand {
 	private static final String API_FORMAT = "https://api.trace.moe/search%s",
@@ -43,7 +45,9 @@ public class TraceMoe extends DiscordCommand {
 			Attachment attachment = message.getAttachments().get(0);
 			String filename = ".\\download\\trace\\"+attachment.getFileName();
 			final File image = attachment.downloadToFile(filename).get();
-			result = formRequest(TraceMoeResult.class, builder -> builder.addFile("image", image), API_MULTIPART_FORMAT);
+			result = formRequest(TraceMoeResult.class, 
+					builder -> builder.addFormDataPart("image", filename, RequestBody.create(MediaType.parse("application/octet-stream"), image)), 
+					API_MULTIPART_FORMAT);
 		} else 
 			result = restRequest(TraceMoeResult.class, API_FORMAT, "?url=" + Encoder.encodeURL(input));
 		List<EmbedBuilder> packages = buildEmbed(result);

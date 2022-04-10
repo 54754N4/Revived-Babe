@@ -12,11 +12,11 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.TimeResult;
-import lib.HTTP.ResponseHandler;
 import lib.StringLib;
 import lib.messages.ValidatingEmbedBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
+import okhttp3.Response;
 
 public class Time extends DiscordCommand {
 	private static final Logger logger = LoggerFactory.getLogger(Time.class);
@@ -88,11 +88,10 @@ public class Time extends DiscordCommand {
 	}
 
 	public static List<String> getTimezones() throws IOException {
-		try (ResponseHandler response = restRequest(API_FORMAT, "timezone.txt")) {
-			final List<String> timezones = new ArrayList<>();
-			response.forEachResponseLine(line -> timezones.add(line));
-			return timezones;
-		}
+		Response response = restRequest(API_FORMAT, "timezone.txt");
+		final List<String> timezones = new ArrayList<>();
+		response.body().string().lines().forEach(timezones::add);
+		return timezones;
 	}
 	
 	public static String convertFromUTC(String utcDate) {
