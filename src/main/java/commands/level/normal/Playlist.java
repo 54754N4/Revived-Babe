@@ -50,9 +50,10 @@ public class Playlist extends DiscordCommand {
 			} else
 				println("Playlist %s doesn't exist", inline(input));
 		} else {
-			if (scheduler.hasPlaylist(input))
+			if (scheduler.hasPlaylist(input)) {
 				scheduler.swapPlaylist(input);
-			else 
+				println("Swapped to playlist %s", inline(input));
+			} else 
 				println("Playlist %s doesn't exist", inline(input));
 		}
 	}
