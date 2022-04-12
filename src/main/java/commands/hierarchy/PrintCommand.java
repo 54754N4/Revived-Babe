@@ -1,6 +1,7 @@
 package commands.hierarchy;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,6 +18,25 @@ public abstract class PrintCommand extends Command {
 	public PrintCommand(UserBot bot, Message message, String[] names) {
 		super(bot, message, names);
 	}
+	
+	/* help building + argument parsing*/
+	
+	protected String helpBuilder(String args, String... lines) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("#"+Arrays.toString(names)+"\n").append("Usage: <name> "+args+"\n");
+		String output;
+		for (String line: lines) {
+			output = line;
+			if (line.startsWith("[") || line.startsWith("<")) 
+				output = "Usage: <name> " + output;
+			else if (!line.startsWith("#") && !line.startsWith("Usage")) 
+				output = "\t" + output;
+			sb.append(output+"\n");
+		}
+		return markdown(sb.toString());
+	}
+	
+	/* Convenience methods */
 	
 	public static String markdown(String input) {
 		return "```markdown%n"+input+"%n```";

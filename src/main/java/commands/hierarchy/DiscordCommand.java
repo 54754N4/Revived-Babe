@@ -1,13 +1,5 @@
 package commands.hierarchy;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,9 +9,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
-
-import com.google.gson.Gson;
 
 import backup.MusicState;
 import backup.Reminders;
@@ -32,18 +21,11 @@ import lib.Consumers;
 import lib.PrintBooster;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
-public abstract class DiscordCommand extends ListenerCommand {
+public abstract class DiscordCommand extends RestCommand {
 	private static final Map<UserBot, Set<Long>> GUILDS_VISITED = new ConcurrentHashMap<>();	// keep track per bot
 	private static final String[] SCHEDULING_STOP_VERBS = { "abort", "stop", "kill", "shutdown" };
 	protected static final Random rand = new Random();
-	protected static final Gson gson = new Gson();
-	protected static final OkHttpClient client = new OkHttpClient();
 	
 	public static enum Global {
 		// Normal commands global params
@@ -99,75 +81,6 @@ public abstract class DiscordCommand extends ListenerCommand {
 	public void eval(String input) {
 		Reflector.Type type = isOwner() ? Reflector.Type.ALL : Reflector.Type.NORMAL;
 		Invoker.invoke(bot, message, input, type);
-	}
-	
-	/* Rest + multipart/form requests convenience methods */
-	
-	public static Response restRequest(String apiFormat, Object...args) throws IOException {
-		Request request = new Request.Builder()
-				.url(String.format(apiFormat, args))
-				.build();
-		return client.newCall(request).execute();
-	}
-	
-	public static <T> T restRequest(Class<T> cls, String apiFormat, Object... args) throws IOException {
-		Response response = restRequest(apiFormat, args);
-		return gson.fromJson(response.body().string(), cls);
-	}
-	
-	public static Response formRequest(Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
-		MultipartBody.Builder requestBody = new MultipartBody.Builder()
-				.setType(MultipartBody.FORM);
-		requestBody = setup.apply(requestBody);
-		RequestBody body = requestBody.build();
-		Request request = new Request.Builder()
-				.url(String.format(apiFormat, args))
-				.post(body)
-				.build();
-		return client.newCall(request).execute();
-	}
-	
-	public static <T> T formRequest(Class<T> cls, Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
-		Response response = formRequest(setup, apiFormat, args);
-		return gson.fromJson(response.body().string(), cls);
-	}
-	
-	public static File writeFile(Response response, String filepath) throws FileNotFoundException, IOException {
-		try (FileOutputStream fos = new FileOutputStream(filepath)) {
-			write(response.body().byteStream(), fos);
-		}
-		return Paths.get(filepath).toFile();
-	}
-	
-	public static long write(InputStream in, OutputStream out) throws IOException {
-		try (BufferedInputStream input = new BufferedInputStream(in)) {
-			byte[] dataBuffer = new byte[4096];
-			int readBytes;
-			long totalBytes = 0;
-			while ((readBytes = input.read(dataBuffer)) != -1) {
-				totalBytes += readBytes;
-				out.write(dataBuffer, 0, readBytes);
-			}
-			out.flush();
-			return totalBytes;
-		}
-	}
-	
-	/* help building + argument parsing*/
-	
-	protected String helpBuilder(String args, String... lines) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("#"+Arrays.toString(names)+"\n").append("Usage: <name> "+args+"\n");
-		String output;
-		for (String line: lines) {
-			output = line;
-			if (line.startsWith("[") || line.startsWith("<")) 
-				output = "Usage: <name> " + output;
-			else if (!line.startsWith("#") && !line.startsWith("Usage")) 
-				output = "\t" + output;
-			sb.append(output+"\n");
-		}
-		return markdown(sb.toString());
 	}
 	
 	/* Scheduling */
