@@ -22,9 +22,9 @@ public class ThreadSleep {
 	}
 	
 	public static Callable<Void> nonBlocking(final long duration, final Supplier<Boolean> abortCondition) {
-		final long checkRate = checkRateOf(duration),
-				start = System.currentTimeMillis();
+		final long checkRate = checkRateOf(duration);
 		return () -> {
+			long start = System.currentTimeMillis();
 			while (!abortCondition.get() && System.currentTimeMillis() - start < duration) 
 				Thread.sleep(checkRate);
 			return null;	// since return type is Void

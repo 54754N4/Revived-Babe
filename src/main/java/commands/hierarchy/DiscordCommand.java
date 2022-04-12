@@ -89,8 +89,7 @@ public abstract class DiscordCommand extends RestCommand {
 		addReplyHandler(new ReplyHandler.Builder()
 			.ignoreBots()
 			.authorOnly()
-			.ifTrue((text, cmd) -> 
-				cmd.scheduled.get() && 
+			.ifTrue((text, cmd) ->
 				StringLib.matchesSimplified(text, SCHEDULING_STOP_VERBS) &&
 				StringLib.matchesSimplified(text, names)
 			)
@@ -101,7 +100,6 @@ public abstract class DiscordCommand extends RestCommand {
 	}
 	
 	private void schedule() throws Exception {
-		scheduled.set(true);
 		addKillHandler()
 			.attachListener()	// make command listen for replies
 			.keepAlive();		// prevent killing on finalisation
@@ -126,8 +124,10 @@ public abstract class DiscordCommand extends RestCommand {
 		Callable<Void> sleeper = ThreadSleep.nonBlocking(period, this);
 		if (instant)
 			iteration.accept(input);
-		while (!finished.get()) {
+		while (true) {
 			sleeper.call();
+			if (finished.get())
+				break;
 			iteration.accept(input);
 		}
 		removeListener();	// stop listening to incoming messages

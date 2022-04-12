@@ -48,9 +48,6 @@ public abstract class ListenerCommand extends RoleCommand {
 	
 	// Conditionally dispatches based on predicate config
 	public void dispatch(ReplyHandler handler, boolean isBot, boolean isAuthor, String text) {
-//		logger.info("Checking (handleBots,isBot) : ({}, {})", handler.handleBots, isBot);
-//		logger.info("Checking (authorOnly,isAuthor) : ({}, {})", handler.authorOnly, isAuthor);
-//		logger.info("Checking custom (predicate) : ({})", handler.predicate.test(text, this));
 		if (handler.handleBots != isBot	||			// bot dispatching (handleBots ^ isBot = XOR)
 			(handler.authorOnly && !isAuthor) ||	// don't dispatch on state 10 in truth table	
 			!handler.predicate.test(text, this))

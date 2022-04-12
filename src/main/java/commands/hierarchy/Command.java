@@ -27,8 +27,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public abstract class Command extends ListenerAdapter implements Callable<Void> {
 	public static final int MESSAGE_MAX = Message.MAX_CONTENT_LENGTH;
 	public final String[] names;
-	protected AtomicBoolean keepAlive, 
-		scheduled, 
+	protected AtomicBoolean keepAlive,  
 		finished;			// stores cmd execution state
 	protected final Logger logger;
 	protected UserBot bot;					// bot responder
@@ -54,7 +53,6 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 			// because getGuild() throws if sent in private message chat
 		}
 		keepAlive = new AtomicBoolean();
-		scheduled = new AtomicBoolean();
 		finished = new AtomicBoolean();
 		stdout = new StringBuilder();
 		logger = LoggerFactory.getLogger(getClass());
