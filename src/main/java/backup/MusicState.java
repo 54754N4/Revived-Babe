@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ import bot.hierarchy.MusicBot;
 import database.DBManager;
 import database.Query;
 import database.TableManager;
-import lambda.ThrowableRunnable;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -36,52 +36,50 @@ import net.dv8tion.jda.api.managers.AudioManager;
 
 public abstract class MusicState {
 	private static final Logger logger = LoggerFactory.getLogger(MusicState.class);
-	private static final String LAST_CHANNEL = "lastVoiceChannel",
+	private static final String 
+			LAST_CHANNEL = "lastVoiceChannel", CURRENT_PLAYLIST = "currentPlaylist",
 			POSITION = "position", VOLUME = "lastVolume", CURRENT = "current",
-			PAUSED = "wasPaused", PLAYLIST = "playlist", CURRENT_PLAYLIST = "currentPlaylist";
-	
-	public static void backup(MusicBot bot) {
-		try {
-			new Backup(bot).run();
-		} catch (Exception e) {
-			logger.error("Couldn't backup bot "+bot, e);
-		}
-	}
-	
-	public static void restore(MusicBot bot) {
-		try {
-			new Restore(bot).run();
-		} catch (Exception e) {
-			logger.error("Couldn't restore bot "+bot, e);
-		}
-	}
+			PAUSED = "wasPaused", PLAYLIST = "playlist";
 	
 	/* Static convenience methods */
 	
-	public static final String tableName(MusicBot bot, long guildID) {
-		return "Backup" + bot.getBotName() + guildID;
+	public static final void backup(MusicBot bot) {
+		new Backup(bot).run();
 	}
 	
-	public static final TableManager getTable(MusicBot bot, long guildID) throws SQLException {
-		return DBManager.INSTANCE.manage(tableName(bot, guildID));
+	public static final void restore(MusicBot bot) {
+		new Restore(bot).run();
 	}
-	
 	
 	public static final void clear(MusicBot bot, long guildID) throws SQLException {
 		getTable(bot, guildID).clear();
 	}
+	
+	private static final String tableName(MusicBot bot, long guildID) {
+		return "Backup" + bot.getBotName() + guildID;
+	}
+	
+	private static final TableManager getTable(MusicBot bot, long guildID) throws SQLException {
+		return DBManager.INSTANCE.manage(tableName(bot, guildID));
+	}
 
 	/* Interface that both backup and restore classes implement */
 	
-	private static interface Handler extends ThrowableRunnable {
-		Map<Long, TableManager> getGuildTables() throws Exception;
+	private static interface Handler extends Runnable {
+		Map<Long, TableManager> getGuildTables();
 		void handlePlaylists(long guildID, TableManager table);
 		void handleVoiceChannel(long guildID, TableManager table);
 		void handleVolumeAndPause(long guildID, TableManager table);
 		void handleSongAndPosition(long guildID, TableManager table);
 		
+		default boolean preExecute(long guildID, TableManager table) throws Exception {
+			return true;
+		}
+		
+		default void postExecute(long guildID, TableManager table) throws Exception {}
+		
 		@Override
-		default void run() throws Exception {
+		default void run() {
 			boolean success;
 			for (Entry<Long, TableManager> entry : getGuildTables().entrySet()) {
 				long guildID = entry.getKey();
@@ -102,15 +100,22 @@ public abstract class MusicState {
 			}
 		}
 		
-		default boolean preExecute(long guildID, TableManager table) throws Exception {
-			return true;
-		}
+		/* Convenience method */
 		
-		default void postExecute(long guildID, TableManager table) throws Exception {}
+		default Map<Long, TableManager> createTableManagers(MusicBot bot, Collection<Long> guildIDs) {
+			Map<Long, TableManager> tables = new HashMap<>();
+			for (long id : guildIDs) {
+				try {
+					tables.put(id, getTable(bot, id));
+				} catch (Exception e) {
+					logger.error("Couldn't get backup table for bot "+bot+" and guild id "+id, e);
+				}
+			}
+			return tables;
+		}
 	}
 	
 	/* Backup class */
-	
 	
 	public static class Backup implements Handler {
 		private final MusicBot bot;
@@ -122,21 +127,20 @@ public abstract class MusicState {
 		}
 
 		@Override
-		public Map<Long, TableManager> getGuildTables() throws SQLException {
-			Map<Long, TableManager> tables = new HashMap<>();
-			for (long id : map.keySet())
-				tables.put(id, getTable(bot, id));
-			return tables;
+		public Map<Long, TableManager> getGuildTables() {
+			return createTableManagers(bot, map.keySet());
 		}
 
 		@Override
 		public boolean preExecute(long guildID, TableManager table) throws SQLException {
+			logger.info("Starting backup for bot {} and guild {}", bot, guildID);
 			table.reset();
 			return true;
 		}
 		
 		@Override
 		public void handlePlaylists(long guildID, TableManager table) {
+			logger.info("Backing up playlists for guild {}", guildID);
 			MusicController controller = map.get(guildID);
 			AudioPlayerManager manager = controller.getPlayerManager();
 			TrackScheduler scheduler = controller.getScheduler();
@@ -188,6 +192,7 @@ public abstract class MusicState {
 
 		@Override
 		public void handleVoiceChannel(long guildID, TableManager table) {
+			logger.info("Backing up voice channel for guild {}", guildID);
 			AudioManager manager = bot.getManager(guildID);
 			if (manager == null) 
 				return;
@@ -204,6 +209,7 @@ public abstract class MusicState {
 
 		@Override
 		public void handleVolumeAndPause(long guildID, TableManager table) {
+			logger.info("Backing up volume and pause state for guild {}", guildID);
 			AudioPlayer player = bot.getPlayer(guildID);
 			try {
 				table.insertOrUpdate(VOLUME, player.getVolume());
@@ -215,6 +221,7 @@ public abstract class MusicState {
 
 		@Override
 		public void handleSongAndPosition(long guildID, TableManager table) {
+			logger.info("Backing up song and track position for guild {}", guildID);
 			CircularDeque queue = map.get(guildID).getScheduler().getQueue();
 			int current = queue.getCurrent();
 			if (current == CircularDeque.UNINITIALISED)
@@ -239,31 +246,35 @@ public abstract class MusicState {
 		}
 
 		@Override
-		public Map<Long, TableManager> getGuildTables() throws SQLException {
+		public Map<Long, TableManager> getGuildTables() {
 			String prefix = "Backup" + bot.getBotName();
-			List<Long> ids = Query.getGuildTables(prefix + "%")
+			List<Long> ids;
+			try {
+				ids = Query.getGuildTables(prefix + "%")
 					.stream()
 					.map(s -> s.substring(prefix.length()))
 					.map(Long::parseLong)
 					.collect(Collectors.toList());
-			Map<Long, TableManager> tables = new HashMap<>();
-			for (long id : ids)
-				tables.put(id, getTable(bot, id));
-			return tables;
+			} catch (Exception e) {
+				return new HashMap<>();
+			}
+			return createTableManagers(bot, ids);
 		}
 
 		@Override
 		public boolean preExecute(long guildID, TableManager table) throws SQLException {
+			logger.info("Started restoring for bot {} and guild {}", bot, guild);
 			guild = bot.getJDA().getGuildById(guildID);
-			logger.info("Guild is {}", guild);
 			if (guild == null) 
 				return false;
+			logger.info("Setting up audio for guild {}", guild);
 			bot.setupAudio(guildID);
 			return true;
 		}
 		
 		@Override
 		public void handlePlaylists(long guildID, TableManager table) {
+			logger.info("Restoring playlists for guild {}", guild);
 			Map<String, String> playlists;
 			try {
 				playlists = table.select(PLAYLIST+"%");
@@ -315,6 +326,7 @@ public abstract class MusicState {
 
 		@Override
 		public void handleVoiceChannel(long guildID, TableManager table) {
+			logger.info("Restoring voice channel for guild {}", guild);
 			try {
 				long channelID = table.retrieveLong(LAST_CHANNEL, -1);
 				if (channelID == -1)
@@ -330,6 +342,7 @@ public abstract class MusicState {
 
 		@Override
 		public void handleVolumeAndPause(long guildID, TableManager table) {
+			logger.info("Restoring volume and pause state for guild {}", guild);
 			Guild guild = bot.getJDA().getGuildById(guildID);
 			if (guild == null)
 				return;
@@ -352,6 +365,7 @@ public abstract class MusicState {
 
 		@Override
 		public void handleSongAndPosition(long guildID, TableManager table) {
+			logger.info("Restoring song and track position for guild {}", guild);
 			Guild guild = bot.getJDA().getGuildById(guildID);
 			try {
 				int current = table.retrieveInt(CURRENT, -1);
