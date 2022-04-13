@@ -4,6 +4,7 @@ import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Stop extends DiscordCommand {
@@ -20,6 +21,7 @@ public class Stop extends DiscordCommand {
 	@Override
 	protected void execute(String input) throws Exception {
 		MusicBot musicBot = getMusicBot();
+		Guild guild = getGuild();
 		boolean wasPaused = musicBot.isPaused(guild);
 		musicBot.stop(guild);
 		println(wasPaused ? "I am paused anyways.." : "Stopped playing tracks");

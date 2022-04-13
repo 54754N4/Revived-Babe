@@ -33,7 +33,7 @@ public class TicTacToe extends FSMCommand {
 
 	@Override
 	protected void setup() {
-		if (mentioned.users.size() == 0) {
+		if (getMentions().getUsers().size() == 0) {
 			println("You need to mention another user to play with =v");
 			return;
 		}
@@ -61,13 +61,13 @@ public class TicTacToe extends FSMCommand {
 		game = new Game(3);
 		isFirst = true;
 		if (rand.nextBoolean()) {
-			first = message.getAuthor();
-			second = mentioned.users.iterator().next();
+			first = getMessage().getAuthor();
+			second = getMentions().getUsers().iterator().next();
 		} else {
-			first = mentioned.users.iterator().next();
-			second = message.getAuthor();
+			first = getMentions().getUsers().iterator().next();
+			second = getMessage().getAuthor();
 		}
-		printable = channel.sendMessage(String.format("%s vs %s", first.getName(), second.getName())).complete();
+		printable = getChannel().sendMessage(String.format("%s vs %s", first.getName(), second.getName())).complete();
 	}
 	
 	private void createFSM() {

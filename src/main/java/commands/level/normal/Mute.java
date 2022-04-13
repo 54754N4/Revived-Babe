@@ -26,13 +26,13 @@ public class Mute extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		List<String> toggled = new ArrayList<>();
 		MusicBot bot = getMusicBot();
-		if (mentioned.members.size() != 0) {
-			for (Member member : mentioned.members) {
+		if (getMentions().getMembers().size() != 0) {
+			for (Member member : getMentions().getMembers()) {
 				bot.toggleMute(member);
 				toggled.add(member.getAsMention());
 			}
 		} else {
-			bot.toggleMute(guild);
+			bot.toggleMute(getGuild());
 			toggled.add(bot.getAsMention());
 		}
 		println("Muted : %s", Arrays.toString(toggled.toArray()));

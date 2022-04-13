@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,6 @@ import commands.model.Mentions;
 import commands.model.Params;
 import commands.model.ThreadsManager;
 import commands.model.TypingWatchdog;
-import lambda.Executable;
 import lib.Consumers;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Guild;
@@ -27,20 +25,18 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public abstract class Command extends ListenerAdapter implements Callable<Void> {
 	public static final int MESSAGE_MAX = Message.MAX_CONTENT_LENGTH;
 	public final String[] names;
-	protected AtomicBoolean keepAlive,  
-		finished;			// stores cmd execution state
-	protected final Logger logger;
-	protected UserBot bot;					// bot responder
-	protected Guild guild;
-	protected Message message;				// message trigger
-	protected MessageChannel channel;
-	protected StringBuilder stdout;
+	private final Logger logger;
+	private AtomicBoolean keepAlive, finished;
+	private UserBot bot;					// bot responder
+	private Guild guild;
+	private Message message;				// message trigger
+	private MessageChannel channel;
+	private StringBuilder stdout;
 	// The following attributes are set when start() is called
-	protected String input;
-	protected Params params;				// named + unnamed parameters
-	protected Mentions mentioned;			// mentioned users/channels
-	protected Future<?> thread;			// future of current thread
-	protected long executionTime;
+	private String input;
+	private Params params;				// named + unnamed parameters
+	private Mentions mentioned;			// mentioned users/channels
+	private Future<?> thread;			// future of current thread
 	
 	public Command(UserBot bot, Message message, String...names) {
 		this.bot = bot;
@@ -58,15 +54,14 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		logger = LoggerFactory.getLogger(getClass());
 	}
 	
-	protected Command keepAlive() {
-		keepAlive.set(true);
-		return this;
+	/* Accessors and Setters */
+	
+	public boolean isFinished() {
+		return finished.get();
 	}
 	
-	protected Command kill() {
-		keepAlive.set(false);
-		finished.set(true);
-		return this;
+	public boolean keepAlive() {
+		return keepAlive.get();
 	}
 	
 	protected Logger getLogger() {
@@ -81,12 +76,55 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		return guild;
 	}
 	
+	public Message getMessage() {
+		return message;
+	}
+	
+	protected Command setMessage(Message message) {
+		this.message = message;
+		return this;
+	}
+	
+	public MessageChannel getChannel() {
+		return channel;
+	}
+	
+	public StringBuilder getStdout() {
+		return stdout;
+	}
+	
+	public String getInput() {
+		return input;
+	}
+	
+	public Params getParams() {
+		return params;
+	}
+	
+	public Mentions getMentions() {
+		return mentioned;
+	}
+	
 	public Future<?> getThread() {
 		return thread;
 	}
 	
-	public boolean isFinished() {
-		return finished.get();
+	/* Convenience methods */
+	
+	protected Command kill() {
+		keepAlive.set(false);
+		finished.set(true);
+		return this;
+	}
+	
+	protected Command setKeepAlive() {
+		keepAlive.set(true);
+		return this;
+	}
+	
+	protected Command setFinished() {
+		finished.set(true);
+		return this;
 	}
 	
 	public void actTyping() {
@@ -94,35 +132,14 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 			.queue(Consumers::ignore, Consumers::ignore);
 	}
 	
-	protected void clear() {
-		stdout = new StringBuilder();
-	}
-	
-	/* Exception handling convenience methods */
-	
-	public Command tryExecuting(Executable consumer) {
-		return tryExecuting(consumer, null);
-	}
-	
-	public Command tryExecuting(Executable consumer, String errorMessage) {
-		return tryExecuting(consumer, null, errorMessage);
-	}
-	
-	public Command tryExecuting(Executable consumer, Consumer<Throwable> errorConsumer, String errorMessage) {
-		try { consumer.invoke(); }
-		catch (Exception e) {
-			if (errorConsumer != null)
-				errorConsumer.accept(e);
-			String message = errorMessage == null ? e.getMessage() : errorMessage;
-			logger.error(message, e);
-		}
-		return this;
+	protected void clearStdout() {
+		stdout.delete(0, stdout.length());
 	}
 	
 	/* Args/input handling */
 	
 	protected boolean hasArgs(String... args) {
-		for (String param : params.all) 
+		for (String param : params.getAll()) 
 			if (StringLib.matches(param, args)) 
 				return true;
 		return false;
@@ -152,14 +169,14 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 	}
 	
 	public Command start(String command) {
-		mentioned = new Mentions(message, command);		// filter mentions from input first
-		input = treatInput(mentioned.filteredMessage);	// then cleanup input
+		mentioned = new Mentions(message, command);			// filter mentions from input first
+		input = treatInput(mentioned.getFilteredMessage());	// then cleanup input
 		channel = hasArgs(Global.PRIVATE_MESSAGE_REPLY.params) ? 
 				message.getAuthor().openPrivateChannel().complete()
 				: message.getChannel();
 		TypingWatchdog.handle(this);
 		thread = ThreadsManager.POOL.submit(this);
-		getLogger().info("Started command {} thread", getClass());
+		logger.info("Started command {} thread", getClass());
 		return this;
 	}
 	

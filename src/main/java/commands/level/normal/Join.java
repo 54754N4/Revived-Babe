@@ -19,11 +19,11 @@ public class Join extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		if (message.getMember() == null || getGuild() == null) { 
+		if (getMessage().getMember() == null || getGuild() == null) { 
 			println("Sadly music commands only work in guilds/servers, not from private/group messages.");
 			return;
 		}
-		AudioChannel channel = message.getMember().getVoiceState().getChannel();
+		AudioChannel channel = getMessage().getMember().getVoiceState().getChannel();
 		if (channel == null) {
 			println("You have to be in a voice channel so i can join =v..");
 			return;

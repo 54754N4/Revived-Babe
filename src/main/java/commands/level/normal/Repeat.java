@@ -4,6 +4,7 @@ import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Repeat extends DiscordCommand {
@@ -22,6 +23,7 @@ public class Repeat extends DiscordCommand {
 	@Override
 	protected void execute(String input) throws Exception {
 		MusicBot bot = getMusicBot();
+		Guild guild = getGuild();
 		if (hasArgs("-q", "--queue")) {
 			bot.toggleLooping(guild);
 			println("Toggled looping queue to %b", bot.isLooping(guild));

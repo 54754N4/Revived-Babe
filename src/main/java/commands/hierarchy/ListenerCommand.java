@@ -20,14 +20,14 @@ public abstract class ListenerCommand extends RoleCommand {
 	/* Replies events (un-)hooking */
 
 	public ListenerCommand attachListener() {
-		logger.info("{} started listening to replies", getClass());
-		bot.getJDA().addEventListener(this);
+		getLogger().info("{} started listening to replies", getClass());
+		getBot().getJDA().addEventListener(this);
 		return this;
 	}
 	
 	public ListenerCommand removeListener() {
-		logger.info("{} stopped listening to replies", getClass());
-		bot.getJDA().removeEventListener(this);
+		getLogger().info("{} stopped listening to replies", getClass());
+		getBot().getJDA().removeEventListener(this);
 		return this;
 	}
 	
@@ -40,9 +40,9 @@ public abstract class ListenerCommand extends RoleCommand {
 	
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
-		boolean isBot = event.getAuthor().isBot();
-		boolean isAuthor = event.getAuthor().getIdLong() == message.getAuthor().getIdLong();
-		String message = event.getMessage().getContentDisplay();
+		final boolean isBot = event.getAuthor().isBot();
+		final boolean isAuthor = event.getAuthor().getIdLong() == getMessage().getAuthor().getIdLong();
+		final String message = event.getMessage().getContentDisplay();
 		handlers.forEach(handler -> dispatch(handler, isBot, isAuthor, message));
 	}
 	

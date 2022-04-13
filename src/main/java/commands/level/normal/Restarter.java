@@ -37,10 +37,10 @@ public class Restarter extends DiscordCommand {
 			return;
 		}
 		printIndependently("Restarting..");
-		bot.delay(2000);	// give 2s for message request to send
+		getBot().delay(2000);	// give 2s for message request to send
 		getLogger().info("Restarting..");
 		FLAG.set(true);		// set flag so exit code is changed on exit
-		bot.kill(hasArgs("-n", "--now"));
+		getBot().kill(hasArgs("-n", "--now"));
 	}
 	
 	public static int update() throws IOException, InterruptedException {

@@ -8,7 +8,6 @@ import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.FoodRecipeResults;
 import json.FoodRecipeResults.Result;
-import lib.HTTP;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 
@@ -30,12 +29,12 @@ public class Recipe extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		String ingredients = hasArgs("--ingredients") ? params.named.get("--ingredients") : "",
-				search = hasArgs("--recipe") ? params.named.get("--recipe") : "",
-				page = hasArgs("--page") ? params.named.get("--page") : "";
+		String ingredients = hasArgs("--ingredients") ? getParams().getNamed().get("--ingredients") : "",
+				search = hasArgs("--recipe") ? getParams().getNamed().get("--recipe") : "",
+				page = hasArgs("--page") ? getParams().getNamed().get("--page") : "";
 		FoodRecipeResults response = getRecipes(ingredients, search, page);
 		for (Result result : response.results) 
-			channel.sendMessageEmbeds(buildEmbed(result).build()).queue();
+			getChannel().sendMessageEmbeds(buildEmbed(result).build()).queue();
 	}
 	
 	public static EmbedBuilder buildEmbed(Result result) {
@@ -53,11 +52,6 @@ public class Recipe extends DiscordCommand {
 		if (!search.equals(""))
 			search = "q=" + search + "&";
 		page = page.equals("") ? "p=1" : "p=" + page;
-		try (	// try-with-resources to auto-close close-able resources
-			HTTP.RequestBuilder builder = new HTTP.RequestBuilder(String.format(API_FORMAT, ingredients, search, page));
-			HTTP.ResponseHandler handler = new HTTP.ResponseHandler(builder.build());
-		) {
-			return gson.fromJson(handler.getResponse(), FoodRecipeResults.class);
-		}	
+		return restRequest(FoodRecipeResults.class, String.format(API_FORMAT, ingredients, search, page));
 	} 
 }

@@ -32,8 +32,8 @@ public class Remove extends DiscordCommand {
 			println("Command only works on music bots.");
 			return;
 		}
-		long guildId = message.getGuild().getIdLong();
-		CircularDeque queue = getMusicBot().getPlaylist(guild);
+		long guildId = getMessage().getGuild().getIdLong();
+		CircularDeque queue = getMusicBot().getPlaylist(getGuild());
 		int[] indices = Arrays.stream(input.split(SEPARATOR))
 				.filter(StringLib::isInteger)
 				.mapToInt(Integer::parseInt)	// parses + un-boxes to primitive type

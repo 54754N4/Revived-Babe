@@ -17,7 +17,7 @@ public class Previous extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		getMusicBot().previous(guild);
+		getMusicBot().previous(getGuild());
 		println("Playing previous track");
 	}
 }

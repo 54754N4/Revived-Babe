@@ -9,6 +9,7 @@ import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
 import lib.messages.PagedTracksHandler;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Play extends DiscordCommand {
@@ -42,13 +43,14 @@ public class Play extends DiscordCommand {
 	}
 	
 	private void play(String input) throws NumberFormatException, InterruptedException, ExecutionException {
+		Guild guild = getGuild();
 		MusicBot bot = getMusicBot();
 		if (input.equals("")) {
 			println(helpMessage());
 			return;
 		}
 		if (!bot.isConnected(guild))
-			bot.connect(message.getMember().getVoiceState().getChannel());
+			bot.connect(getMessage().getMember().getVoiceState().getChannel());
 		if (StringLib.isInteger(input)) {
 			int index = Integer.parseInt(input),
 				max = bot.getScheduler(guild).getQueue().size();
@@ -77,16 +79,16 @@ public class Play extends DiscordCommand {
 			PagedTracksHandler handler = new PagedTracksHandler(bot, getMusicBot().getScheduler(guild), new ArrayList<>())
 					.loopbackIndices();		// indices always between [0,9]
 			bot.play(guild, input, handler).get();
-			channel.sendMessage("Loading...")
+			getChannel().sendMessage("Loading...")
 				.queue(handler.enableHandlerButtons());
 		} else 
 			bot.play(guild,
 				input,
 				hasArgs("--top", "-t"),
 				hasArgs("--next", "-n"),
-				hasArgs("--count") ? Integer.parseInt(params.named.get("--count")) : 1,
+				hasArgs("--count") ? Integer.parseInt(getParams().getNamed().get("--count")) : 1,
 				hasArgs("-pl", "--playlist"),
-				hasArgs("-v", "--verbose") ? getPrinter() : logger::info)
+				hasArgs("-v", "--verbose") ? getPrinter() : getLogger()::info)
 			.get();
 	}
 	

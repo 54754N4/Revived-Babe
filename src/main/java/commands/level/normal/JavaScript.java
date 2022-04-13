@@ -39,8 +39,8 @@ public class JavaScript extends DiscordCommand {
 	// Converts from named parameters (params with double hyphens '--')
 	private final Bindings getBindings() {
 		final Bindings bindings = JS_ENGINE.createBindings();
-		params.named.keySet().stream()
-			.forEach(param -> bindings.put(param.replaceAll("--", ""), params.named.get(param)));
+		getParams().getNamed().keySet().stream()
+			.forEach(param -> bindings.put(param.replaceAll("--", ""), getParams().getNamed().get(param)));
 		return bindings;
 	}
 

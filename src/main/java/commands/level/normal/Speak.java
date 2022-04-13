@@ -15,6 +15,7 @@ import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.encode.Encoder;
 import lib.scrape.Browser;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import okhttp3.Response;
 
@@ -44,20 +45,21 @@ public class Speak extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		String language = hasArgs("--lang") ?  params.named.get("--lang") : DEFAULT_LANGUAGE, 
-			rate = hasArgs("--rate") ?  params.named.get("--rate") : DEFAULT_RATE, 
-			voice = hasArgs("--voice") ?  params.named.get("--voice") : DEFAULT_VOICE;
+		String language = hasArgs("--lang") ? getParams().getNamed().get("--lang") : DEFAULT_LANGUAGE, 
+			rate = hasArgs("--rate") ? getParams().getNamed().get("--rate") : DEFAULT_RATE, 
+			voice = hasArgs("--voice") ? getParams().getNamed().get("--voice") : DEFAULT_VOICE;
 		if (hasArgs("-l", "--languages")) { languages(); return; }
 		else if (hasArgs("-v", "--voices")) { voices(); return; }
 		// Connect to channel
+		Guild guild = getGuild();
 		MusicBot bot = getMusicBot();
 		boolean connected = bot.isConnected(guild),
-				authorConnected = message.getMember().getVoiceState().inAudioChannel();
+				authorConnected = getMessage().getMember().getVoiceState().inAudioChannel();
 		if (!connected && !authorConnected) {
 			println("I have to be in a voice channel to talk.. So you also have to be in one so I can join you lol..");
 			return;
 		} else if (!connected)
-			bot.connect(message.getMember().getVoiceState().getChannel());
+			bot.connect(getMessage().getMember().getVoiceState().getChannel());
 		// Generate WAV from API
 		Response response = restRequest(
 				API_FORMAT, 
@@ -67,7 +69,7 @@ public class Speak extends DiscordCommand {
 				DEFAULT_FILE_FORMAT, 
 				rate, 
 				voice);
-		logger.info(String.format(API_FORMAT, System.getenv("VOICE_RSS_API"), URLEncoder.encode(input, "UTF-8"), language, DEFAULT_FILE_FORMAT, rate, voice));
+		getLogger().info(String.format(API_FORMAT, System.getenv("VOICE_RSS_API"), URLEncoder.encode(input, "UTF-8"), language, DEFAULT_FILE_FORMAT, rate, voice));
 		if (!response.isSuccessful()) {
 			println("HTTP error code %d", response.code());
 			response.body().string().lines().forEach(this::println);

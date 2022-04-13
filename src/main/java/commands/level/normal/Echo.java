@@ -25,11 +25,11 @@ public class Echo extends DiscordCommand {
 	@Override
 	public void execute(String command) {
 		String output = hasArgs("-n", "--no") ? command : codeBlock(command);
-		if (mentioned.users.size() == 0)
+		if (getMentions().getUsers().size() == 0)
 			print(output);
 		else {
-			List<User> users = new ArrayList<>(mentioned.users);
-			for (User user : mentioned.users)
+			List<User> users = new ArrayList<>(getMentions().getUsers());
+			for (User user : getMentions().getUsers())
 				if (user.isBot())
 					users.remove(user);
 			if (users.size() == 0)

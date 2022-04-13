@@ -8,6 +8,7 @@ import java.util.Set;
 
 import bot.hierarchy.UserBot;
 import lib.StringLib;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -36,6 +37,7 @@ public abstract class RoleCommand extends PrintCommand {
 	}
 	
 	protected List<Role> getCallerRoles() {
+		Message message = getMessage();
 		return message == null ? 
 				EMPTY :
 				message.getMember() == null ? 
@@ -68,6 +70,7 @@ public abstract class RoleCommand extends PrintCommand {
 	}
 	
 	protected List<Role> getRoles(String match, boolean createIfNonExistant) {
+		Guild guild = getGuild();
 		List<Role> roles = guild.getRolesByName(match, true);
 		if (roles.size() == 0 && createIfNonExistant)
 			roles.add(guild.createRole().setName(StringLib.capitalize(match)).complete());

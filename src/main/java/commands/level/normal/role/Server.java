@@ -20,6 +20,7 @@ import discord.ServerSetting;
 import lib.StringLib;
 import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.AudioChannel;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.Message;
@@ -64,6 +65,7 @@ public class Server extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
+		Guild guild = getGuild();
 		manager = ServerManager.manage(guild);
 		if (hasArgs("-na", "--name")) 
 			handleName(input);
@@ -102,7 +104,7 @@ public class Server extends DiscordCommand {
 	/* Convenience methods */
 
 	private boolean hasAttachments() {
-		return message.getAttachments().size() != 0;
+		return getMessage().getAttachments().size() != 0;
 	}
 	
 	private boolean wantsCurrent() {
@@ -117,7 +119,7 @@ public class Server extends DiscordCommand {
 	
 	private void handleName(String input) {
 		if (wantsCurrent())
-			println(guild.getName());
+			println(getGuild().getName());
 		else if (input.equals("")) 
 			giveMe("name");
 		else {
@@ -129,7 +131,7 @@ public class Server extends DiscordCommand {
 	
 	private void handleDescription(String input) {
 		if (wantsCurrent())
-			println(guild.getDescription());
+			println(getGuild().getDescription());
 		else if (input.equals(""))
 			giveMe("description");
 		else {
@@ -150,7 +152,7 @@ public class Server extends DiscordCommand {
 		else if (hasAttachments())
 			applier.apply(
 				Icon.from(
-					message.getAttachments()
+					getMessage().getAttachments()
 						.get(0)
 						.downloadToFile(DOWNLOAD_PATH)
 						.get()))
@@ -164,23 +166,23 @@ public class Server extends DiscordCommand {
 	
 	private void handleSystemChannel(String input) {
 		if (wantsCurrent())
-			println(guild.getSystemChannel().getAsMention());
-		else if (mentioned.channels.size() == 0)
+			println(getGuild().getSystemChannel().getAsMention());
+		else if (getMentions().getChannels().size() == 0)
 			giveMe("new system channel");
 		else {
-			manager.setSystemChannel(mentioned.channels.iterator().next())
+			manager.setSystemChannel(getMentions().getChannels().iterator().next())
 				.applyChanges();
-			println("Set system channel to : %s", mentioned.channels.iterator().next().getAsMention());
+			println("Set system channel to : %s", getMentions().getChannels().iterator().next().getAsMention());
 		}
 	}
 
 	private void handleAFK(String input) {
 		if (wantsCurrent())
-			println(inline(guild.getAfkChannel().getName()));
+			println(inline(getGuild().getAfkChannel().getName()));
 		else if (input.equals(""))
 			giveMe("new AFK channel");
 		else {
-			VoiceChannel channel = message.getJDA()
+			VoiceChannel channel = getMessage().getJDA()
 					.getVoiceChannelsByName(input, true)
 					.get(0);
 			manager.setAfkChannel(channel)
@@ -191,7 +193,7 @@ public class Server extends DiscordCommand {
 	
 	private void handleVanityCode(String input) {
 		if (wantsCurrent())
-			println("Code: `%s`%nURL: %s", guild.getVanityCode(), guild.getVanityUrl());
+			println("Code: `%s`%nURL: %s", getGuild().getVanityCode(), getGuild().getVanityUrl());
 		else if (input.equals(""))
 			giveMe("new vanity code");
 		else
@@ -217,7 +219,7 @@ public class Server extends DiscordCommand {
 	}
 	
 	private void handleRegion(String input) {
-		AudioChannel channel = message.getMember().getVoiceState().getChannel();
+		AudioChannel channel = getMessage().getMember().getVoiceState().getChannel();
 		if (channel == null)
 			println("You have to be in a voice channel to change it's region.");
 		else if (wantsCurrent())
@@ -245,7 +247,7 @@ public class Server extends DiscordCommand {
 	private void onRetrieveInvites(List<Invite> invites) {
 		Stream<InvitesParser> stream = invites.stream()
 			.map(manager::parseInvite)
-			.filter(invite -> invite.matches(input));
+			.filter(invite -> invite.matches(getInput()));
 		if (hasArgs("-te", "--temp", "--temporary"))
 			stream.filter(InvitesParser::isTemporary);
 		List<InvitesParser> leftovers = stream.collect(Collectors.toList());
@@ -260,7 +262,7 @@ public class Server extends DiscordCommand {
 				.forEach(AuditableRestAction::queue);
 		else
 			stream.map(InvitesParser::toEmbed)
-				.map(channel::sendMessageEmbeds)
+				.map(getChannel()::sendMessageEmbeds)
 				.forEach(MessageAction::queue);
 	}
 }

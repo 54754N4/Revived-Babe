@@ -7,7 +7,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.function.Function;
 
 import com.google.gson.Gson;
@@ -28,7 +31,7 @@ public abstract class RestCommand extends ListenerCommand {
 		super(bot, message, names);
 	}
 
-/* Rest + multipart/form requests convenience methods */
+	/* Rest + multipart/form requests convenience methods */
 	
 	public static Response restRequest(String apiFormat, Object...args) throws IOException {
 		Request request = new Request.Builder()
@@ -79,4 +82,22 @@ public abstract class RestCommand extends ListenerCommand {
 			return totalBytes;
 		}
 	}
+	
+	public static String getParamsString(Map<String, String> params, String separator, boolean encode) throws UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+        	if (result.length() != 0) result.append(separator);
+        	if (entry.getValue() == null)
+        		result.append(entry.getKey());
+        	else if (encode)
+        		result.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
+        			.append("=")
+        			.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+        	else 
+        		result.append(entry.getKey())
+    				.append("=")
+    				.append(entry.getValue());
+        }
+        return result.toString(); 
+    }
 }

@@ -22,7 +22,8 @@ public class Highlight extends DiscordCommand {
 	@Override
 	public void execute(String command) {
 		String language = "";
-		if (hasArgs("--lang")) language = params.named.get("--lang");
+		if (hasArgs("--lang")) 
+			language = getParams().getNamed().get("--lang");
 		print(codeBlock(language, command));
 	}
 }

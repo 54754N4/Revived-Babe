@@ -28,9 +28,9 @@ public class Screenshot extends DiscordCommand {
 		try {
 			Browser browser = Browser.getInstance().visit(url);
 			File screenshot = hasArgs("--select") ? 
-					browser.screenshotFileOf(By.cssSelector(params.named.get("--select"))):
+					browser.screenshotFileOf(By.cssSelector(getParams().getNamed().get("--select"))):
 					browser.screenshotFullAsFile();
-			channel.sendFile(screenshot).queue();
+			getChannel().sendFile(screenshot).queue();
 			if (!screenshot.delete())
 				println("Could not delete temporary screenshot file.");
 		} catch (Exception e) {

@@ -34,34 +34,34 @@ public class Volume extends DiscordCommand {
 	}
 	
 	private boolean hasUnnamedDigit() {
-		for (String unnamed : params.unnamed)
+		for (String unnamed : getParams().getUnnamed())
 			if (StringLib.isInteger(unnamed.substring(1)))
 				return true;
 		return false;
 	}
 	
 	private void handleRelativeNegative() {
-		for (String unnamed : params.unnamed)
+		for (String unnamed : getParams().getUnnamed())
 			if (StringLib.isInteger(unnamed.substring(1)))
 				handleRelative(unnamed, false);
 	}
 	
 	private void handleRelative(String input, boolean increment) {
-		int volume = getMusicBot().getVolume(guild),
+		int volume = getMusicBot().getVolume(getGuild()),
 			dv = Integer.parseInt(input.substring(1)),
 			after = increment ? volume + dv : volume - dv;
-		getMusicBot().setVolume(guild, after);
+		getMusicBot().setVolume(getGuild(), after);
 	}
 
 	private void printCurrentVolume() {
-		println("Current volume is %d", getMusicBot().getVolume(guild));
+		println("Current volume is %d", getMusicBot().getVolume(getGuild()));
 	}
 
 	private void handleInt(int vol) {
 		if (vol < MIN || vol > MAX)
 			println("Volume cannot be outside the range of [0, 200]%");
 		else {
-			getMusicBot().setVolume(guild, vol);
+			getMusicBot().setVolume(getGuild(), vol);
 			println("Set volume to %d", vol);
 		}
 	}
@@ -71,9 +71,9 @@ public class Volume extends DiscordCommand {
 		if (input.matches("[\\+-]+")) {
 			for (char c : input.toCharArray())
 				if (c == '+')
-					bot.increaseVolume(guild);
+					bot.increaseVolume(getGuild());
 				else
-					bot.decreaseVolume(guild);
+					bot.decreaseVolume(getGuild());
 		} else
 			println("I only take integers as argument/parameter or +/-");
 	}

@@ -42,7 +42,7 @@ public class Help extends DiscordCommand {
 		if (hasArgs("-f", "--full")) 
 			for (Entry<List<String>, Class<? extends Command>> entry : dict.entrySet()) 
 				try { print(instantiate(Reflector.find(entry.getKey().get(0), type)).helpMessage()); }
-				catch (Exception e) { logger.error("Command "+entry+"threw exception", e); }
+				catch (Exception e) { getLogger().error("Command "+entry+"threw exception", e); }
 		else if (!input.equals(""))
 			for (Entry<List<String>, Class<? extends Command>> entry : dict.entrySet())
 				if (entry.getKey().stream().anyMatch(key -> key.contains(input)))
@@ -90,11 +90,6 @@ public class Help extends DiscordCommand {
 			inline("--diagram=<scaling>")+"\tFSM commands can draw their state machine diagram, if scaling isn't given defaults to 2.\n"
 		);
 	}
-	
-	/*
-		DELAYED("--after"),
-		SCHEDULED("--every");
-	 */
 	
 	private static String helpRead() {
 		return helpify("**__>> Reading Help__**",

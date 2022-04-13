@@ -7,6 +7,7 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Seek extends DiscordCommand {
@@ -24,6 +25,7 @@ public class Seek extends DiscordCommand {
 	@Override
 	public void execute(String command) {
 		MusicBot bot = getMusicBot();
+		Guild guild = getGuild();
 		AudioTrack current = bot.getCurrentTrack(guild);
 		if (command.equals("")) {
 			println("Give me time to seek to.");

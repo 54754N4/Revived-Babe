@@ -28,7 +28,7 @@ public class Playlist extends DiscordCommand {
 			println("This command only works for music bots.");
 			return;
 		}
-		TrackScheduler scheduler = getMusicBot().getScheduler(guild);
+		TrackScheduler scheduler = getMusicBot().getScheduler(getGuild());
 		if (hasArgs("-l", "--list"))
 			printItems(scheduler.getPlaylistNames());
 		else if (hasArgs("-cl", "--clear")) {

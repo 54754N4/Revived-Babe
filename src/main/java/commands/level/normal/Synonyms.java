@@ -35,7 +35,7 @@ public class Synonyms extends DiscordCommand {
 			printItemsIndexed(languages);
 			return;
 		} else if (hasArgs("--lang")) {
-			lang = params.named.get("--lang");
+			lang = getParams().getNamed().get("--lang");
 			if (StringLib.isInteger(lang)) 
 				lang = languages[Integer.parseInt(lang)];
 		}
@@ -55,7 +55,7 @@ public class Synonyms extends DiscordCommand {
 			builder.setTitle("Synonyms for "+input);
 			builder.addField("Category", r.list.category, true);
 			builder.addField("Synonyms", r.list.synonyms, true);
-			channel.sendMessageEmbeds(builder.build()).queue();
+			getChannel().sendMessageEmbeds(builder.build()).queue();
 		}
 	}
 

@@ -29,7 +29,7 @@ public class Encode extends DiscordCommand {
 			printItemsIndexed(types);
 			return;
 		}
-		int type = Integer.parseInt(params.named.get("--type"));
+		int type = Integer.parseInt(getParams().getNamed().get("--type"));
 		if (type < 0 || type > types.length) {
 			println("Invalid type entered, required between: [0, %d]", types.length-1);
 			return;

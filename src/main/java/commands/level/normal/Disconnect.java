@@ -21,10 +21,10 @@ public class Disconnect extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		if (!fromGuild()) 
 			println("Cannot retrieve user voice state outside of the server `#DiscordLimitation`");
-		else if (mentioned.members.size() == 0)
+		else if (getMentions().getMembers().size() == 0)
 			println("You need to mention users to disconnect.");
 		else 
-			for (Member member : mentioned.members) 
+			for (Member member : getMentions().getMembers()) 
 				getGuild().kickVoiceMember(member)
 					.queue(null, e -> println("%s is not in a voice channel", member.getEffectiveName()));
 	}

@@ -38,18 +38,18 @@ public class Reminder extends DiscordCommand {
 		}
 		LocalDateTime date = hasArgs("--format") ?
 				LocalDateTime.parse(
-					params.named.get("--time"),
-					DateTimeFormatter.ofPattern(params.named.get("--format"))) :
-				LocalDateTime.parse(params.named.get("--time"), TIME_FORMATTER);
-		logger.info(input);
-		for (Member user : mentioned.members) {
-			logger.info("Replacing \""+"@"+user.getEffectiveName()+"\" with \""+ user.getAsMention());
+					getParams().getNamed().get("--time"),
+					DateTimeFormatter.ofPattern(getParams().getNamed().get("--format"))) :
+				LocalDateTime.parse(getParams().getNamed().get("--time"), TIME_FORMATTER);
+		getLogger().info(input);
+		for (Member user : getMentions().getMembers()) {
+			getLogger().info("Replacing \""+"@"+user.getEffectiveName()+"\" with \""+ user.getAsMention());
 			input = StringLib.replaceAll(input, "@"+user.getEffectiveName(), user.getAsMention());
 		}
-		logger.info(input);
-		Reminders.Reminder reminder = new Reminders.Reminder(message.getAuthor().getAsMention()+" "+input);
-		Reminders.add(date, reminder, channel);
-		println("Event@%s#%s: %s", date.toString(), channel.getName(), reminder.message);
+		getLogger().info(input);
+		Reminders.Reminder reminder = new Reminders.Reminder(getMessage().getAuthor().getAsMention()+" "+input);
+		Reminders.add(date, reminder, getChannel());
+		println("Event@%s#%s: %s", date.toString(), getChannel().getName(), reminder.message);
 	}
 	
 	public static LocalDateTime getTime(long fromSeconds) {

@@ -24,7 +24,7 @@ public class Get extends DiscordCommand {
 			println("You need to give me an integer.");
 			return;
 		}
-		CircularDeque queue = getMusicBot().getPlaylist(guild);
+		CircularDeque queue = getMusicBot().getPlaylist(getGuild());
 		if (queue.size() == 0) {
 			println("No songs in queue.");
 			return;

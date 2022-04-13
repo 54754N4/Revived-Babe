@@ -4,6 +4,7 @@ import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Clear extends DiscordCommand {
@@ -27,6 +28,7 @@ public class Clear extends DiscordCommand {
 			return;
 		}
 		MusicBot bot = getMusicBot();
+		Guild guild = getGuild();
 		String output = "Cleared all tracks from queue";
 		if (hasArgs("-f", "--force")) {
 			output += " forcibly";

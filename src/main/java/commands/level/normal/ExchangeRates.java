@@ -7,7 +7,6 @@ import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.ExchangeRatesResult;
-import lib.HTTP;
 import lib.messages.ValidatingEmbedBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -34,18 +33,18 @@ public class ExchangeRates extends DiscordCommand {
 	@Override
 	protected void execute(String input) throws Exception {
 		if (hasArgs("--base"))
-			dict.put(BASE, params.named.get("--base").toUpperCase());
+			dict.put(BASE, getParams().getNamed().get("--base").toUpperCase());
 		if (hasArgs("--symbols"))
-			dict.put(SYMBOLS, params.named.get("--symbols").toUpperCase());
+			dict.put(SYMBOLS, getParams().getNamed().get("--symbols").toUpperCase());
 		String target = hasArgs("--date") ? 
-				params.named.get("--date") : 
+				getParams().getNamed().get("--date") : 
 				"latest";
 		ExchangeRatesResult result = restRequest(
 				ExchangeRatesResult.class,
 				API_FORMAT,
 				target, 
-				HTTP.getParamsString(dict, "&", true));
-		channel.sendMessageEmbeds(buildEmbed(result).build()).queue();;
+				getParamsString(dict, "&", true));
+		getChannel().sendMessageEmbeds(buildEmbed(result).build()).queue();;
 	}
 	
 	private static EmbedBuilder buildEmbed(ExchangeRatesResult result) {

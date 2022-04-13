@@ -44,7 +44,7 @@ public class IP extends DiscordCommand {
 			File map = Browser.getInstance()
 				.visit(new URL(url))
 				.screenshotFullAsFile();
-			channel.sendMessageEmbeds(buildEmbed(geolocation).build())
+			getChannel().sendMessageEmbeds(buildEmbed(geolocation).build())
 				.addFile(map)
 				.queue();
 		} else 

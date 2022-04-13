@@ -11,18 +11,16 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 
 public class Mentions {
-	public final Collection<User> users;
-	public final Collection<Member> members;
-	public final Collection<TextChannel> channels;
-	public final Collection<Role> roles;
-	public final String[] filteredMessage;
-	public final Message message;
+	private final Collection<User> users;
+	private final Collection<Member> members;
+	private final Collection<TextChannel> channels;
+	private final Collection<Role> roles;
+	private final String[] filteredMessage;
 	
 	public Mentions(Message message, String command) {
 		Collection<Member> tMembers = new ArrayList<>(); 
 		Collection<TextChannel> tChannels = new ArrayList<>(); 
 		Collection<Role> tRoles = new ArrayList<>();
-		this.message = message;
 		users = message.getMentionedUsers();
 		try { tMembers = message.getMentionedMembers(); }	// might fail if not in guild (e.g. private chat) 
 		catch (IllegalStateException e) {}
@@ -53,4 +51,23 @@ public class Mentions {
 		return tokens;
 	}
 	
+	public Collection<User> getUsers() {
+		return users;
+	}
+	
+	public Collection<Member> getMembers() {
+		return members;
+	}
+	
+	public Collection<TextChannel> getChannels() {
+		return channels;
+	}
+	
+	public Collection<Role> getRoles() {
+		return roles;
+	}
+	
+	public String[] getFilteredMessage() {
+		return filteredMessage;
+	}
 }

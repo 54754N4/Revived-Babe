@@ -39,8 +39,8 @@ public class QrCode extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		if (message.getAttachments().size() != 0) {
-			File attached = message.getAttachments().get(0).downloadToFile().get();
+		if (getMessage().getAttachments().size() != 0) {
+			File attached = getMessage().getAttachments().get(0).downloadToFile().get();
 			QrCodeResult[] result = formRequest(QrCodeResult[].class,
 					builder -> builder.addFormDataPart("file", attached.getName(), RequestBody.create(MediaType.parse("application/octet-stream"), attached)), 
 					API_DECODE_FILE);
@@ -59,12 +59,12 @@ public class QrCode extends DiscordCommand {
 				bgcolor = DEFAULT_BG_COLOR,
 				data = Encoder.encodeURL(input);
 		if (hasArgs("--color"))
-			color = params.named.get("--color");
+			color = getParams().getNamed().get("--color");
 		if (hasArgs("--bgcolor"))
-			bgcolor = params.named.get("--bgcolor");
+			bgcolor = getParams().getNamed().get("--bgcolor");
 		Response response = restRequest(API_ENCODE, data, color, bgcolor);
 		File file = writeFile(response, "download/qr.png");
-		channel.sendFile(file)
+		getChannel().sendFile(file)
 			.queue(e -> file.delete(), t -> file.delete());
 	}
 
@@ -76,7 +76,7 @@ public class QrCode extends DiscordCommand {
 					message = String.format("Result: `%s`", symbol.data);
 				else
 					message = String.format("Error: `%s`", symbol.error);
-				channel.sendMessage(message).queue();
+				getChannel().sendMessage(message).queue();
 			}
 		}
 	}

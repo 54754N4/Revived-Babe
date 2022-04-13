@@ -50,7 +50,7 @@ public class Time extends DiscordCommand {
 			match.map(Time::getTime)
 				.map(Time::buildEmbed)
 				.map(EmbedBuilder::build)
-				.map(channel::sendMessageEmbeds)
+				.map(getChannel()::sendMessageEmbeds)
 				.get()
 				.queue();
 		}

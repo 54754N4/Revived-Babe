@@ -20,11 +20,14 @@ public class Ping extends DiscordCommand {
 	
 	@Override
 	public void execute(String command) {
-		long ping = bot.getJDA().getGatewayPing();
+		long ping = getBot().getJDA().getGatewayPing();
 		print("Discord server is **%d** _ms_ away from me.", ping);
-		if (ping < 100) println(" So close ~~ "+Emoji.HEART_WITH_ARROW);
-		else if (ping < 200) println(". That means I might stutter sometimes 3'=");
-		else println(". Sooo far ~~~ "+Emoji.BROKEN_HEART+Emoji.BROKEN_HEART+Emoji.BROKEN_HEART);
+		if (ping < 100) 
+			println(" So close ~~ "+Emoji.HEART_WITH_ARROW);
+		else if (ping < 200) 
+			println(". That means I might stutter sometimes 3'=");
+		else 
+			println(". Sooo far ~~~ "+Emoji.BROKEN_HEART+Emoji.BROKEN_HEART+Emoji.BROKEN_HEART);
 	}
 
 }

@@ -35,7 +35,7 @@ public class Log extends DiscordCommand {
 			Files.readAllLines(Paths.get(BUILD_LOG))
 				.forEach(this::println);
 		else {
-			int lines = hasArgs("--lines") ? Integer.parseInt(params.named.get("--lines")) : DEFAULT_TAIL;
+			int lines = hasArgs("--lines") ? Integer.parseInt(getParams().getNamed().get("--lines")) : DEFAULT_TAIL;
 			List<String> tail = LineShiftBuffer.getTail(lines, new FileInputStream(Paths.get(LOG_FILE).toFile()));
 			printBlock(tail);
 		}

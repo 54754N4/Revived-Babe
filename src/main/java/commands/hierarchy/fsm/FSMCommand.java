@@ -43,7 +43,7 @@ public abstract class FSMCommand extends DiscordCommand {
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (!shouldHandleEvent(event))
 			return;
-		message = event.getMessage();	// overrides every new reply
+		setMessage(event.getMessage());	// overrides every new reply
 		state = state.check(event);
 		if (state == end) 
 			onEnd(event);
@@ -56,15 +56,15 @@ public abstract class FSMCommand extends DiscordCommand {
 			return;
 		}
 		// FSM entry-point
-		keepAlive();		// to keep sending typing action 
+		setKeepAlive();		// to keep sending typing action 
 		attachListener();	// listens for new replies
 		// Restrict handling
-		if (mentioned.users.size() != 0)
-			mentioned.users
+		if (getMentions().getUsers().size() != 0)
+			getMentions().getUsers()
 				.stream()
 				.map(ISnowflake::getIdLong)
 				.forEach(issuers::add);
-		issuers.add(message.getAuthor().getIdLong());
+		issuers.add(getMessage().getAuthor().getIdLong());
 		setup();
 	}
 	
@@ -73,7 +73,7 @@ public abstract class FSMCommand extends DiscordCommand {
 	
 	protected void onEnd(MessageReceivedEvent event) {
 		removeListener();
-		finished.set(true);
+		setFinished();
 	}
 	
 	protected boolean shouldHandleEvent(MessageReceivedEvent event) {
@@ -105,14 +105,14 @@ public abstract class FSMCommand extends DiscordCommand {
 	private void printDiagram() throws NumberFormatException, IOException {
 		String scaling = DEFAULT_SCALING,
 			param = Global.DIAGRAM.params[0];
-		if (hasArgs(Global.DIAGRAM.params) && !params.named.get(param).equals(""))
-			scaling = params.named.get(param); 
+		if (hasArgs(Global.DIAGRAM.params) && !getParams().getNamed().get(param).equals(""))
+			scaling = getParams().getNamed().get(param); 
 		if (!StringLib.isInteger(scaling)) {
 			println("Invalid integer scaling given =v.");
 			return;
 		}
 		File diagram = FSMVisualizer.visualise(this, Integer.parseInt(scaling));
-		channel.sendMessage("This command's FSM :")
+		getChannel().sendMessage("This command's FSM :")
 			.addFile(diagram)
 			.queue();
 		diagram.delete();

@@ -10,15 +10,27 @@ import lib.StringLib;
 
 public class Params {
 	private static final String EQUALS = "=";
-	public final String[] unnamed;
-	public final Map<String, String> named;
-	public final String[] all;
+	private final String[] unnamed;
+	private final Map<String, String> named;
+	private final String[] all;
 	
 	public Params(List<String> namedParams, List<String> unnamedParams) {
 		this.unnamed = unnamedParams.toArray(new String[unnamedParams.size()]);
 		this.named = new HashMap<>();
 		fillNamed(namedParams);
-		all = all();
+		all = fillAll();
+	}
+	
+	public String[] getUnnamed() {
+		return unnamed;
+	}
+	
+	public Map<String, String> getNamed() {
+		return named;
+	}
+	
+	public String[] getAll() {
+		return all;
 	}
 	
 	private void fillNamed(List<String> namedParams) {
@@ -37,7 +49,7 @@ public class Params {
 		}
 	}
 	
-	private String[] all() {
+	private String[] fillAll() {
 		List<String> params = new ArrayList<>();
 		params.addAll(Arrays.asList(unnamed));
 		params.addAll(named.keySet());

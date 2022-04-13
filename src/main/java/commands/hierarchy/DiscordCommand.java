@@ -27,6 +27,8 @@ public abstract class DiscordCommand extends RestCommand {
 	private static final String[] SCHEDULING_STOP_VERBS = { "abort", "stop", "kill", "shutdown" };
 	protected static final Random rand = new Random();
 	
+	private long executionTime;
+	
 	public static enum Global {
 		// Normal commands global params
 		DELETE_USER_MESSAGE("-d", "--delete"), 
@@ -51,36 +53,37 @@ public abstract class DiscordCommand extends RestCommand {
 	}
 	
 	public boolean fromGuild() {
+		Message message = getMessage();
 		return message == null ? false : message.isFromGuild();
 	}
 	
 	public boolean fromMusicBot() {
-		return MusicBot.class.isInstance(bot);
+		return MusicBot.class.isInstance(getBot());
 	}
 	
 	public MusicBot getMusicBot() {
-		return MusicBot.class.cast(bot);
+		return MusicBot.class.cast(getBot());
 	}
 	
 	protected DiscordCommand clearBackup() throws SQLException {
 		if (fromMusicBot())
-			MusicState.clear(getMusicBot(), guild.getIdLong());
+			MusicState.clear(getMusicBot(), getGuild().getIdLong());
 		return this;
 	}
 	
 	/* Convenience methods */
 	
 	public boolean isOwner() {
-		return message.getAuthor().getIdLong() == 188033164864782336l;
+		return getMessage().getAuthor().getIdLong() == 188033164864782336l;
 	}
 
 	protected void removeUserMessage() {
-		message.delete().queue(Consumers::ignore, Consumers::ignore);
+		getMessage().delete().queue(Consumers::ignore, Consumers::ignore);
 	}
 	
 	public void eval(String input) {
 		Reflector.Type type = isOwner() ? Reflector.Type.ALL : Reflector.Type.NORMAL;
-		Invoker.invoke(bot, message, input, type);
+		Invoker.invoke(getBot(), getMessage(), input, type);
 	}
 	
 	/* Scheduling */
@@ -102,9 +105,9 @@ public abstract class DiscordCommand extends RestCommand {
 	private void schedule() throws Exception {
 		addKillHandler()
 			.attachListener()	// make command listen for replies
-			.keepAlive();		// prevent killing on finalisation
+			.setKeepAlive();		// prevent killing on finalisation
 		// Parse period input
-		String param = params.named.get("--every");
+		String param = getParams().getNamed().get("--every");
 		boolean instant = param.startsWith("*");
 		final long period = Long.parseLong(instant ? param.substring(1) : param) * 1000,
 			initial = System.currentTimeMillis();
@@ -117,18 +120,18 @@ public abstract class DiscordCommand extends RestCommand {
 			} finally {
 				executionTime = System.currentTimeMillis() - initial;
 				finalise();	// finalise and send output
-				clear();	// reset stdout
+				clearStdout();	// reset stdout
 			}
 		};
 		// Do scheduling logic
 		Callable<Void> sleeper = ThreadSleep.nonBlocking(period, this);
 		if (instant)
-			iteration.accept(input);
+			iteration.accept(getInput());
 		while (true) {
 			sleeper.call();
-			if (finished.get())
+			if (isFinished())
 				break;
-			iteration.accept(input);
+			iteration.accept(getInput());
 		}
 		removeListener();	// stop listening to incoming messages
 	}
@@ -137,14 +140,16 @@ public abstract class DiscordCommand extends RestCommand {
 	
 	@Override
 	public Command start(String command) {
-		if (bot != null && message.getChannelType().isGuild()) {	// since commands can be instantiated using dummy data
-			message.getChannel().sendTyping().queue(Consumers::ignore, Consumers::ignore);
-			long id = message.getGuild().getIdLong();
-			GUILDS_VISITED.putIfAbsent(bot, new HashSet<>());
-			Set<Long> visited = GUILDS_VISITED.get(bot);
+		if (getBot() != null && getMessage().getChannelType().isGuild()) {	// since commands can be instantiated using dummy data
+			getMessage().getChannel()
+				.sendTyping()
+				.queue(Consumers::ignore, Consumers::ignore);
+			long id = getGuild().getIdLong();
+			GUILDS_VISITED.putIfAbsent(getBot(), new HashSet<>());
+			Set<Long> visited = GUILDS_VISITED.get(getBot());
 			if (!visited.contains(id)) { // only restore backups if not visited
 				visited.add(id);
-				Reminders.restoreAll(message.getChannel());
+				Reminders.restoreAll(getChannel());
 				if (fromMusicBot())
 					MusicState.restore(getMusicBot());
 			}
@@ -171,18 +176,18 @@ public abstract class DiscordCommand extends RestCommand {
 			return null;
 		} else if (hasArgs(Global.DELAYED.params)) {
 			addKillHandler().attachListener();
-			String after = params.named.get("--after");
+			String after = getParams().getNamed().get("--after");
 			if (!after.matches("[0-9]+"))
 				println("Invalid delay %s", after);
 			else {
 				final long delay = Long.parseLong(after)*1000; // convert from seconds
 				ThreadSleep.nonBlocking(delay, this).call();
-				if (finished.get())	// has been aborted
+				if (isFinished())	// has been aborted
 					return null;	// prevent execution
 			}
 		}
 		// Single execution
-		try { execute(input); } 
+		try { execute(getInput()); } 
 		catch (Exception e) {
 			println("Error during execution: `%s`", e.getMessage());
 			getLogger().error(this+" thread generated "+e+" : "+e.getMessage(), e);
@@ -194,16 +199,16 @@ public abstract class DiscordCommand extends RestCommand {
 	}
 	
 	private void finalise() {
-		if (!keepAlive.get())
-			finished.set(true);
+		if (!keepAlive())
+			setFinished();
 		if (hasArgs(Global.SHOW_EXECUTION_TIME.params))
 			println(String.format("Execution time: %d ms", executionTime));
 		if (hasArgs(Global.HIDE_ALL_OUTPUT.params)) 
 			return;
-		String[] tokens = PrintBooster.splitForDiscord(stdout.toString())
+		String[] tokens = PrintBooster.splitForDiscord(getStdout().toString())
 				.toArray(new String[0]);
 		for (String token : tokens) 
-			channel.sendMessage(token)
+			getChannel().sendMessage(token)
 				.queue();
 	}
 }

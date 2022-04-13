@@ -18,7 +18,7 @@ public class Leave extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
-		print("Left %s", getMusicBot().disconnect(guild).getName());
+		print("Left %s", getMusicBot().disconnect(getGuild()).getName());
 	}
 
 }

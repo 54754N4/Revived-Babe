@@ -26,7 +26,7 @@ public class Insult extends DiscordCommand {
 		InsultsResult result = restRequest(
 				InsultsResult.class, 
 				API_FORMAT, 
-				hasArgs("--lang") ? params.named.get("--lang") : DEFAULT_LANG, 
+				hasArgs("--lang") ? getParams().getNamed().get("--lang") : DEFAULT_LANG, 
 				DEFAULT_TYPE);
 		println(result.insult);
 	}

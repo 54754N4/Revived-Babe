@@ -30,19 +30,19 @@ public class Prune extends DiscordCommand {
 			println("Tell me how many messages to delete..");
 			return;
 		}
-		Message last = message;
+		Message last = getMessage();
 		List<Message> messages;
 		int count = 0, total = bypass ? 1 : Integer.parseInt(input);
 		deleting_loop: do {
-			messages = channel.getHistoryBefore(last, 100).complete().getRetrievedHistory();
-			if (mentioned.users.size() == 0) {
+			messages = getChannel().getHistoryBefore(last, 100).complete().getRetrievedHistory();
+			if (getMentions().getUsers().size() == 0) {
 				for (Message message : messages) {
 					message.delete().queue();
 					count++;
 					if (count == total && !bypass) break deleting_loop;
 				}
 			} else for (final Message message : messages) {
-				for (User user : mentioned.users) {
+				for (User user : getMentions().getUsers()) {
 					if (user.getIdLong() == message.getAuthor().getIdLong()) {
 						message.delete().queue();
 						count++;
@@ -53,7 +53,7 @@ public class Prune extends DiscordCommand {
 			if (messages.size() != 0)
 				last = messages.get(messages.size()-1);
 		} while (messages.size() != 0);
-		message.delete().queue();
+		getMessage().delete().queue();
 	}
 
 }

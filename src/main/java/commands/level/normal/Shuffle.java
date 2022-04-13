@@ -21,7 +21,7 @@ public class Shuffle extends DiscordCommand {
 		if (!fromMusicBot()) {
 			println("This command only works on music bots");
 		}
-		getMusicBot().getScheduler(guild).shuffle();
+		getMusicBot().getScheduler(getGuild()).shuffle();
 		println("Shuffled queue.");
 	}
 

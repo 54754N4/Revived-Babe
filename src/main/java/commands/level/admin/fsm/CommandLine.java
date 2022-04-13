@@ -39,7 +39,7 @@ public class CommandLine extends FSMCommand {
 	}
 
 	protected boolean isNotForBot(MessageReceivedEvent event) {
-		return !StringLib.startsWith(event.getMessage().getContentDisplay(), bot.getPrefixes());
+		return !StringLib.startsWith(event.getMessage().getContentDisplay(), getBot().getPrefixes());
 	}
 	
 	private void onExecuteCommand(MessageReceivedEvent event) {

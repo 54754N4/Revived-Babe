@@ -21,6 +21,6 @@ public class Exit extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		printlnIndependently("Exiting");
 		Thread.sleep(2000);
-		bot.kill(hasArgs("-n", "--now"));
+		getBot().kill(hasArgs("-n", "--now"));
 	}
 }

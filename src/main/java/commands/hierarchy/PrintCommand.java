@@ -68,7 +68,7 @@ public abstract class PrintCommand extends Command {
 	}
 	
 	public void print(String format, Object... args) { 
-		stdout.append(format(format, args));
+		getStdout().append(format(format, args));
 	}
 	
 	public void println(String format, Object... args) {
@@ -81,7 +81,7 @@ public abstract class PrintCommand extends Command {
 	
 	public void printIndependently(String format, Object... args) {
 		if (format.equals("")) return;
-		channel.sendMessage(format(format, args))
+		getChannel().sendMessage(format(format, args))
 			.queue();
 	}
 	
@@ -130,7 +130,7 @@ public abstract class PrintCommand extends Command {
 	}
 	
 	protected RestAction<Void> destructibleMessage(String message, long seconds) {
-		return channel.sendMessage(message)
+		return getChannel().sendMessage(message)
 				.delay(Duration.ofSeconds(seconds))
 				.flatMap(Message::delete);
 	}

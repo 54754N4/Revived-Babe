@@ -34,6 +34,7 @@ public class TraceMoe extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
+		Message message = getMessage();
 		boolean hasAttachment = message.getAttachments().size() != 0,
 			hasInput = !input.equals(""); 
 		if (!hasAttachment && !hasInput) {
@@ -52,8 +53,8 @@ public class TraceMoe extends DiscordCommand {
 			result = restRequest(TraceMoeResult.class, API_FORMAT, "?url=" + Encoder.encodeURL(input));
 		List<EmbedBuilder> packages = buildEmbed(result);
 		for (EmbedBuilder pkg : packages)
-			channel.sendMessageEmbeds(pkg.build())
-				.queue(new ReactionsHandler(bot));	// adds close button by default
+			getChannel().sendMessageEmbeds(pkg.build())
+				.queue(new ReactionsHandler(getBot()));		// adds close button by default
 	}
 
 	private List<EmbedBuilder> buildEmbed(TraceMoeResult result) {

@@ -33,7 +33,7 @@ public class Lyrics extends DiscordCommand {
 		if (result == null || result.lyrics == null|| result.lyrics.equals(""))
 			println("Couldn't find lyrics");
 		else 
-			channel.sendMessageEmbeds(new EmbedBuilder()
+			getChannel().sendMessageEmbeds(new EmbedBuilder()
 				.setTitle(String.format("%s - %s", split[0], split[1]))
 				.setDescription(fixSpacing(result.lyrics))
 				.build())

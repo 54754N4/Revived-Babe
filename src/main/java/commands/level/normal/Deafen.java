@@ -25,14 +25,14 @@ public class Deafen extends DiscordCommand {
 	protected void execute(String input) throws Exception {
 		List<String> toggled = new ArrayList<>();
 		MusicBot bot = getMusicBot();
-		if (mentioned.members.size() != 0) {
-			for (Member member : mentioned.members) { 
+		if (getMentions().getMembers().size() != 0) {
+			for (Member member : getMentions().getMembers()) { 
 				bot.toggleDeafen(member);
 				toggled.add(member.getAsMention());
 			}
 		} else {
 			toggled.add(bot.getAsMention());
-			bot.toggleDeafen(guild);
+			bot.toggleDeafen(getGuild());
 		}
 		println("Toggled deafened state of : %s", Arrays.toString(toggled.toArray()));
 	}

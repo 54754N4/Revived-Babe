@@ -23,6 +23,7 @@ import lib.StringLib;
 import lib.messages.PagedHandler;
 import lib.messages.PagedTracksHandler;
 import lib.messages.ReactionsHandler;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -47,7 +48,7 @@ public class ListTracks extends DiscordCommand {
 	@Override
 	protected void execute(String input) throws Exception {
 		int pos = 0;
-		CircularDeque queue = getMusicBot().getPlaylist(guild);
+		CircularDeque queue = getMusicBot().getPlaylist(getGuild());
 		if (hasArgs("-l", "--local"))
 			listLocal(input);
 		else if (queue.size() == 0)
@@ -67,6 +68,7 @@ public class ListTracks extends DiscordCommand {
 	
 	private void createPlayer() {
 		final MusicBot bot = getMusicBot();	// give lambdas already casted
+		final Guild guild = getGuild();
 		final TrackScheduler scheduler = bot.getScheduler(guild);
 		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler)
 				.setTitleSuffix(this::getCurrentStats)
@@ -82,12 +84,13 @@ public class ListTracks extends DiscordCommand {
 				.handle(0x2B07, this::moveBottom)
 				.handle(0x23FA, this::joinUser)
 				.handle(0x23CF, event -> bot.disconnect(guild));
-		channel.sendMessage("Loading..")
+		getChannel().sendMessage("Loading..")
 			.queue(handler);
 	}
 	
 	private String getCurrentStats() {
 		final MusicBot bot = getMusicBot();
+		final Guild guild = getGuild();
 		final AudioPlayer player = bot.getPlayer(guild);
 		final TrackScheduler scheduler = bot.getScheduler(guild);
 		final CircularDeque queue = bot.getPlaylist(guild);
@@ -106,7 +109,7 @@ public class ListTracks extends DiscordCommand {
 	}
 	
 	private void currentUrl(MessageReactionAddEvent event) {
-		CircularDeque queue = getMusicBot().getPlaylist(guild);
+		CircularDeque queue = getMusicBot().getPlaylist(getGuild());
 		printlnIndependently(queue.get(queue.getCurrent()).getInfo().uri);
 	}
 	
@@ -130,7 +133,7 @@ public class ListTracks extends DiscordCommand {
 	}
 	
 	private String printCurrent() {
-		CircularDeque queue = getMusicBot().getPlaylist(guild);
+		CircularDeque queue = getMusicBot().getPlaylist(getGuild());
 		AudioTrack track = queue.get(queue.getCurrent());
 		return String.format("%d. %s (`%s`/%s) | Total Songs = `%s`", 
 				queue.getCurrent(),
@@ -141,9 +144,9 @@ public class ListTracks extends DiscordCommand {
 	}
 	
 	private void createCurrent() {
-		channel.sendMessage(printCurrent())
+		getChannel().sendMessage(printCurrent())
 				.queue(message -> 
-					new ReactionsHandler(bot)
+					new ReactionsHandler(getBot())
 							.handle(0x2747, reaction -> message.editMessage(printCurrent()).queue())
 							.accept(message));
 	}
@@ -154,12 +157,12 @@ public class ListTracks extends DiscordCommand {
 		try {
 			Files.walkFileTree(start, visitor);
 		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
+			getLogger().error(e.getMessage(), e);
 			println("Failed to list local dir: "+e.getMessage());
 			return;
 		}
-		channel.sendMessage("Loading...")
-			.queue(new PagedHandler<>(bot, visitor::getFound));
+		getChannel().sendMessage("Loading...")
+			.queue(new PagedHandler<>(getBot(), visitor::getFound));
 	}
 	
 	private static class MusicFilesVisitor implements FileVisitor<Path> {
@@ -187,7 +190,7 @@ public class ListTracks extends DiscordCommand {
 
 		@Override
 		public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-			command.logger.error(exc.getMessage(), exc);
+			command.getLogger().error(exc.getMessage(), exc);
 			return FileVisitResult.CONTINUE;
 		}
 

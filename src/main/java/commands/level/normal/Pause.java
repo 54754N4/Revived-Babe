@@ -3,6 +3,7 @@ package commands.level.normal;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Pause extends DiscordCommand {
@@ -17,6 +18,7 @@ public class Pause extends DiscordCommand {
 
 	@Override
 	protected void execute(String input) throws Exception {
+		Guild guild = getGuild();
 		println("Toggled pause state to %b", getMusicBot().togglePause(guild).isPaused(guild));
 	}
 }
