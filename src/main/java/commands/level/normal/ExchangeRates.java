@@ -28,13 +28,14 @@ public class ExchangeRates extends DiscordCommand {
 	@Override
 	public String helpMessage() {
 		return helpBuilder("[<currencies>]",
+			"-f or --fetch\tupdates rates from API",
 			"--base=B\twhere B is the currency to use as base",
 			"Retrieves rates quoted against the USD by default. Can take comma separated list of currencies to retrieve specifically.");
 	}
 
 	@Override
 	protected void execute(String input) throws Exception {
-		if (currencies.size() == 0)
+		if (currencies.size() == 0 || hasArgs("-f", "--fetch"))
 			setup();
 		Map<String, Double> map = currencies;
 		String base = "USD";
@@ -53,7 +54,7 @@ public class ExchangeRates extends DiscordCommand {
 		else
 			for (String key : map.keySet())
 				if (StringLib.matchSimplified(input, key))
-					println(markdown("%s = %s"), key, map.get(key));
+					print(markdown("%s = %s"), key, map.get(key));
 	}
 	
 	private Map<String, Double> changeBase(String currency) {
