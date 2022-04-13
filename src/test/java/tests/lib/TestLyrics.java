@@ -5,32 +5,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import com.google.gson.Gson;
-
 import annotations.SlowTest;
+import commands.hierarchy.RestCommand;
 import commands.level.normal.Lyrics;
 import json.LyricsOVHResult;
-import lib.HTTP.RequestBuilder;
-import lib.HTTP.ResponseHandler;
 import lib.encode.Encoder;
 
 public class TestLyrics {
 	
 	@SlowTest
 	public void givenOVHRequest_LyricsResponse_shouldBeValid() throws MalformedURLException, IOException {
-		Gson gson = new Gson();
-		String api = String.format(
-				"https://api.lyrics.ovh/v1/%s/%s", 
+		LyricsOVHResult result = RestCommand.restRequest(LyricsOVHResult.class, "https://api.lyrics.ovh/v1/%s/%s", 
 				Encoder.encodeURL("takida"), 
 				Encoder.encodeURL("to have and to hold"));
-		try (RequestBuilder builder = new RequestBuilder(api)) {
-			try (ResponseHandler handler = new ResponseHandler(builder.build());) {
-				LyricsOVHResult result = gson.fromJson(handler.getResponse(), LyricsOVHResult.class);
-				String lyrics = result.lyrics;
-				lyrics = Lyrics.fixSpacing(lyrics);
-				assertEquals(EXPECTED, lyrics);
-			}
-		}
+		String lyrics = result.lyrics;
+		lyrics = Lyrics.fixSpacing(lyrics);
+		assertEquals(EXPECTED, lyrics);
 	}
 	
 	public static String EXPECTED = "You're forgiveness is all mine\r\n"
