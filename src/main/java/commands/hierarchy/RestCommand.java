@@ -24,8 +24,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public abstract class RestCommand extends ListenerCommand {
-	protected static final Gson gson = new Gson();
-	protected static final OkHttpClient client = new OkHttpClient();
+	private static final Gson gson = new Gson();
+	private static final OkHttpClient client = new OkHttpClient();
 	
 	public RestCommand(UserBot bot, Message message, String[] names) {
 		super(bot, message, names);

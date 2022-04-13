@@ -1,90 +1,99 @@
 package commands.level.normal;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.ExchangeRatesResult;
-import lib.messages.ValidatingEmbedBuilder;
-import net.dv8tion.jda.api.EmbedBuilder;
+import json.ExchangeRatesResult.Rates;
+import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
 
 public class ExchangeRates extends DiscordCommand {
-	private static final String API_FORMAT = "https://api.ratesapi.io/api/%s?%s",
-			BASE = "base", SYMBOLS = "symbols";
-	private Map<String, String> dict;
+	private static final String API_FORMAT = "http://openexchangerates.org/api/latest.json?app_id=%s";
+	private static final Map<String, Double> currencies = new ConcurrentHashMap<>();
 	
 	public ExchangeRates(UserBot bot, Message message) {
 		super(bot, message, Command.RATES.names);
-		dict = new HashMap<>();
 	}
 
 	@Override
 	public String helpMessage() {
-		return helpBuilder("", 
-			"--base=B\twhere B is the currency to quote against",
-			"--symbols=S\twhere S is a comma-delimited list of currencies",
-			"--date=YYYY-MM-DD\tto get historical rates for any day since 1999",
-			"Retrieves rates quoted against the Euro by default.");
+		return helpBuilder("[<currencies>]",
+			"--base=B\twhere B is the currency to use as base",
+			"Retrieves rates quoted against the USD by default. Can take comma separated list of currencies to retrieve specifically.");
 	}
 
 	@Override
 	protected void execute(String input) throws Exception {
-		if (hasArgs("--base"))
-			dict.put(BASE, getParams().getNamed().get("--base").toUpperCase());
-		if (hasArgs("--symbols"))
-			dict.put(SYMBOLS, getParams().getNamed().get("--symbols").toUpperCase());
-		String target = hasArgs("--date") ? 
-				getParams().getNamed().get("--date") : 
-				"latest";
-		ExchangeRatesResult result = restRequest(
-				ExchangeRatesResult.class,
-				API_FORMAT,
-				target, 
-				getParamsString(dict, "&", true));
-		getChannel().sendMessageEmbeds(buildEmbed(result).build()).queue();;
+		if (currencies.size() == 0)
+			setup();
+		Map<String, Double> map = currencies;
+		String base = "USD";
+		if (hasArgs("--base")) {
+			base = getParams().getNamed().get("--base");
+			if (currencies.containsKey(base))
+				map = changeBase(base);
+			else {
+				println("%s is not a valid currency", inline(base));
+				return;
+			}
+		}
+		println("> Comparing to base : %s", base);
+		if (input.equals(""))
+			printMap(map);
+		else
+			for (String key : map.keySet())
+				if (StringLib.matchSimplified(input, key))
+					println(markdown("%s = %s"), key, map.get(key));
 	}
 	
-	private static EmbedBuilder buildEmbed(ExchangeRatesResult result) {
-		ValidatingEmbedBuilder eb = new ValidatingEmbedBuilder();
-		eb.setTitle(result.base);
-		eb.addField("Date", result.date);
-		eb.addField("AUD", result.getRates().getAUD());
-		eb.addField("BGN", result.getRates().getBGN());
-		eb.addField("BRL", result.getRates().getBRL());
-		eb.addField("CAD", result.getRates().getCAD());
-		eb.addField("CHF", result.getRates().getCHF());
-		eb.addField("CNY", result.getRates().getCNY());
-		eb.addField("CZK", result.getRates().getCZK());
-		eb.addField("DKK", result.getRates().getDKK());
-		eb.addField("GBP", result.getRates().getGBP());
-		eb.addField("HKD", result.getRates().getHKD());
-		eb.addField("HRK", result.getRates().getHRK());
-		eb.addField("HRK", result.getRates().getHRK());
-		eb.addField("HUF", result.getRates().getHUF());
-		eb.addField("IDR", result.getRates().getIDR());
-		eb.addField("ILS", result.getRates().getILS());
-		eb.addField("INR", result.getRates().getINR());
-		eb.addField("ISK", result.getRates().getISK());
-		eb.addField("JPY", result.getRates().getJPY());
-		eb.addField("KRW", result.getRates().getKRW());
-		eb.addField("MXN", result.getRates().getMXN());
-		eb.addField("MYR", result.getRates().getMYR());
-		eb.addField("NOK", result.getRates().getNOK());
-		eb.addField("NZD", result.getRates().getNZD());
-		eb.addField("PHP", result.getRates().getPHP());
-		eb.addField("PLN", result.getRates().getPLN());
-		eb.addField("RON", result.getRates().getRON());
-		eb.addField("RUB", result.getRates().getRUB());
-		eb.addField("SEK", result.getRates().getSEK());
-		eb.addField("SGD", result.getRates().getSGD());
-		eb.addField("THB", result.getRates().getTHB());
-		eb.addField("TRY", result.getRates().getTRY());
-		eb.addField("USD", result.getRates().getUSD());
-		eb.addField("ZAR", result.getRates().getZAR());
-		return eb;
+	private Map<String, Double> changeBase(String currency) {
+		Map<String, Double> changed = new HashMap<>();
+		double base = currencies.get(currency), coef;
+		Function<Double, Double> convert;
+		if (base < 1) {
+			coef = 1d / base;
+			convert = d -> d * coef;
+		} else if (base == 1)
+			return currencies;
+		else {
+			coef = base;
+			convert = d -> d / coef;
+		}
+		for (Entry<String, Double> entry : currencies.entrySet())
+			changed.put(entry.getKey(), convert.apply(entry.getValue()));
+		changed.put(currency, 1d);
+		return changed;
 	}
-
+	
+	private final void setup() throws IOException, IllegalArgumentException, IllegalAccessException {
+		ExchangeRatesResult result = restRequest(
+				ExchangeRatesResult.class, 
+				API_FORMAT, 
+				System.getenv("OPEN_EXCHANGE_RATES_API"));
+		Rates rates = result.rates;
+		// Use reflection cause too many attributes/fields to handle
+		Field[] fields = Rates.class.getDeclaredFields();
+		String name; double value;
+		for (Field field : fields) {
+			try {
+				if (Modifier.isPublic(field.getModifiers()) && field.canAccess(rates)) {
+					name = field.getName();
+					value = field.getDouble(rates);
+					currencies.put(name, value);
+				}
+			} catch (Exception e) {
+				getLogger().error("Field failed to be read "+field.getName()+" "+field, e);
+			}
+		}
+	}
 }
