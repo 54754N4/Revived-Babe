@@ -1,21 +1,18 @@
 package commands.level.normal;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 
 import backup.Reminders;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
-import lib.StringLib;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Reminder extends DiscordCommand {
 	private static final String TIME_PATTERN = "dd/MM/yyyy@HH:mm:ss";
-	private static final ZoneId DEFAULT_ZONE = ZoneId.systemDefault();
 	private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_PATTERN);
 	
 	public Reminder(UserBot bot, Message message) {
@@ -27,32 +24,42 @@ public class Reminder extends DiscordCommand {
 		return helpBuilder("<message>",
 			"--format=F\twhere F is the time format to use",
 			"--time=T\twhere T stands for the time",
+			"-l or --list\tlists scheduled reminders",
+			"-c or --clear\tremoves all scheduled reminders",
 			"Makes me send a message reminder at a specific time in this default format : "+TIME_PATTERN);
 	}
 
 	@Override
 	protected void execute(String input) throws Exception {
+		if (hasArgs("-l", "--list")) {
+			Collection<Reminders.Reminder> reminders = Reminders.getReminders();
+			if (reminders.size() == 0)
+				println("No reminders scheduled.");
+			else
+				printItems(Reminders.getReminders());
+			return;
+		}
+		if (hasArgs("-c", "--clear")) {
+			Reminders.clear();
+			println("Cleared all reminders.");
+			return;
+		}
 		if (!hasArgs("--time")) {
 			print("Please specify the time T like this : `--time=T`, for example : ```..rem --time=09/02/2021@22:30:00```");
 			return;
 		}
-		LocalDateTime date = hasArgs("--format") ?
-				LocalDateTime.parse(
-					getParams().getNamed().get("--time"),
-					DateTimeFormatter.ofPattern(getParams().getNamed().get("--format"))) :
-				LocalDateTime.parse(getParams().getNamed().get("--time"), TIME_FORMATTER);
-		getLogger().info(input);
-		for (Member user : getMentions().getMembers()) {
-			getLogger().info("Replacing \""+"@"+user.getEffectiveName()+"\" with \""+ user.getAsMention());
-			input = StringLib.replaceAll(input, "@"+user.getEffectiveName(), user.getAsMention());
-		}
-		getLogger().info(input);
-		Reminders.Reminder reminder = new Reminders.Reminder(getMessage().getAuthor().getAsMention()+" "+input);
-		Reminders.add(date, reminder, getChannel());
-		println("Event@%s#%s: %s", date.toString(), getChannel().getName(), reminder.message);
-	}
-	
-	public static LocalDateTime getTime(long fromSeconds) {
-		return LocalDateTime.ofInstant(Instant.ofEpochSecond(fromSeconds), DEFAULT_ZONE);
+		String time = getParams().getNamed().get("--time");
+		DateTimeFormatter formatter = TIME_FORMATTER;
+		if (hasArgs("--format"))
+			formatter = DateTimeFormatter.ofPattern(getParams().getNamed().get("--format"));
+		LocalDateTime date = LocalDateTime.parse(time, formatter);
+		for (Member user : getMentions().getMembers())
+			input += " " + user.getAsMention();
+		Reminders.add(new Reminders.Reminder.Builder()
+				.setMessage(input)
+				.setDate(date)
+				.setChannel(getChannel())
+				.build());
+		println("Setup reminder for %s", date);
 	}
 }

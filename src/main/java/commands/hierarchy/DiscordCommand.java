@@ -149,7 +149,7 @@ public abstract class DiscordCommand extends RestCommand {
 			Set<Long> visited = GUILDS_VISITED.get(getBot());
 			if (!visited.contains(id)) { // only restore backups if not visited
 				visited.add(id);
-				Reminders.restoreAll(getChannel());
+				Reminders.restoreAll(getBot().getJDA());
 				if (fromMusicBot())
 					MusicState.restore(getMusicBot());
 			}
