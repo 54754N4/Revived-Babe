@@ -30,7 +30,7 @@ public abstract class Reminders {
 	private static final Logger logger = LoggerFactory.getLogger(Reminders.class);
 	private static final List<Reminder> reminders = new ArrayList<>();
 	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(100);
-	private static Lock lock = new ReentrantLock();
+	private static final Lock lock = new ReentrantLock();
 	
 	private static TableManager getTable() throws SQLException {
 		return DBManager.INSTANCE.manage("Reminders");
@@ -50,18 +50,6 @@ public abstract class Reminders {
 				lock.unlock();
 			}
 			executor.schedule(reminder, after, TimeUnit.SECONDS);
-		}
-	}
-	
-	public static final void purge() {	// clear finished tasks
-		try { 
-			lock.lock();
-			reminders.stream()
-				.filter(Reminder::isFinished)
-				.collect(Collectors.toList())
-				.forEach(reminders::remove);
-		} finally {
-			lock.unlock();
 		}
 	}
 	
@@ -91,6 +79,7 @@ public abstract class Reminders {
 	}
 	
 	public static void backup() {
+		executor.shutdownNow();
 		Map<String, Object> map = new HashMap<>();
 		int i=0;
 		for (Reminder reminder : reminders)
