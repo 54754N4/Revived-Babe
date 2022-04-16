@@ -90,8 +90,8 @@ public abstract class MusicState {
 						continue;
 					handlePlaylists(guildID, table);
 					handleVoiceChannel(guildID, table);
-					handleVolumeAndPause(guildID, table);
 					handleSongAndPosition(guildID, table);
+					handleVolumeAndPause(guildID, table);
 					postExecute(guildID, table);
 				} catch (Exception e) {
 					logger.error("Error with guild " + guildID, e);
@@ -208,18 +208,6 @@ public abstract class MusicState {
 		}
 
 		@Override
-		public void handleVolumeAndPause(long guildID, TableManager table) {
-			logger.info("Backing up volume and pause state for guild {}", guildID);
-			AudioPlayer player = bot.getPlayer(guildID);
-			try {
-				table.insertOrUpdate(VOLUME, player.getVolume());
-				table.insertOrUpdate(PAUSED, player.isPaused());
-			} catch (SQLException e) {
-				logger.error("Could not backup volume and pause state", e);
-			}
-		}
-
-		@Override
 		public void handleSongAndPosition(long guildID, TableManager table) {
 			logger.info("Backing up song and track position for guild {}", guildID);
 			CircularDeque queue = map.get(guildID).getScheduler().getQueue();
@@ -231,6 +219,18 @@ public abstract class MusicState {
 				table.insertOrUpdate(POSITION, queue.get(current).getPosition());
 			} catch (SQLException e) {
 				logger.error("Could not backup current track index + position", e);
+			}
+		}
+		
+		@Override
+		public void handleVolumeAndPause(long guildID, TableManager table) {
+			logger.info("Backing up volume and pause state for guild {}", guildID);
+			AudioPlayer player = bot.getPlayer(guildID);
+			try {
+				table.insertOrUpdate(VOLUME, player.getVolume());
+				table.insertOrUpdate(PAUSED, player.isPaused());
+			} catch (SQLException e) {
+				logger.error("Could not backup volume and pause state", e);
 			}
 		}
 	}
@@ -341,6 +341,29 @@ public abstract class MusicState {
 		}
 
 		@Override
+		public void handleSongAndPosition(long guildID, TableManager table) {
+			logger.info("Restoring song and track position for guild {}", guild);
+			Guild guild = bot.getJDA().getGuildById(guildID);
+			try {
+				int current = table.retrieveInt(CURRENT, -1);
+				if (current == -1)
+					return;
+				bot.play(guild, current);
+			} catch (Exception e) {
+				logger.error("Couldn't retrieve current song index", e);
+			}
+			try {
+				long position = table.retrieveLong(POSITION, -1);
+				if (position == -1 || bot.getPlayer(guild).getPlayingTrack() == null)
+					return;
+				logger.info("Seeking for {} in song for guild {}", bot, guild);
+				bot.seekTo(guild, position);
+			} catch (Exception e) {
+				logger.error("Could not retrieve last song's position", e);
+			}
+		}
+		
+		@Override
 		public void handleVolumeAndPause(long guildID, TableManager table) {
 			logger.info("Restoring volume and pause state for guild {}", guild);
 			Guild guild = bot.getJDA().getGuildById(guildID);
@@ -362,28 +385,5 @@ public abstract class MusicState {
 				logger.error("Could not retrieve last pause state", e);
 			}
 		}
-
-		@Override
-		public void handleSongAndPosition(long guildID, TableManager table) {
-			logger.info("Restoring song and track position for guild {}", guild);
-			Guild guild = bot.getJDA().getGuildById(guildID);
-			try {
-				int current = table.retrieveInt(CURRENT, -1);
-				if (current == -1)
-					return;
-				bot.play(guild, current);
-			} catch (Exception e) {
-				logger.error("Couldn't retrieve current song index", e);
-			}
-			try {
-				long position = table.retrieveLong(POSITION, -1);
-				if (position == -1 || bot.getPlayer(guild).getPlayingTrack() == null)
-					return;
-				logger.info("Seeking for {} in song for guild {}", bot, guild);
-				bot.seekTo(guild, position);
-			} catch (Exception e) {
-				logger.error("Could not retrieve last song's position", e);
-			}
-		}	
 	}
 }
