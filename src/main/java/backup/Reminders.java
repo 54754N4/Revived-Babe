@@ -50,7 +50,8 @@ public abstract class Reminders {
 				lock.unlock();
 			}
 			executor.schedule(reminder, after, TimeUnit.SECONDS);
-		}
+		} else 
+			executor.execute(reminder);
 	}
 	
 	public static final void clear() {
@@ -114,8 +115,8 @@ public abstract class Reminders {
 		
 		@Override
 		public void run() {
-			channel.sendMessage(String.format("Reminder: `%s`", message))
-				.queue(m -> reminders.remove(this));
+			channel.sendMessage(String.format("Reminder: %s", message))
+				.queue(m -> reminders.remove(this), e -> reminders.remove(this));
 		}
 		
 		public String serialize() {

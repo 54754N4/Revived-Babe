@@ -1,7 +1,9 @@
 package commands.level.normal;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Collection;
 
 import backup.Reminders;
@@ -13,7 +15,8 @@ import net.dv8tion.jda.api.entities.Message;
 
 public class Reminder extends DiscordCommand {
 	private static final String TIME_PATTERN = "dd/MM/yyyy@HH:mm:ss";
-	private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_PATTERN);
+	private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_PATTERN),
+			HUMAN_READABLE = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL);
 	
 	public Reminder(UserBot bot, Message message) {
 		super(bot, message, Command.REMINDER.names);
@@ -53,6 +56,7 @@ public class Reminder extends DiscordCommand {
 		if (hasArgs("--format"))
 			formatter = DateTimeFormatter.ofPattern(getParams().getNamed().get("--format"));
 		LocalDateTime date = LocalDateTime.parse(time, formatter);
+		input = inline(input);
 		for (Member user : getMentions().getMembers())
 			input += " " + user.getAsMention();
 		Reminders.add(new Reminders.Reminder.Builder()
@@ -60,6 +64,6 @@ public class Reminder extends DiscordCommand {
 				.setDate(date)
 				.setChannel(getChannel())
 				.build());
-		println("Setup reminder for %s", date);
+		println("Setup reminder for %s", HUMAN_READABLE.format(date.atZone(ZoneId.systemDefault())));
 	}
 }
