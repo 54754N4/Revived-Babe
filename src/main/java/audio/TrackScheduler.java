@@ -65,7 +65,8 @@ public class TrackScheduler extends AudioEventAdapter {
 				int current = queue.getCurrent();
 				if (current == CircularDeque.UNINITIALISED)
 					current = 0;
-				play(current);
+				if (!isPaused())
+					play(current);
 			}
 		}
 		return this;
@@ -210,14 +211,13 @@ public class TrackScheduler extends AudioEventAdapter {
 	}
 	
 	public boolean togglePause() {
-		setPause(!player.isPaused());
-		return player.isPaused();
+		return setPause(!isPaused());
 	}
 	
 	public boolean setPause(boolean pause) {
 		player.setPaused(pause);
 		notifyObservers();
-		return player.isPaused();
+		return isPaused();
 	}
 	
 	public boolean isPaused() {
