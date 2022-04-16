@@ -2,7 +2,10 @@ package commands.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.function.Supplier;
 
+import bot.hierarchy.UserBot;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -16,25 +19,42 @@ public class Mentions {
 	private final Collection<TextChannel> channels;
 	private final Collection<Role> roles;
 	private final String[] filteredMessage;
+	private final boolean trim;
 	
-	public Mentions(Message message, String command) {
-		Collection<Member> tMembers = new ArrayList<>(); 
-		Collection<TextChannel> tChannels = new ArrayList<>(); 
-		Collection<Role> tRoles = new ArrayList<>();
-		users = message.getMentionedUsers();
-		try { tMembers = message.getMentionedMembers(); }	// might fail if not in guild (e.g. private chat) 
-		catch (IllegalStateException e) {}
-		finally { members = tMembers; }
-		try { tChannels = message.getMentionedChannels(); }
-		catch (IllegalStateException e) {}
-		finally { channels = tChannels; }
-		try { tRoles = message.getMentionedRoles(); }
-		catch (IllegalStateException e) {}
-		finally { roles = tRoles; }
-		filteredMessage = filter(command);
+	public Mentions(UserBot bot, Message message, String command) {
+		users = retrieveSafely(message::getMentionedUsers);
+		members = retrieveSafely(message::getMentionedMembers);
+		channels = retrieveSafely(message::getMentionedChannels);
+		roles = retrieveSafely(message::getMentionedRoles);
+		filteredMessage = filterAllMentions(command);
+		trim = trim(bot, command);
+		if (trim) {
+			users.removeIf(user -> user.getIdLong() == bot.getIdLong());
+			members.removeIf(user -> user.getIdLong() == bot.getIdLong());
+		}
+	}
+	
+	/* Since bot can also execute commands through a mention;
+	 * trim only if mentioned once at the start */
+	private boolean trim(UserBot bot, String command) {
+		String prefix = "@"+bot.getBotName();
+		if (command.startsWith(prefix)) {
+			// check if it isn't mentioned again
+			int index = command.indexOf(prefix);
+			return command.indexOf(prefix, index+prefix.length()) == -1;
+		}
+		return false;
+	}
+	
+	private final <T> Collection<T> retrieveSafely(Supplier<Collection<T>> supplier) {
+		try { 
+			return new ArrayList<>(supplier.get()); 
+		} catch (Exception e) { 
+			return Collections.emptyList(); 
+		}
 	}
 
-	private String[] filter(String command) {
+	private String[] filterAllMentions(String command) {
 		String match;
 		for (User user : users)
 			if (command.contains(match = "@"+user.getName())) 

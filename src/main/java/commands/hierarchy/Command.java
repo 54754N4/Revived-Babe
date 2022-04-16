@@ -169,7 +169,7 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 	}
 	
 	public Command start(String command) {
-		mentioned = new Mentions(message, command);			// filter mentions from input first
+		mentioned = new Mentions(bot, message, command);			// filter mentions from input first
 		input = treatInput(mentioned.getFilteredMessage());	// then cleanup input
 		channel = hasArgs(Global.PRIVATE_MESSAGE_REPLY.params) ? 
 				message.getAuthor().openPrivateChannel().complete()
