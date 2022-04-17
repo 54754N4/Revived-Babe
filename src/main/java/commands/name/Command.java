@@ -62,7 +62,8 @@ public enum Command {
 	SHUFFLE("shuffle", "sh"), 
 	SYNONYMS("synonyms", "syn"), 
 	QR_CODE("qr"), 
-	PLAYLIST("playlist", "pl");
+	PLAYLIST("playlist", "pl"),
+	EVAL("eval", "ev");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;
