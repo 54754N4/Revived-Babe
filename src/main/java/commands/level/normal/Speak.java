@@ -52,9 +52,10 @@ public class Speak extends DiscordCommand implements AudioLoadResultHandler {
 	@Override
 	protected void execute(String input) throws Exception {
 		if (languages == null || voices == null) {
-			destructibleMessage("Loading voices and languages..", 5).queue();
+			Message loading = getChannel().sendMessage("Loading voices and languages..").complete();
 			languages = loadLanguages();
 			voices = loadVoices();
+			loading.delete().queue();
 		}
 		String language = hasArgs("--lang") ? getParams().getNamed().get("--lang") : DEFAULT_LANGUAGE, 
 			rate = hasArgs("--rate") ? getParams().getNamed().get("--rate") : DEFAULT_RATE, 
