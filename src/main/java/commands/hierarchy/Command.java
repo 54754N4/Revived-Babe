@@ -23,7 +23,6 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public abstract class Command extends ListenerAdapter implements Callable<Void> {
-	public static final int MESSAGE_MAX = Message.MAX_CONTENT_LENGTH;
 	public final String[] names;
 	private final Logger logger;
 	private AtomicBoolean keepAlive, finished;

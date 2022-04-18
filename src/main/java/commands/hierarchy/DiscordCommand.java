@@ -205,7 +205,7 @@ public abstract class DiscordCommand extends RestCommand {
 			println(String.format("Execution time: %d ms", executionTime));
 		if (hasArgs(Global.HIDE_ALL_OUTPUT.params)) 
 			return;
-		String[] tokens = PrintBooster.splitForDiscord(getStdout().toString())
+		String[] tokens = PrintBooster.split(getStdout().toString())
 				.toArray(new String[0]);
 		for (String token : tokens) 
 			getChannel().sendMessage(token)

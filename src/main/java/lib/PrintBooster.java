@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import commands.hierarchy.DiscordCommand;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 
 /**
  * Performance boost strategy takes 2 steps and is as follows : 
@@ -17,24 +18,43 @@ import commands.hierarchy.DiscordCommand;
  * 2. merge tokens as long as satisfy length < MESSAGE_MAX
  * 
  * This allows DiscordCommands to chain MessageActions (e.g. network I/O) 
- * using the tokens we give it since they're all the biggest/valid we could
+ * using the tokens we give it since they're all the biggest we could
  * make from the command output. This greatly reduces the number of network 
  * calls we initiate to Discord, and directly translates to the bot replying 
  * faster no matter the output length.
  */
 public abstract class PrintBooster {
+	public static final int MESSAGE_MAX = Message.MAX_CONTENT_LENGTH,
+			EMBED_MAX = MessageEmbed.DESCRIPTION_MAX_LENGTH;
 
-//	@SuppressWarnings("unused")
-//	public static void main(String[] args) {
-//		String str = "```markdown\n#[unqueue, remove, rem, rm]\nUsage: <name> <indices>\n\tDeletes the songs specified as parameter, each index separated by spaces.\nUsage: <name> [-t|--tag] <pattern>\n\tDeletes the tags that matched the given pattern.\n\n```";
-//		String lyrics = "```markdown\n\nFirst things first \nI'mma say all the words inside my head \nI'm fired up and tired of the way that things have been, oh-ooh \nThe way that things have been, oh-ooh \nSecond thing second \nDon't you tell me what you think that \nI can be \nI'm the one at the sail, \nI'm the master of my sea, oh-ooh \nThe master of my sea, oh-ooh\n\nI was broken from a young age \nTaking my soul into the masses \nWrite down my poems for the few \nThat looked at me \nTook to me, shook to me, feeling me \nSinging from heart ache from the pain \nTake up my message from the veins \nSpeaking my lesson from the brain \nSeeing the beauty through the...\n\nPain! \nYou made me a, you made me a believer, believer \nPain! \nYou break me down, you build me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\nThird things third \nSend a prayer to the ones up above \nAll the hate that you've heard has turned your spirit to a dove, oh-ooh \nYour spirit up above, oh-ooh\n\nI was choking in the crowd \nLiving my brain up in the cloud \nFalling like ashes to the ground \nHoping my feelings, they would drown \nBut they never did, ever lived, ebbing and flowing \nInhibited, limited \nTill it broke up and it rained down \nIt rained down, like...\n\nPain! \nYou made me a, you made me a believer, believer \nPain! \nYou break me down, you built me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\nLast things last \nBy the grace of the fire and the flames \nYou're the face of the future, the blood in my veins, oh-ooh \nThe blood in my veins, oh-ooh \nBut they never did, ever lived, ebbing and flowing \nInhibited, limited \nTill it broke up and it rained down \nIt rained down, like...\n\nPain! \nYou made me a, you made me a believer, believer \nPain!\nYou break me down, you built me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\n```";
-//		List<String> words = splitForDiscord(lyrics);
-//		System.out.println(words.size());
-//		for (String word : words)
-//			System.out.println(word);
-//	}
-
-	public static Markdown[] findMarkdowns(String sb) {
+	/* Splits normal discord messages */
+	public static List<String> split(String string) {
+		return filterEmpty(mergeForDiscord(splitOnDots(splitOnNewlines(splitOnMarkdowns(string)))));
+	}
+	
+	/* Splits discord embed message descriptions */
+	public static List<String> splitEmbed(String message) {
+		if (message.length() < EMBED_MAX)
+			return Arrays.asList(message);
+		List<String> result = new ArrayList<>();
+		String[] lines = message.lines().toArray(String[]::new);
+		StringBuilder sb = new StringBuilder();
+		for (String line : lines) {
+			if (sb.length() + line.length() < EMBED_MAX)
+				sb.append(line);
+			else {
+				result.add(sb.toString());
+				sb.delete(0, sb.length());
+				sb.append(line);
+			}
+			sb.append("\n");
+		}
+		if (sb.length() != 0)
+			result.add(sb.toString());
+		return result;
+	}
+	
+	private static Markdown[] findMarkdowns(String sb) {
 		List<Markdown> markdowns = new ArrayList<>();
 		int start = -1, end = -1;
 		start = sb.indexOf("```markdown");
@@ -61,7 +81,7 @@ public abstract class PrintBooster {
 		List<String> smaller = new ArrayList<>();
 		for (String token : tokens) 
 			// we optionally split based on if the token is bigger than MESSAGE_MAX
-			if (token.length() > DiscordCommand.MESSAGE_MAX) smaller.addAll(splitOnTarget(target, token));
+			if (token.length() > MESSAGE_MAX) smaller.addAll(splitOnTarget(target, token));
 			else smaller.add(token);
 		return smaller;
 	}
@@ -103,14 +123,14 @@ public abstract class PrintBooster {
 	private static ConsumedResult mergeBiggest(List<String> words, int index) {
 		StringBuilder word = new StringBuilder().append(words.get(index));
 		String next;
-		while (index + 1 < words.size() && word.length() + (next = words.get(index + 1)).length() < DiscordCommand.MESSAGE_MAX) {
+		while (index + 1 < words.size() && word.length() + (next = words.get(index + 1)).length() < MESSAGE_MAX) {
 			word.append(next);
 			index++;
 		}
 		if (index + 1 != words.size()-1)	// not last word, that means word is too big
 			return new ConsumedResult(word.toString(), ++index);
 		String last = words.get(index);
-		if (word.length() + last.length() < DiscordCommand.MESSAGE_MAX) 
+		if (word.length() + last.length() < MESSAGE_MAX) 
 			word.append(last);
 		return new ConsumedResult(word.toString(), ++index);
 	}
@@ -126,10 +146,6 @@ public abstract class PrintBooster {
 			merged.add(result.word);
 		}
 		return merged;
-	}
-	
-	public static List<String> splitForDiscord(String string) {
-		return filterEmpty(mergeForDiscord(splitOnDots(splitOnNewlines(splitOnMarkdowns(string)))));
 	}
 	
 	private static List<String> filterEmpty(List<String> strings) {
@@ -157,7 +173,7 @@ public abstract class PrintBooster {
 		public Markdown(int start, int end) {
 			this.start = start;
 			this.end = end;
-			isTooBig = (end+3)-start >= DiscordCommand.MESSAGE_MAX;
+			isTooBig = (end+3)-start >= MESSAGE_MAX;
 		}
 		
 		@Override
@@ -165,4 +181,14 @@ public abstract class PrintBooster {
 			return "("+start+","+end+")";
 		}
 	}
+	
+//	@SuppressWarnings("unused")
+//	public static void main(String[] args) {
+//		String str = "```markdown\n#[unqueue, remove, rem, rm]\nUsage: <name> <indices>\n\tDeletes the songs specified as parameter, each index separated by spaces.\nUsage: <name> [-t|--tag] <pattern>\n\tDeletes the tags that matched the given pattern.\n\n```";
+//		String lyrics = "```markdown\n\nFirst things first \nI'mma say all the words inside my head \nI'm fired up and tired of the way that things have been, oh-ooh \nThe way that things have been, oh-ooh \nSecond thing second \nDon't you tell me what you think that \nI can be \nI'm the one at the sail, \nI'm the master of my sea, oh-ooh \nThe master of my sea, oh-ooh\n\nI was broken from a young age \nTaking my soul into the masses \nWrite down my poems for the few \nThat looked at me \nTook to me, shook to me, feeling me \nSinging from heart ache from the pain \nTake up my message from the veins \nSpeaking my lesson from the brain \nSeeing the beauty through the...\n\nPain! \nYou made me a, you made me a believer, believer \nPain! \nYou break me down, you build me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\nThird things third \nSend a prayer to the ones up above \nAll the hate that you've heard has turned your spirit to a dove, oh-ooh \nYour spirit up above, oh-ooh\n\nI was choking in the crowd \nLiving my brain up in the cloud \nFalling like ashes to the ground \nHoping my feelings, they would drown \nBut they never did, ever lived, ebbing and flowing \nInhibited, limited \nTill it broke up and it rained down \nIt rained down, like...\n\nPain! \nYou made me a, you made me a believer, believer \nPain! \nYou break me down, you built me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\nLast things last \nBy the grace of the fire and the flames \nYou're the face of the future, the blood in my veins, oh-ooh \nThe blood in my veins, oh-ooh \nBut they never did, ever lived, ebbing and flowing \nInhibited, limited \nTill it broke up and it rained down \nIt rained down, like...\n\nPain! \nYou made me a, you made me a believer, believer \nPain!\nYou break me down, you built me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\n```";
+//		List<String> words = splitForDiscord(lyrics);
+//		System.out.println(words.size());
+//		for (String word : words)
+//			System.out.println(word);
+//	}
 }

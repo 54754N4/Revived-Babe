@@ -1,9 +1,12 @@
 package commands.level.normal;
 
+import java.util.List;
+
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import json.LyricsOVHResult;
+import lib.PrintBooster;
 import lib.encode.Encoder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
@@ -32,12 +35,15 @@ public class Lyrics extends DiscordCommand {
 		LyricsOVHResult result = getLyrics(split[0].trim(), split[1].trim());
 		if (result == null || result.lyrics == null|| result.lyrics.equals(""))
 			println("Couldn't find lyrics");
-		else 
-			getChannel().sendMessageEmbeds(new EmbedBuilder()
-				.setTitle(String.format("%s - %s", split[0], split[1]))
-				.setDescription(fixSpacing(result.lyrics))
-				.build())
-			.queue();
+		else {
+			List<String> lyrics = PrintBooster.splitEmbed(fixSpacing(result.lyrics));
+			for (int i=0; i<lyrics.size(); i++)
+				getChannel().sendMessageEmbeds(new EmbedBuilder()
+					.setTitle(String.format("%s - %s (%d/%d)", split[0], split[1], i+1, lyrics.size()))
+					.setDescription(lyrics.get(i))
+					.build())
+				.queue();
+		}
 	}
 	
 	private LyricsOVHResult getLyrics(String artist, String title) {
