@@ -1,6 +1,5 @@
 package bot.hierarchy;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -18,7 +17,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import audio.CircularDeque;
 import audio.MusicController;
 import audio.TrackScheduler;
-import audio.track.handlers.SpeakTrackHandler;
 import audio.track.handlers.TrackLoadHandler;
 import backup.MusicState;
 import commands.model.ThreadSleep;
@@ -519,16 +517,6 @@ public abstract class MusicBot extends UserBot {
 			.getScheduler(guild)
 			.play(index);
 		return index;
-	}
-	
-	// also for TTS through wav files
-	public MusicBot play(Guild guild, File file) {
-		setupAudio(guild);
-		play(
-			guild, 
-			file.getAbsolutePath(), 
-			new SpeakTrackHandler(getScheduler(guild)));
-		return this;
 	}
 	
 	public Future<Void> play(Guild guild, String identifier, AudioLoadResultHandler handler) {

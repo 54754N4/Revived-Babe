@@ -114,6 +114,13 @@ public abstract class PrintCommand extends Command {
 		for (T item : list) print(markdown("%d.\t%s"), i++, item.toString());
 	}
 	
+	protected <K, V> void printMapFiltered(Map<K, V> map, String filter) {
+		for (Entry<K, V> entry : map.entrySet())
+			if (StringLib.matchSimplified(entry.getKey().toString(), filter)
+				|| StringLib.matchSimplified(entry.getValue().toString(), filter))
+				print(markdown("%s = %s"), entry.getKey(), entry.getValue());
+	}
+	
 	protected <K, V> void printMap(Map<K, V> map) {
 		for (Entry<K, V> entry : map.entrySet()) 
 			print(markdown("%s = %s"), entry.getKey(), entry.getValue());
