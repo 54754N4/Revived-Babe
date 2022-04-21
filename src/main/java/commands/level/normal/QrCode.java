@@ -15,8 +15,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class QrCode extends DiscordCommand {
-	// https://goqr.me/api/doc/read-qr-code/
-	private static final String API_ENCODE = "http://api.qrserver.com/v1/create-qr-code/?data=%s&color=%s&bgcolor=%s",
+	//	
+	public static final String API_ENCODE = "http://api.qrserver.com/v1/create-qr-code/?data=%s&color=%s&bgcolor=%s",
 			API_DECODE_FILE = "http://api.qrserver.com/v1/read-qr-code/?outputformat=json",
 			API_DECODE_URL = "http://api.qrserver.com/v1/read-qr-code/?fileurl=%s",
 			DEFAULT_COLOR = "000000",

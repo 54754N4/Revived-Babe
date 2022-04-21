@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.entities.Message;
 
 public class Lyrics extends DiscordCommand {
 	// https://lyricsovh.docs.apiary.io/#reference
-	private static final String API_FORMAT = "https://api.lyrics.ovh/v1/%s/%s";
+	public static final String API_FORMAT = "https://api.lyrics.ovh/v1/%s/%s";
 
 	public Lyrics(UserBot bot, Message message) {
 		super(bot, message, Command.LYRICS.names);

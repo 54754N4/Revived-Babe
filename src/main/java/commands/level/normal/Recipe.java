@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Recipe extends DiscordCommand {
-	private static final String API_FORMAT = "http://www.recipepuppy.com/api/?%s%s%s";
+	public static final String API_FORMAT = "http://www.recipepuppy.com/api/?%s%s%s";
 	
 	public Recipe(UserBot bot, Message message) {
 		super(bot, message, Command.RECIPE.names);
@@ -52,6 +52,6 @@ public class Recipe extends DiscordCommand {
 		if (!search.equals(""))
 			search = "q=" + search + "&";
 		page = page.equals("") ? "p=1" : "p=" + page;
-		return restRequest(FoodRecipeResults.class, String.format(API_FORMAT, ingredients, search, page));
+		return restRequest(FoodRecipeResults.class, API_FORMAT, ingredients, search, page);
 	} 
 }

@@ -1,4 +1,4 @@
-package tests.lib;
+package tests;
 
 import static lib.StringLib.replaceAll;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;

@@ -18,8 +18,8 @@ import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
 
 public class ExchangeRates extends DiscordCommand {
-	private static final String API_FORMAT = "http://openexchangerates.org/api/latest.json?app_id=%s";
-	private static final Map<String, Double> currencies = new ConcurrentHashMap<>();
+	public static final String API_FORMAT = "http://openexchangerates.org/api/latest.json?app_id=%s";
+	public static final Map<String, Double> currencies = new ConcurrentHashMap<>();
 	
 	public ExchangeRates(UserBot bot, Message message) {
 		super(bot, message, Command.RATES.names);

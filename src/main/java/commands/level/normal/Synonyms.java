@@ -12,8 +12,8 @@ import net.dv8tion.jda.api.entities.Message;
 
 public class Synonyms extends DiscordCommand {
 	// https://thesaurus.altervista.org/service
-	private static final String[] languages = "cs_CZ, da_DK, de_CH, de_DE, en_US, el_GR, es_ES, fr_FR, hu_HU, it_IT, no_NO, pl_PL, pt_PT, ro_RO, ru_RU, sk_SK".split(", ");
-	private static final String API_FORMAT = "http://thesaurus.altervista.org/thesaurus/v1?key=%s&word=%s&language=%s&output=json",
+	public static final String[] languages = "cs_CZ, da_DK, de_CH, de_DE, en_US, el_GR, es_ES, fr_FR, hu_HU, it_IT, no_NO, pl_PL, pt_PT, ro_RO, ru_RU, sk_SK".split(", ");
+	public static final String API_FORMAT = "http://thesaurus.altervista.org/thesaurus/v1?key=%s&word=%s&language=%s&output=json",
 			DEFAULT_LANG = "en_US";
 	
 	public Synonyms(UserBot bot, Message message) {

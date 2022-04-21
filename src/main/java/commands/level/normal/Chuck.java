@@ -7,7 +7,7 @@ import json.ChuckNorrisResult;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Chuck extends DiscordCommand {
-	private static final String API_CALL = "https://api.chucknorris.io/jokes/random";
+	public static final String API_CALL = "https://api.chucknorris.io/jokes/random";
 	
 	public Chuck(UserBot bot, Message message) {
 		super(bot, message, Command.CHUCK_NORRIS.names);
