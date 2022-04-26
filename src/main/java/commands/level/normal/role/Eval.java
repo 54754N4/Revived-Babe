@@ -1,8 +1,9 @@
 package commands.level.normal.role;
 
+import java.util.stream.Stream;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
@@ -11,7 +12,8 @@ import net.dv8tion.jda.api.entities.Message;
 
 public class Eval extends DiscordCommand {
 	private static final ScriptEngineManager mgr = new ScriptEngineManager();
-    private static final ScriptEngine js = mgr.getEngineByName("JavaScript");
+    private static final ScriptEngine js = mgr.getEngineByName("JavaScript"),
+    		py = mgr.getEngineByName("python");
 	
 	public Eval(UserBot bot, Message message) {
 		super(bot, message, Command.EVAL.names);
@@ -21,15 +23,30 @@ public class Eval extends DiscordCommand {
 	@Override
 	public String helpMessage() {
 		return helpBuilder("",
-			"Makes me eval javascript code through a JS interpreter");
+			"-js or --javascript\texecutes JS code",
+			"-py or --python\texecutes python code",
+			"-l or --list\tlists all scripting engines factories",
+			"Makes me eval code through a specific interpreter");
 	}
 
 	@Override
 	protected void execute(String input) throws Exception {
-		println("%s", javascript(input));
+		if (hasArgs("-l", "--list"))
+			printItems(factories());
+		else if (hasArgs("-py", "--python"))
+			println("%s", py.eval(input));
+		else
+			println("%s", js.eval(input));
 	}
-
-	public static Object javascript(String input) throws ScriptException {
-		return js.eval(input);
+	
+	private Stream<String> factories() {
+		return mgr.getEngineFactories()
+				.stream()
+				.map(engine -> String.format(
+						"Name: %s (%s)%nLanguage: %s (%s)", 
+						engine.getEngineName(), 
+						engine.getEngineVersion(), 
+						engine.getLanguageName(), 
+						engine.getLanguageVersion()));
 	}
 }

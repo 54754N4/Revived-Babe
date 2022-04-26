@@ -49,6 +49,7 @@ dependencies {
   implementation 'org.jgrapht:jgrapht-ext:1.5.1'					// graph visualisation
   implementation 'org.graalvm.js:js:20.3.0'							// js scripting engine
   implementation 'org.graalvm.js:js-scriptengine:21.0.0.2'			// engine implementation
+  implementation 'org.python:jython-standalone:2.7.2'				// python scripting engine
   
   // Testing
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
