@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import bot.hierarchy.UserBot;
 import lambda.StatusUpdater;
@@ -95,6 +96,14 @@ public abstract class PrintCommand extends Command {
 	
 	public void printlnCentered(String text) {
 		println(StringLib.center(text, CODEBLOCK_LINE_MAX));
+	}
+	
+	protected <T> void printItems(Stream<T> stream) {
+		printItems(stream.toArray());
+	}
+	
+	protected <T> void printItemsIndexed(Stream<T> stream) {
+		printItemsIndexed(stream.toArray());
 	}
 	
 	protected <T> void printItems(Collection<T> list) {
