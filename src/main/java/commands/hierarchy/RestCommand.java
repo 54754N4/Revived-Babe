@@ -7,13 +7,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.function.Function;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import bot.hierarchy.UserBot;
 import net.dv8tion.jda.api.entities.Message;
@@ -24,25 +22,38 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public abstract class RestCommand extends ListenerCommand {
-	private static final Gson gson = new Gson();
-	private static final OkHttpClient client = new OkHttpClient();
+	private static Gson gson;
+	private static OkHttpClient client;
 	
 	public RestCommand(UserBot bot, Message message, String[] names) {
 		super(bot, message, names);
 	}
 
+	/* Lazy loaded singletons */
+	
+	private static final synchronized Gson gson() {
+		if (gson == null)
+			gson = new Gson();
+		return gson;
+	}
+	
+	private static final synchronized OkHttpClient client() {
+		if (client == null)
+			client = new OkHttpClient();
+		return client;
+	}
+	
 	/* Rest + multipart/form requests convenience methods */
 	
 	public static Response restRequest(String apiFormat, Object...args) throws IOException {
 		Request request = new Request.Builder()
 				.url(String.format(apiFormat, args))
 				.build();
-		return client.newCall(request).execute();
+		return execute(request);
 	}
 	
 	public static <T> T restRequest(Class<T> cls, String apiFormat, Object... args) throws IOException {
-		Response response = restRequest(apiFormat, args);
-		return gson.fromJson(response.body().string(), cls);
+		return convert(cls, restRequest(apiFormat, args));
 	}
 	
 	public static Response formRequest(Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
@@ -54,13 +65,14 @@ public abstract class RestCommand extends ListenerCommand {
 				.url(String.format(apiFormat, args))
 				.post(body)
 				.build();
-		return client.newCall(request).execute();
+		return execute(request);
 	}
 	
 	public static <T> T formRequest(Class<T> cls, Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
-		Response response = formRequest(setup, apiFormat, args);
-		return gson.fromJson(response.body().string(), cls);
+		return convert(cls, formRequest(setup, apiFormat, args));
 	}
+	
+	/* Convenience methods */
 	
 	public static File writeFile(Response response, String filepath) throws FileNotFoundException, IOException {
 		try (FileOutputStream fos = new FileOutputStream(filepath)) {
@@ -83,21 +95,11 @@ public abstract class RestCommand extends ListenerCommand {
 		}
 	}
 	
-	public static String getParamsString(Map<String, String> params, String separator, boolean encode) throws UnsupportedEncodingException {
-        StringBuilder result = new StringBuilder();
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-        	if (result.length() != 0) result.append(separator);
-        	if (entry.getValue() == null)
-        		result.append(entry.getKey());
-        	else if (encode)
-        		result.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
-        			.append("=")
-        			.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-        	else 
-        		result.append(entry.getKey())
-    				.append("=")
-    				.append(entry.getValue());
-        }
-        return result.toString(); 
-    }
+	public static Response execute(Request request) throws IOException {
+		return client().newCall(request).execute();
+	}
+	
+	public static <T> T convert(Class<T> cls, Response response) throws JsonSyntaxException, IOException {
+		return gson().fromJson(response.body().string(), cls);
+	}
 }
