@@ -12,6 +12,7 @@ import lib.StringLib;
 import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 public abstract class FSMCommand extends DiscordCommand {
 	private static final String DEFAULT_SCALING = "2";
@@ -113,7 +114,7 @@ public abstract class FSMCommand extends DiscordCommand {
 		}
 		File diagram = FSMVisualizer.visualise(this, Integer.parseInt(scaling));
 		getChannel().sendMessage("This command's FSM :")
-			.addFile(diagram)
+			.addFiles(FileUpload.fromData(diagram))
 			.queue();
 		diagram.delete();
 	}

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import database.DBManager;
 import database.TableManager;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 
 public abstract class Reminders {
 	private static final Logger logger = LoggerFactory.getLogger(Reminders.class);

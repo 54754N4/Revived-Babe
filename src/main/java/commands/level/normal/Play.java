@@ -1,18 +1,20 @@
 package commands.level.normal;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
+import lib.SpotifyLinkConverter;
 import lib.StringLib;
 import lib.messages.PagedTracksHandler;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
-public class Play extends DiscordCommand {
+public class Play extends DiscordCommand {	
 	public Play(UserBot bot, Message message) {
 		super(bot, message, Command.PLAY.names);
 	}
@@ -81,7 +83,15 @@ public class Play extends DiscordCommand {
 			bot.play(guild, input, handler).get();
 			getChannel().sendMessage("Loading...")
 				.queue(handler.enableHandlerButtons());
-		} else 
+		} else if (input.contains("open.spotify.com")) {
+			List<String> songs = SpotifyLinkConverter.getInstance().convertPlaylist(input);
+			if (songs.size() == 0) {
+				println("Could not extract song names from spotify playlist `%s`", input);
+				return;
+			}
+			for (String song : songs)
+				play(song);
+		} else
 			bot.play(guild,
 				input,
 				hasArgs("--top", "-t"),

@@ -1,5 +1,6 @@
 package commands.level.normal.role;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -19,14 +20,14 @@ import discord.ServerRestAction;
 import discord.ServerSetting;
 import lib.StringLib;
 import net.dv8tion.jda.api.Region;
-import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 
 public class Server extends DiscordCommand {
 	private static final String DOWNLOAD_PATH = System.getProperty("user.dir") + "/download";
@@ -154,7 +155,8 @@ public class Server extends DiscordCommand {
 				Icon.from(
 					getMessage().getAttachments()
 						.get(0)
-						.downloadToFile(DOWNLOAD_PATH)
+						.getProxy()
+						.downloadToFile(new File(DOWNLOAD_PATH))
 						.get()))
 				.applyChanges();
 		else {
@@ -263,6 +265,6 @@ public class Server extends DiscordCommand {
 		else
 			stream.map(InvitesParser::toEmbed)
 				.map(getChannel()::sendMessageEmbeds)
-				.forEach(MessageAction::queue);
+				.forEach(MessageCreateAction::queue);
 	}
 }

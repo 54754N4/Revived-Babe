@@ -6,7 +6,6 @@ import java.util.EnumSet;
 import java.util.List;
 
 import javax.annotation.Nullable;
-import javax.security.auth.login.LoginException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,14 +22,14 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.audio.factory.IAudioSendFactory;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.SelfUser;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.ShutdownEvent;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
+import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -67,8 +66,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	@Override
 	public void run() {
 		logger.debug("Starting thread for bot %s..", name);
-		try { jda = attachListeners(buildJDA()).build(); } 
-		catch (LoginException e) { logger.info("Can't login with %s", name); }
+		jda = attachListeners(buildJDA()).build(); 
 		onLoad();
 	}
 	
@@ -266,7 +264,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	}
 
 	@Override
-	public RestAction<PrivateChannel> openPrivateChannel() {
+	public CacheRestAction<PrivateChannel> openPrivateChannel() {
 		return getAccount().openPrivateChannel();
 	}
 
@@ -286,7 +284,7 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	}
 	
 	@Override
-	public RestAction<Profile> retrieveProfile() {
+	public CacheRestAction<Profile> retrieveProfile() {
 		return getAccount().retrieveProfile();
 	}
 

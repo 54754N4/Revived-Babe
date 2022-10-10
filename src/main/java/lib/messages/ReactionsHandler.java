@@ -7,12 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import bot.hierarchy.UserBot;
-import lib.Emoji;
+//import lib.Emoji;
 import lib.messages.ReactionsDispatcher.CustomEmojiConsumer;
 import lib.messages.ReactionsDispatcher.NativeEmojiConsumer;
 import lib.messages.ReactionsDispatcher.NativeExtendedEmojiConsumer;
 import lib.messages.ReactionsDispatcher.ReactionConsumer;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 
 public class ReactionsHandler implements Consumer<Message> {
@@ -79,17 +80,17 @@ public class ReactionsHandler implements Consumer<Message> {
 	}
 	
 	private ReactionConsumer handleCustom(Message message, String name, int key) {
-		message.addReaction(message.getGuild().getEmotesByName(name, true).get(0)).queue();
+		message.addReaction(message.getGuild().getEmojisByName(name, true).get(0)).queue();
 		return new CustomEmojiConsumer(message, name, consumers.get(key));
 	}
 	
 	private ReactionConsumer handleNative(Message message, int unicode, int key) {
-		message.addReaction(Emoji.toCodepoint(unicode)).queue();
+		message.addReaction(Emoji.fromUnicode(lib.Emoji.toCodepoint(unicode))).queue();
 		return new NativeEmojiConsumer(message, unicode, consumers.get(key));
 	}
 	
 	private ReactionConsumer handleNativeExtended(Message message, String name, int key) {
-		message.addReaction(name).queue();
+		message.addReaction(Emoji.fromUnicode(name)).queue();
 		return new NativeExtendedEmojiConsumer(message, name, consumers.get(key));
 	}
 }

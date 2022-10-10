@@ -10,6 +10,7 @@ import json.QrCodeResult.Symbol;
 import lib.StringLib;
 import lib.encode.Encoder;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.utils.FileUpload;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -40,9 +41,15 @@ public class QrCode extends DiscordCommand {
 	@Override
 	protected void execute(String input) throws Exception {
 		if (getMessage().getAttachments().size() != 0) {
-			File attached = getMessage().getAttachments().get(0).downloadToFile().get();
+			File attached = getMessage().getAttachments()
+					.get(0)
+					.getProxy()
+					.downloadToPath()
+					.get()
+					.toFile();
+			RequestBody body = RequestBody.create(attached, MediaType.parse("application/octet-stream"));
 			QrCodeResult[] result = formRequest(QrCodeResult[].class,
-					builder -> builder.addFormDataPart("file", attached.getName(), RequestBody.create(MediaType.parse("application/octet-stream"), attached)), 
+					builder -> builder.addFormDataPart("file", attached.getName(), body), 
 					API_DECODE_FILE);
 			handle(result);
 			attached.delete();
@@ -64,7 +71,7 @@ public class QrCode extends DiscordCommand {
 			bgcolor = getParams().getNamed().get("--bgcolor");
 		Response response = restRequest(API_ENCODE, data, color, bgcolor);
 		File file = writeFile(response, "download/qr.png");
-		getChannel().sendFile(file)
+		getChannel().sendFiles(FileUpload.fromData(file))
 			.queue(e -> file.delete(), t -> file.delete());
 	}
 

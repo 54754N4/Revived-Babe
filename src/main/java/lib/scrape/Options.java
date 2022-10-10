@@ -7,7 +7,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.ie.InternetExplorerOptions;
-import org.openqa.selenium.opera.OperaOptions;
+//import org.openqa.selenium.opera.OperaOptions;
 import org.openqa.selenium.safari.SafariOptions;
 
 public interface Options {
@@ -29,7 +29,7 @@ public interface Options {
 	static final Chrome CHROME = new Chrome();
 	static final Edge EDGE = new Edge();
 	static final Safari SAFARI = new Safari();
-	static final Opera OPERA = new Opera();
+//	static final Opera OPERA = new Opera();
 	static final InternetExplorer INTERNET_EXPLORER = new InternetExplorer();
 	
 	static Firefox firefox() {
@@ -48,9 +48,9 @@ public interface Options {
 		return SAFARI;
 	}
 	
-	static Opera opera() {
-		return OPERA;
-	}
+//	static Opera opera() {
+//		return OPERA;
+//	}
 	
 	static InternetExplorer internetExplorer() {
 		return INTERNET_EXPLORER;
@@ -118,14 +118,14 @@ public interface Options {
 		}
 	}
 	
-	public static class Opera implements ConfigurationMethods<OperaOptions> {
-		@Override
-		public OperaOptions defaultSettings() {
-			return (OperaOptions) new OperaOptions()
-					.setAcceptInsecureCerts(true)
-	                .addArguments(ARG_DISABLE_GPU, ARG_WINDOW_SIZE);
-		}
-	}
+//	public static class Opera implements ConfigurationMethods<OperaOptions> {
+//		@Override
+//		public OperaOptions defaultSettings() {
+//			return (OperaOptions) new OperaOptions()
+//					.setAcceptInsecureCerts(true)
+//	                .addArguments(ARG_DISABLE_GPU, ARG_WINDOW_SIZE);
+//		}
+//	}
 	
 	public static class InternetExplorer implements ConfigurationMethods<InternetExplorerOptions> {
 		@Override

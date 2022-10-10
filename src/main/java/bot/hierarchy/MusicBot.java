@@ -23,11 +23,9 @@ import commands.model.ThreadSleep;
 import lambda.StatusUpdater;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
-import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
-import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
+import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 
@@ -98,13 +96,8 @@ public abstract class MusicBot extends UserBot {
 	}
 	
 	@Override
-    public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
+    public void onGuildVoiceUpdate(GuildVoiceUpdateEvent event) {
 		if (isSelf(event)) handleVoiceChannelUpdate(event);
-    }
-    
-    @Override
-    public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
-    	if (isSelf(event)) handleVoiceChannelUpdate(event);
     }
     
     private void handleVoiceChannelUpdate(GuildVoiceUpdateEvent event) {

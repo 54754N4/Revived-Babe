@@ -9,6 +9,7 @@ import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.scrape.Browser;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 public class Screenshot extends DiscordCommand {
 
@@ -30,7 +31,7 @@ public class Screenshot extends DiscordCommand {
 			File screenshot = hasArgs("--select") ? 
 					browser.screenshotFileOf(By.cssSelector(getParams().getNamed().get("--select"))):
 					browser.screenshotFullAsFile();
-			getChannel().sendFile(screenshot).queue();
+			getChannel().sendFiles(FileUpload.fromData(screenshot)).queue();
 			if (!screenshot.delete())
 				println("Could not delete temporary screenshot file.");
 		} catch (Exception e) {

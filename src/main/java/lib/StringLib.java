@@ -1,5 +1,6 @@
 package lib;
 
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -138,8 +139,12 @@ public final class StringLib {
 	}
 
 	public static boolean isURL(String url) {
-		return url.startsWith("http") || url.startsWith("www.") 
-				|| url.matches("(https?:\\/\\/)?(www\\.)?\\w+(\\.\\w+)+\\/?(([^:\\/\\\\\\[\\]@\\s]+\\/?)+)?");
+		try { 
+			new URL(url); 
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	public static boolean isInteger(String input) {
@@ -151,11 +156,17 @@ public final class StringLib {
 	}
 
 	public static boolean isKeyword(String url) {
-		return !url.contains("\\") && !url.contains("/");
+		return !isURL(url) && !isPath(url);
+		// return !url.contains("\\") && !url.contains("/");
 	}
 
 	public static boolean isPath(String url) {
-		return url.matches("([A-Za-z]:\\\\)?((?>[^\\r\\n\\t\\:\\*\\?\"<>\\\\|\\/,\\.]+\\\\?))+(\\.[A-Za-z0-9]+)?");
+		try {
+			return Paths.get(url).toFile().exists();
+		} catch (Exception e) {
+			return false;
+		}
+//		return url.matches("([A-Za-z]:\\\\)?((?>[^\\r\\n\\t\\:\\*\\?\"<>\\\\|\\/,\\.]+\\\\?))+(\\.[A-Za-z0-9]+)?");
 	}
 
 	public static String join(String...strings) {

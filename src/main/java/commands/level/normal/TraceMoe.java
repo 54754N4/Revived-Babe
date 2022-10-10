@@ -1,6 +1,7 @@
 package commands.level.normal;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,9 +46,10 @@ public class TraceMoe extends DiscordCommand {
 		if (hasAttachment) {
 			Attachment attachment = message.getAttachments().get(0);
 			String filename = ".\\download\\trace\\"+attachment.getFileName();
-			final File image = attachment.downloadToFile(filename).get();
+			final File image = attachment.getProxy().downloadToPath(Paths.get(filename)).get().toFile();
+			RequestBody body = RequestBody.create(image, MediaType.parse("application/octet-stream"));
 			result = formRequest(TraceMoeResult.class, 
-					builder -> builder.addFormDataPart("image", filename, RequestBody.create(MediaType.parse("application/octet-stream"), image)), 
+					builder -> builder.addFormDataPart("image", filename, body), 
 					API_MULTIPART_FORMAT);
 		} else 
 			result = restRequest(TraceMoeResult.class, API_FORMAT, "?url=" + Encoder.encodeURL(input));

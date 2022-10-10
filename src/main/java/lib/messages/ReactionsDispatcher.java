@@ -10,7 +10,7 @@ import lib.Consumers;
 import lib.Emoji;
 import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -21,11 +21,11 @@ public class ReactionsDispatcher extends ListenerAdapter {
     public void onMessageReactionAdd(MessageReactionAddEvent event) {
 		if (event.getUser().isBot()) 
 			return;
-    	final String reactionName = event.getReactionEmote().getAsReactionCode();
+    	final String reactionName = event.getEmoji().getAsReactionCode();
     	final boolean isCustom = reactionName.matches("[a-zA-Z0-9_]+");	// getAsReactionCode returns str for custom and unicode2str for native emojis
     	List<ReactionConsumer> handlers = consumers.stream()
     		.filter(handler -> handler.id == event.getMessageIdLong())
-			.filter(handler -> handler.name.equals(isCustom ? reactionName : event.getReactionEmote().getName()))
+			.filter(handler -> handler.name.equals(isCustom ? reactionName : event.getEmoji().getName()))
 			.collect(Collectors.toList());
     	if (handlers.size() != 0) {
     		event.getReaction()

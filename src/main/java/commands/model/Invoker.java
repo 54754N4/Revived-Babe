@@ -29,7 +29,7 @@ import commands.level.admin.Test;
 import commands.level.normal.Echo;
 import lib.ListUtil;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 
 /* Finds the appropriate command based on string command 
  * and appropriate role based on package names			 */
@@ -67,7 +67,7 @@ public class Invoker {
 			.queue();
 		if (!correction.equals(name))
 			channel.sendMessage(String.format("Did you mean `%s` ?", correction))
-				.reference(message)
+				.setMessageReference(message)
 				.queue();
 		return null;
 	}
@@ -124,8 +124,8 @@ public class Invoker {
 			ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
 			FilterBuilder filterBuilder = new FilterBuilder();
 			configurationBuilder.addUrls(ClasspathHelper.forPackage(packageName));
-			for (Class<?> keep : include) filterBuilder.includePackage(keep);
-			for (Class<?> skip : exclude) filterBuilder.excludePackage(skip);
+			for (Class<?> keep : include) filterBuilder.includePackage(keep.getPackageName());
+			for (Class<?> skip : exclude) filterBuilder.excludePackage(skip.getPackageName());
 			configurationBuilder.filterInputsBy(filterBuilder);
 		    return new Reflections(configurationBuilder);
 		}

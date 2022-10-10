@@ -117,7 +117,7 @@ public class TestApis {
 		// Test file decode
 		request(QrCodeResult[].class)
 			.setHost(QrCode.API_DECODE_FILE)
-			.setForm(builder -> builder.addFormDataPart("file", file.getName(), RequestBody.create(MediaType.parse("application/octet-stream"), file)))
+			.setForm(builder -> builder.addFormDataPart("file", file.getName(), RequestBody.create(file, MediaType.parse("application/octet-stream"))))
 			.then(assertDecoded)
 			.execute();
 		assertTrue(file.delete());

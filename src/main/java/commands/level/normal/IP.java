@@ -14,6 +14,7 @@ import lib.messages.ValidatingEmbedBuilder;
 import lib.scrape.Browser;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 public class IP extends DiscordCommand {
 	public static final String IP_FORMAT = "^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\\.(?!$)|$)){4}$";
@@ -45,7 +46,7 @@ public class IP extends DiscordCommand {
 				.visit(new URL(url))
 				.screenshotFullAsFile();
 			getChannel().sendMessageEmbeds(buildEmbed(geolocation).build())
-				.addFile(map)
+				.addFiles(FileUpload.fromData(map))
 				.queue();
 		} else 
 			println("Invalid ip format..");

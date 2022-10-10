@@ -10,8 +10,9 @@ import lib.StringLib;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 
 public class Mentions {
 	private final Collection<User> users;
@@ -22,10 +23,10 @@ public class Mentions {
 	private final boolean trim;
 	
 	public Mentions(UserBot bot, Message message, String command) {
-		users = retrieveSafely(message::getMentionedUsers);
-		members = retrieveSafely(message::getMentionedMembers);
-		channels = retrieveSafely(message::getMentionedChannels);
-		roles = retrieveSafely(message::getMentionedRoles);
+		users = retrieveSafely(message.getMentions()::getUsers);
+		members = retrieveSafely(message.getMentions()::getMembers);
+		channels = retrieveSafely(() -> message.getMentions().getChannels(TextChannel.class));
+		roles = retrieveSafely(message.getMentions()::getRoles);
 		filteredMessage = filterAllMentions(command);
 		trim = trim(bot, command);
 		if (trim) {
@@ -62,7 +63,7 @@ public class Mentions {
 		for (Role role : roles)
 			if (command.contains(match = "@"+role.getName()))
 				command = StringLib.replaceAll(command, match, "");
-		for (TextChannel channel : channels) 
+		for (GuildChannel channel : channels) 
 			if (command.contains(match = "#"+channel.getName()))
 				command = StringLib.replaceAll(command, match, "");
 		String[] tokens = StringLib.split(command, ' ');

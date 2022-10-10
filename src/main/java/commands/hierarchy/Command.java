@@ -19,7 +19,7 @@ import lib.Consumers;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public abstract class Command extends ListenerAdapter implements Callable<Void> {
