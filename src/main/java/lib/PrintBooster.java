@@ -96,11 +96,8 @@ public abstract class PrintBooster {
 
 	private static List<String> splitOnMarkdowns(String string) {
 		Markdown[] markdowns = findMarkdowns(string);
-		if (markdowns.length == 0) {
-			List<String> single = new ArrayList<>(1);
-			single.add(string);
-			return single;
-		}
+		if (markdowns.length == 0)
+			return Arrays.asList(string);
 		List<String> strings = new ArrayList<>();
 		int start = 0;
 		String word, md;
@@ -110,9 +107,10 @@ public abstract class PrintBooster {
 				md = string.substring(markdown.start+"```markdown".length(), markdown.end-"```".length());
 			else 
 				md = string.substring(markdown.start, markdown.end);
-			start = markdown.end;			// next start is previous markdown end
-			if (!word.equals("")) strings.add(word); 
+			if (!word.equals(""))
+				strings.add(word);
 			strings.add(md);
+			start = markdown.end;
 		}
 		String last = string.substring(start);
 		if (!last.equals(""))
@@ -122,16 +120,13 @@ public abstract class PrintBooster {
 	
 	private static ConsumedResult mergeBiggest(List<String> words, int index) {
 		StringBuilder word = new StringBuilder().append(words.get(index));
-		String next;
-		while (index + 1 < words.size() && word.length() + (next = words.get(index + 1)).length() < MESSAGE_MAX) {
-			word.append(next);
-			index++;
+		for (String next; index + 1 < words.size(); index++) {
+			next = words.get(index + 1);
+			if (word.length() + next.length() < MESSAGE_MAX)
+				word.append(next);
+			else 
+				break;
 		}
-		if (index + 1 != words.size()-1)	// not last word, that means word is too big
-			return new ConsumedResult(word.toString(), ++index);
-		String last = words.get(index);
-		if (word.length() + last.length() < MESSAGE_MAX) 
-			word.append(last);
 		return new ConsumedResult(word.toString(), ++index);
 	}
 	

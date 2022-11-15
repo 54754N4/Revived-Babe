@@ -54,18 +54,18 @@ public class Help extends DiscordCommand {
 		}
 	}
 	
-	private static Command instantiate(Class<? extends Command> cls) throws NoSuchMethodException, SecurityException, ReflectiveOperationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public static Command instantiate(Class<? extends Command> cls) throws NoSuchMethodException, SecurityException, ReflectiveOperationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		Constructor<? extends Command> constructor = cls.getConstructor(UserBot.class, Message.class);
 		return constructor.newInstance(null, null);
 	}
 	
-	private static String helpify(String... lines) {
+	public static String helpify(String... lines) {
 		StringBuilder sb = new StringBuilder();
 		for (String line : lines) sb.append(line+"\n");
 		return sb.toString();
 	}
 	
-	private static String helpGeneral() {
+	public static String helpGeneral() {
 		return helpify("**__>> GENERAL HELP__**",
 			"Babe's _prefixes_ can be listed just by mentioning her.",
 			"\tThere's 3 ways to execute commands so 3 types of _prefixes_. To put it simply there's the **__SLOW__**, **__FAST__**, and **__MENTION__** prefixes, here's an example of each respectively :",
@@ -76,7 +76,7 @@ public class Help extends DiscordCommand {
 		);
 	}
 	
-	private static String helpGlobal() {
+	public static String helpGlobal() {
 		return helpify("**__>> Global Params__**",
 			inline("-h or --help")+"\tPrints the command's help/manual.",
 			inline("--timed")+"\t\t\tPrints how long the command took to execute.",
@@ -91,7 +91,7 @@ public class Help extends DiscordCommand {
 		);
 	}
 	
-	private static String helpRead() {
+	public static String helpRead() {
 		return helpify("**__>> Reading Help__**",
 			"Every command's help/documentation will always start like this :",
 			"```markdown\n#[name0,name1,name2] <- this just defines the different names you can use to call this command```",
