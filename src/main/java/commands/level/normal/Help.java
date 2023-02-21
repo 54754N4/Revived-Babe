@@ -85,7 +85,7 @@ public class Help extends DiscordCommand {
 			inline("-d or --delete")+"\tDeletes your msg that invoked the command.",
 			inline("-s or --silent")+"\tPrevents the command from outputting anything.",
 			inline("--after=<seconds>")+"\tExecutes the command after delay in seconds.",
-			inline("--every=<seconds>")+"\tRepeats every period. If you want it to execute instantly, add a '*' before (e.g. --every=*60)",
+			inline("--every=<seconds>")+"\tRepeats every period. If you want it to execute instantly, add a '\\*' before (e.g. --every=\\*60)",
 			"\n**__>> Global FSM Params__**",
 			inline("--diagram=<scaling>")+"\tFSM commands can draw their state machine diagram, if scaling isn't given defaults to 2.\n"
 		);
