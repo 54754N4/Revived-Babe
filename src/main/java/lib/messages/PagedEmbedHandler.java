@@ -50,7 +50,7 @@ public class PagedEmbedHandler<T> extends ReactionsHandler {
 	public void accept(Message message) {
 		tracked = message;
 		elements = supplier.get();
-		if (defaultBehaviour) {
+		if (defaultBehaviour && elements.size() > 1) {
 			handle(0x2B05, this::onPrev);
 			handle(0x27A1, this::onNext);
 		}
