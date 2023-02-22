@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import bot.hierarchy.UserBot;
@@ -112,6 +116,27 @@ public abstract class PrintCommand extends Command {
 	
 	protected <T> void printItemsIndexed(Collection<T> list) {
 		printItemsIndexed(list.toArray());
+	}
+	
+	protected <T> void printItems(T[] list, Predicate<T> condition, Function<T, String> action) {
+		String printable;
+		for (T item : list) {
+			printable = item.toString();
+			if (condition.test(item))
+				printable = action.apply(item);
+			print(markdown("%s"), printable);
+		}
+	}
+
+	protected <T> void printItemsIndexed(T[] list, BiPredicate<Integer, T> condition, BiFunction<Integer, T, String> action) {
+		String printable;
+		int i = 0;
+		for (T item : list) {
+			printable = item.toString();
+			if (condition.test(i, item))
+				printable = action.apply(i, item);
+			print(markdown("%d.\t%s"), i++, printable);
+		}
 	}
 	
 	protected <T> void printItems(T[] list) {

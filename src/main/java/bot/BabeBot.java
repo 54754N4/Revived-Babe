@@ -27,7 +27,7 @@ public class BabeBot extends MusicBot {
 	@Override
 	public String prefixHelp() {
 		return "Hey, give me a command babe."
-			+"My fast prefix is \""+FAST_PREFIX
+			+"\nMy fast prefix is \""+FAST_PREFIX
 			+"\",\nand slow prefix is \""+BOT_PREFIX
 			+"\",\nor just mention me at the start of a message ~~ "+Emoji.HEART_DECORATION;
 	}

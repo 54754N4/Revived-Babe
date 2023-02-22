@@ -7,6 +7,7 @@ import commands.name.Command;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Playlist extends DiscordCommand {
+	public static final String NOTES_EMOJI = new String(Character.toChars(0x1F3B6));
 
 	public Playlist(UserBot bot, Message message) {
 		super(bot, message, Command.PLAYLIST.names);
@@ -19,7 +20,7 @@ public class Playlist extends DiscordCommand {
 				"-c or --create\tcreats a playlist",
 				"-r or --remove\tremoves a playlist",
 				"-cl or --clear\tremoves all playlist except default",
-				"Manages playlists and swaps between them");
+				"Manages playlists and by default swaps between them");
 	}
 
 	@Override
@@ -30,7 +31,10 @@ public class Playlist extends DiscordCommand {
 		}
 		TrackScheduler scheduler = getMusicBot().getScheduler(getGuild());
 		if (hasArgs("-l", "--list"))
-			printItems(scheduler.getPlaylistNames());
+			printItems(
+				scheduler.getPlaylistNames().toArray(),
+				scheduler.getCurrentPlaylist()::equals,
+				playlist -> NOTES_EMOJI + playlist + NOTES_EMOJI);
 		else if (hasArgs("-cl", "--clear")) {
 			scheduler.clearPlaylists();
 			println("Cleared all except default playlist");

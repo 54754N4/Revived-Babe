@@ -51,6 +51,16 @@ public class TrackScheduler extends AudioEventAdapter {
 		return queues.keySet();
 	}
 	
+	public int getCurrentPlaylistIndex() {
+		int i = 0, match = -1;
+		for (String s : queues.keySet()) {
+			if (s.equals(playlist))
+				match = i;
+			i++;
+		}
+		return match;	
+	}
+	
 	public String getCurrentPlaylist() {
 		return playlist;
 	}

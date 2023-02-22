@@ -13,7 +13,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
  * 		else -> subdivide the message based on code blocks into tokens
  * 		if no code blocks or is still too big -> split token on newlines
  * 		if still too big -> split token on dots
- * at this point, we suppose that after these 3 kinds of splits (worst case), 
+ * 		if still too big -> split token on spaces
+ * at this point, we suppose that after these 4 kinds of splits (worst case), 
  * tokens should all become valid but small discord messages.
  * 2. merge tokens as long as satisfy length < MESSAGE_MAX
  * 
@@ -29,25 +30,31 @@ public abstract class PrintBooster {
 
 	/* Splits normal discord messages */
 	public static List<String> split(String string) {
-		return filterEmpty(mergeForDiscord(splitOnDots(splitOnNewlines(splitOnMarkdowns(string)))));
+		return Pipeline.of(PrintBooster::splitOnMarkdowns)
+				.then(PrintBooster::splitOnNewlines)
+				.then(PrintBooster::splitOnDots)
+				.then(PrintBooster::splitOnSpaces)
+				.then(PrintBooster::mergeForDiscord)
+				.then(PrintBooster::filterEmpty)
+				.apply(string);
 	}
 	
-	/* Splits discord embed message descriptions */
+	/* Splits discord messages based on embed message descriptions max size */
 	public static List<String> splitEmbed(String message) {
 		if (message.length() < EMBED_MAX)
 			return Arrays.asList(message);
+		String space = " ";
 		List<String> result = new ArrayList<>();
-		String[] lines = message.lines().toArray(String[]::new);
+		String[] words = message.split(space);
 		StringBuilder sb = new StringBuilder();
-		for (String line : lines) {
-			if (sb.length() + line.length() < EMBED_MAX)
-				sb.append(line);
+		for (String word : words) {
+			if (sb.length() + word.length() + space.length() < EMBED_MAX)
+				sb.append(word).append(space);
 			else {
 				result.add(sb.toString());
 				sb.delete(0, sb.length());
-				sb.append(line);
+				sb.append(word).append(space);
 			}
-			sb.append("\n");
 		}
 		if (sb.length() != 0)
 			result.add(sb.toString());
@@ -68,7 +75,7 @@ public abstract class PrintBooster {
 		return markdowns.toArray(new Markdown[markdowns.size()]);
 	}
 	
-	private static List<String> splitOnTarget(String target, String word) {
+	private static List<String> split(String target, String word) {
 		List<String> smaller = new ArrayList<>();
 		smaller.addAll(Arrays.asList(word.split(target)));
 		int i = 0;
@@ -77,23 +84,27 @@ public abstract class PrintBooster {
 		return smaller;
 	}
 	
-	private static List<String> optionallySplitOn(String target, List<String> tokens) {
+	private static List<String> optionallySplit(String target, List<String> tokens) {
 		List<String> smaller = new ArrayList<>();
 		for (String token : tokens) 
 			// we optionally split based on if the token is bigger than MESSAGE_MAX
-			if (token.length() > MESSAGE_MAX) smaller.addAll(splitOnTarget(target, token));
+			if (token.length() > MESSAGE_MAX) smaller.addAll(split(target, token));
 			else smaller.add(token);
 		return smaller;
 	}
 	
 	private static List<String> splitOnDots(List<String> tokens) {
-		return optionallySplitOn("\\.", tokens);
+		return optionallySplit("\\.", tokens);
 	}
 	
 	private static List<String> splitOnNewlines(List<String> tokens) {
-		return optionallySplitOn("\n", tokens);
+		return optionallySplit("\n", tokens);
 	}
 
+	private static List<String> splitOnSpaces(List<String> tokens) {
+		return optionallySplit(" ", tokens);
+	}
+	
 	private static List<String> splitOnMarkdowns(String string) {
 		Markdown[] markdowns = findMarkdowns(string);
 		if (markdowns.length == 0)
@@ -176,14 +187,4 @@ public abstract class PrintBooster {
 			return "("+start+","+end+")";
 		}
 	}
-	
-//	@SuppressWarnings("unused")
-//	public static void main(String[] args) {
-//		String str = "```markdown\n#[unqueue, remove, rem, rm]\nUsage: <name> <indices>\n\tDeletes the songs specified as parameter, each index separated by spaces.\nUsage: <name> [-t|--tag] <pattern>\n\tDeletes the tags that matched the given pattern.\n\n```";
-//		String lyrics = "```markdown\n\nFirst things first \nI'mma say all the words inside my head \nI'm fired up and tired of the way that things have been, oh-ooh \nThe way that things have been, oh-ooh \nSecond thing second \nDon't you tell me what you think that \nI can be \nI'm the one at the sail, \nI'm the master of my sea, oh-ooh \nThe master of my sea, oh-ooh\n\nI was broken from a young age \nTaking my soul into the masses \nWrite down my poems for the few \nThat looked at me \nTook to me, shook to me, feeling me \nSinging from heart ache from the pain \nTake up my message from the veins \nSpeaking my lesson from the brain \nSeeing the beauty through the...\n\nPain! \nYou made me a, you made me a believer, believer \nPain! \nYou break me down, you build me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\nThird things third \nSend a prayer to the ones up above \nAll the hate that you've heard has turned your spirit to a dove, oh-ooh \nYour spirit up above, oh-ooh\n\nI was choking in the crowd \nLiving my brain up in the cloud \nFalling like ashes to the ground \nHoping my feelings, they would drown \nBut they never did, ever lived, ebbing and flowing \nInhibited, limited \nTill it broke up and it rained down \nIt rained down, like...\n\nPain! \nYou made me a, you made me a believer, believer \nPain! \nYou break me down, you built me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\nLast things last \nBy the grace of the fire and the flames \nYou're the face of the future, the blood in my veins, oh-ooh \nThe blood in my veins, oh-ooh \nBut they never did, ever lived, ebbing and flowing \nInhibited, limited \nTill it broke up and it rained down \nIt rained down, like...\n\nPain! \nYou made me a, you made me a believer, believer \nPain!\nYou break me down, you built me up, believer, believer \nPain! \nI let the bullets fly, oh let them rain \nMy luck, my love, my \nGod, they came from... \nPain! \nYou made me a, you made me a believer, believer\n\n```";
-//		List<String> words = splitForDiscord(lyrics);
-//		System.out.println(words.size());
-//		for (String word : words)
-//			System.out.println(word);
-//	}
 }

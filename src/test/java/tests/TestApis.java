@@ -19,7 +19,6 @@ import commands.level.normal.Chuck;
 import commands.level.normal.ExchangeRates;
 import commands.level.normal.Food;
 import commands.level.normal.Insult;
-import commands.level.normal.Lyrics;
 import commands.level.normal.QrCode;
 import commands.level.normal.Recipe;
 import commands.level.normal.Speak;
@@ -30,7 +29,6 @@ import json.ExchangeRatesResult;
 import json.FoodImageResult;
 import json.FoodRecipeResults;
 import json.InsultsResult;
-import json.LyricsOVHResult;
 import json.QrCodeResult;
 import json.QrCodeResult.Symbol;
 import json.ThesaurusResult;
@@ -78,16 +76,6 @@ public class TestApis {
 			.setArgs(Insult.DEFAULT_LANG, Insult.DEFAULT_TYPE)
 			.then(r -> assertNotNull(r.insult))
 			.andThen(r -> assertNotEquals(r.insult, ""))
-			.execute();
-	}
-	
-	@SlowTest
-	public void givenLyricsRequest_whenExecuted_succeeds() {
-		request(LyricsOVHResult.class)
-			.setHost(Lyrics.API_FORMAT)
-			.setArgs(Encoder.encodeURL("takida"), Encoder.encodeURL("to have and to hold"))
-			.then(r -> assertNotNull(r.lyrics))
-			.andThen(r -> assertNotEquals(r.lyrics, ""))
 			.execute();
 	}
 	

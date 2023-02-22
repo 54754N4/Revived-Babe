@@ -97,10 +97,13 @@ public abstract class MusicBot extends UserBot {
 	
 	@Override
     public void onGuildVoiceUpdate(GuildVoiceUpdateEvent event) {
-		if (isSelf(event)) handleVoiceChannelUpdate(event);
+		if (isSelf(event)) 
+			handleVoiceChannelUpdate(event);
     }
     
     private void handleVoiceChannelUpdate(GuildVoiceUpdateEvent event) {
+    	if (event.getChannelJoined() == null)
+    		return;
     	String id = event.getChannelJoined().getId();
     	logger.info("Updated {} last channel id in music state to {}", name, id);
 	}
