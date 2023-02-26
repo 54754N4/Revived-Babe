@@ -14,7 +14,8 @@ import lib.messages.PagedTracksHandler;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 
-public class Play extends DiscordCommand {	
+public class Play extends DiscordCommand {
+	
 	public Play(UserBot bot, Message message) {
 		super(bot, message, Command.PLAY.names);
 	}
@@ -28,7 +29,7 @@ public class Play extends DiscordCommand {
 				"# Args",
 				"-p or --paged\tmakes me print search results paginated",
 				"-v or --verbose\tmakes me print the songs being queued",
-				"-pl or --playlist\t retrieves all songs of a playlist",
+				"-a or --all\t retrieves all songs retrieved (e.g. playlists)",
 				"-sc or --soundcloud\t  searches keywords using SoundCloud",
 				"-yt or --youtube\t\t searches keywords using YouTube",
 				"--count=V\t\t\t\tretrieves V tracks from playlists (URLs) or keyword searches",
@@ -97,7 +98,7 @@ public class Play extends DiscordCommand {
 				hasArgs("--top", "-t"),
 				hasArgs("--next", "-n"),
 				hasArgs("--count") ? Integer.parseInt(getParams().getNamed().get("--count")) : 1,
-				hasArgs("-pl", "--playlist"),
+				hasArgs("-a", "--all"),
 				hasArgs("-v", "--verbose") ? getPrinter() : getLogger()::info)
 			.get();
 	}

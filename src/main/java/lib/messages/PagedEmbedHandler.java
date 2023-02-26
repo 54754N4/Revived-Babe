@@ -18,7 +18,7 @@ public class PagedEmbedHandler<T> extends ReactionsHandler {
 	protected EmbedBuildHandler<T> itemHandler;
 	protected boolean defaultBehaviour;
 	protected Message tracked;
-	protected int page, count;
+	protected int page;
 	
 	private List<T> elements;
 	
@@ -54,12 +54,13 @@ public class PagedEmbedHandler<T> extends ReactionsHandler {
 			handle(0x2B05, this::onPrev);
 			handle(0x27A1, this::onNext);
 		}
+		message.editMessage(".").queue();
 		super.accept(message);
 		update();
 	}
 	
 	private void onNext(MessageReactionAddEvent reaction) {
-		if (page + 1 > elements.size())
+		if (page + 1 >= elements.size())
 			page = 0;
 		else 
 			page++;
@@ -80,10 +81,16 @@ public class PagedEmbedHandler<T> extends ReactionsHandler {
 	
 	public void update(boolean stayOnCurrent) {
 		try { 
-			EmbedBuilder embed = itemHandler.config(page, elements.size(), elements.get(page), new ValidatingEmbedBuilder());
+			EmbedBuilder embed = itemHandler.config(
+					page, 
+					elements.size(), 
+					elements.get(page), 
+					new ValidatingEmbedBuilder());
 			tracked.editMessageEmbeds(embed.build())
 				.queue(Consumers::ignore, Consumers::ignore); 
-		} catch (Exception e) { logger.error("Exception trying to print paged item handler", e); }
+		} catch (Exception e) { 
+			logger.error("Exception trying to print paged item handler", e);
+		}
 	}
 	
 	@FunctionalInterface

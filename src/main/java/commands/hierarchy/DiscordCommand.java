@@ -86,6 +86,10 @@ public abstract class DiscordCommand extends RestCommand {
 		Invoker.invoke(getBot(), getMessage(), input, type);
 	}
 	
+	protected boolean hasAttachment() {
+		return getMessage().getAttachments().size() != 0;
+	}
+	
 	/* Scheduling */
 	
 	private DiscordCommand addKillHandler() {

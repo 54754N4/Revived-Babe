@@ -5,10 +5,8 @@ plugins {
 }
 
 mainClassName = 'main.Run'
-
 version = '2.0'
-
-sourceCompatibility = 1.17
+compileJava.options.encoding = 'UTF-8'
 
 repositories {
   mavenCentral()
@@ -63,4 +61,8 @@ dependencies {
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
-compileJava.options.encoding = 'UTF-8'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}

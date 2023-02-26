@@ -1,5 +1,7 @@
 package commands.level.normal;
 
+import java.util.Arrays;
+
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
@@ -7,7 +9,7 @@ import json.ThesaurusResult;
 import json.ThesaurusResult.Response;
 import lib.StringLib;
 import lib.encode.Encoder;
-import net.dv8tion.jda.api.EmbedBuilder;
+import lib.messages.PagedEmbedHandler;
 import net.dv8tion.jda.api.entities.Message;
 
 public class Synonyms extends DiscordCommand {
@@ -43,20 +45,17 @@ public class Synonyms extends DiscordCommand {
 			println("Please give me a word");
 			return;
 		}
-		ThesaurusResult response = restRequest(
+		final ThesaurusResult response = restRequest(
 				ThesaurusResult.class, 
 				API_FORMAT, 
 				System.getenv("THESAURUS_API"),
 				Encoder.encodeURL(input),
 				lang);
-		EmbedBuilder builder;
-		for (Response r : response.response) {
-			builder = new EmbedBuilder();
-			builder.setTitle("Synonyms for "+input);
-			builder.addField("Category", r.list.category, true);
-			builder.addField("Synonyms", r.list.synonyms, true);
-			getChannel().sendMessageEmbeds(builder.build()).queue();
-		}
+		getChannel().sendMessage("Loading...")
+			.queue(new PagedEmbedHandler<Response>(getBot(), () -> Arrays.asList(response.response))
+				.setItemHandler((index, total, r, builder) -> 
+					builder.setTitle(String.format("Synonyms for %s - Page %d/%d", getInput(), index+1, total))
+						.addField("Category", r.list.category, true)
+						.addField("Synonyms", r.list.synonyms, true)));
 	}
-
 }

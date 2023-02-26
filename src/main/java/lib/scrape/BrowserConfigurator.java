@@ -25,8 +25,13 @@ public class BrowserConfigurator<K> {
 	 * downloaded, otherwise downloads correct version.
 	 */
 	public RemoteWebDriver createDriver() {
-		WebDriverManager manager = WebDriverManager.getInstance(type);
-		manager = Constants.is64Bit ? manager.arch64() : manager.arch32();
+		WebDriverManager manager = WebDriverManager.getInstance(type)
+				.avoidBrowserDetection()
+				.disableCsp();
+		if (Constants.isArm)
+			manager = manager.linux().arm64();
+		else
+			manager = Constants.is64Bit ? manager.arch64() : manager.arch32();
 		manager.setup();
 		return creator.apply(options.get());
 	}

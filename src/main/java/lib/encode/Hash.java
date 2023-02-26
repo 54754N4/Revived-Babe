@@ -7,35 +7,23 @@ import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
+import java.util.Set;
 import java.util.function.Consumer;
 
 // Convenience wrapper over native java message digests
-public abstract class Hash {
-	private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
-	private static final int BUFFER_SIZE = 8192, EOF = -1;
-	// Singletons pattern
-	public static final MD5 MD5 = new MD5();
-	public static final SHA256 SHA256 = new SHA256();
-	public static final SHA356 SHA356 = new SHA356();
+public interface Hash {
+	public static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
+	public static final int BUFFER_SIZE = 8192, EOF = -1;
 	
-	private String algorithm;
-	
-	protected Hash(String algorithm) {
-		this.algorithm = algorithm;
-	}
-	
-	public MessageDigest getMessageDigest() throws NoSuchAlgorithmException {
-		return MessageDigest.getInstance(algorithm);
-	}
-	
-	public byte[] hash(byte[] bytes) throws NoSuchAlgorithmException {
-		MessageDigest md = getMessageDigest();
+	static byte[] hash(String algorithm, byte[] bytes) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance(algorithm);
 		md.update(bytes);
 		return md.digest();
 	}
 	
-	public byte[] hash(File file, Consumer<byte[]> consumer) throws NoSuchAlgorithmException, IOException {
-		MessageDigest md = getMessageDigest();
+	static byte[] hash(String algorithm, File file, Consumer<byte[]> consumer) throws NoSuchAlgorithmException, IOException {
+		MessageDigest md = MessageDigest.getInstance(algorithm);
 		try (DigestInputStream dis = new DigestInputStream(new FileInputStream(file), md)) {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			while (dis.read(buffer) != EOF)
@@ -44,23 +32,23 @@ public abstract class Hash {
 		}
 	}
 	
-	public byte[] hash(File file) throws NoSuchAlgorithmException, IOException {
-		return hash(file, buffer -> {});
+	static byte[] hash(String algorithm, File file) throws NoSuchAlgorithmException, IOException {
+		return hash(algorithm, file, buffer -> {});
 	}
 	
-	public String hashString(String input) throws NoSuchAlgorithmException {
-		return bytesToHex(hash(input.getBytes(StandardCharsets.UTF_8)));
+	static String hashString(String algorithm, String input) throws NoSuchAlgorithmException {
+		return bytesToHex(hash(algorithm, input.getBytes(StandardCharsets.UTF_8)));
 	}
 	
-	public String hashString(File file, Consumer<byte[]> consumer) throws IOException, NoSuchAlgorithmException {
-		return bytesToHex(hash(file, consumer));
+	static String hashString(String algorithm, File file, Consumer<byte[]> consumer) throws IOException, NoSuchAlgorithmException {
+		return bytesToHex(hash(algorithm, file, consumer));
 	}
 	
-	public String hashString(File file) throws IOException, NoSuchAlgorithmException {
-		return hashString(file, buffer -> {});	// no consumer given => do nothing
+	static String hashString(String algorithm, File file) throws IOException, NoSuchAlgorithmException {
+		return hashString(algorithm, file, buffer -> {});	// no consumer given => do nothing
 	}
 	
-	public static String bytesToHex(byte[] bytes) {
+	static String bytesToHex(byte[] bytes) {
 	    byte[] hexChars = new byte[bytes.length * 2];
 	    for (int j = 0; j < bytes.length; j++) {
 	        int v = bytes[j] & 0xFF;
@@ -70,25 +58,7 @@ public abstract class Hash {
 	    return new String(hexChars, StandardCharsets.UTF_8);
 	}
 	
-	private static class MD5 extends Hash {
-		private MD5() {
-			super("MD5");
-		}
-	}
-
-	public static class SHA256 extends Hash {
-		private SHA256() {
-			super("SHA-256");
-		}
-	}
-	
-	public static class SHA356 extends Hash {
-		private SHA356() {
-			super("SHA3-256");
-		}
-	}
-	
-	public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-		System.out.println(SHA256.hashString(new File("out.java")));
+	static Set<String> algorithms() {
+		return Security.getAlgorithms("MessageDigest");
 	}
 }

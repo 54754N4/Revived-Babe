@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import lib.Pair;
+import lib.StringPair;
 import lib.StringLib;
 import lib.messages.ValidatingEmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -154,10 +154,10 @@ public class ServerManager extends ServerRestAction {
 		
 		public <I, F> F forEachData(
 				Supplier<? extends I> initialiser, 
-				BiFunction<Pair, I, ? extends I> accumulator,
+				BiFunction<StringPair, I, ? extends I> accumulator,
 				Function<I, ? extends F> finaliser) {
 			I builder = initialiser.get();
-			Pair entry = new Pair();		// reuse same instance
+			StringPair entry = new StringPair();		// reuse same instance
 			for (int i=0; i<fields.length; i++) {
 				entry.key = FIELD_NAMES[i];
 				entry.value = fields[i];

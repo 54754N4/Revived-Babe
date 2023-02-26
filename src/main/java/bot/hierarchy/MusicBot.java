@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
@@ -124,6 +125,34 @@ public abstract class MusicBot extends UserBot {
 				.getQueue();
 	}
 	
+	public Map<String, CircularDeque> getPlaylists(Guild guild) {
+		return setupAudio(guild)
+				.controller(guild)
+				.getScheduler()
+				.getPlaylists();
+	}
+	
+	public String getCurrentPlaylist(Guild guild) {
+		return setupAudio(guild)
+				.controller(guild)
+				.getScheduler()
+				.getCurrentPlaylist();
+	}
+	
+	public int getCurrentPlaylistIndex(Guild guild) {
+		return setupAudio(guild)
+				.controller(guild)
+				.getScheduler()
+				.getCurrentPlaylistIndex();
+	}
+	
+	public Set<String> getPlaylistNames(Guild guild) {
+		return setupAudio(guild)
+				.controller(guild)
+				.getScheduler()
+				.getPlaylistNames();
+	}
+	
 	public AudioPlayer getPlayer(Guild guild) {
 		return setupAudio(guild)
 				.controller(guild)
@@ -189,6 +218,34 @@ public abstract class MusicBot extends UserBot {
 				.controller(guildID)
 				.getScheduler()
 				.getQueue();
+	}
+	
+	public Map<String, CircularDeque> getPlaylists(long guildID) {
+		return setupAudio(guildID)
+				.controller(guildID)
+				.getScheduler()
+				.getPlaylists();
+	}
+	
+	public String getCurrentPlaylist(long guildID) {
+		return setupAudio(guildID)
+				.controller(guildID)
+				.getScheduler()
+				.getCurrentPlaylist();
+	}
+	
+	public int getCurrentPlaylistIndex(long guildID) {
+		return setupAudio(guildID)
+				.controller(guildID)
+				.getScheduler()
+				.getCurrentPlaylistIndex();
+	}
+	
+	public Set<String> getPlaylistNames(long guildID) {
+		return setupAudio(guildID)
+				.controller(guildID)
+				.getScheduler()
+				.getPlaylistNames();
 	}
 	
 	/* Music methods */

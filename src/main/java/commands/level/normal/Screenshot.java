@@ -31,11 +31,15 @@ public class Screenshot extends DiscordCommand {
 			File screenshot = hasArgs("--select") ? 
 					browser.screenshotFileOf(By.cssSelector(getParams().getNamed().get("--select"))):
 					browser.screenshotFullAsFile();
-			getChannel().sendFiles(FileUpload.fromData(screenshot)).queue();
+			getLogger().info(">>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<");
+			getLogger().info(screenshot.getAbsolutePath());
+			getChannel().sendFiles(FileUpload.fromData(screenshot)).complete();
 			if (!screenshot.delete())
 				println("Could not delete temporary screenshot file.");
 		} catch (Exception e) {
 			println("Could not access url.");
+			getLogger().info(">>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<");
+			getLogger().error("Coulnd't access url", e);
 		}
 	}
 }

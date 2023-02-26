@@ -29,7 +29,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
-import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.print.PrintOptions;
 import org.openqa.selenium.remote.AbstractDriverOptions;
@@ -65,11 +65,11 @@ public class Browser implements Closeable, Cloneable {
     
     public static synchronized Browser getInstance() {
     	if (INSTANCE == null) {
-//    		Builder<FirefoxOptions> builder = Configurators.firefox()
-//    				.config(Options.FIREFOX::defaultSettings);
+    		Builder<FirefoxOptions> builder = Configurators.firefox()
+    				.config(Options.FIREFOX::defaultSettings);
 //    				.config(Options.FIREFOX::debugging);
-    		Builder<ChromeOptions> builder = Configurators.chrome()
-    				.config(Options.CHROME::defaultSettings);
+//    		Builder<ChromeOptions> builder = Configurators.chrome()
+//    				.config(Options.CHROME::defaultSettings);
 //    				.config(Options.CHROME::debugging);
     		INSTANCE = new Browser(builder.build());
     	}

@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -40,30 +41,41 @@ public class ListTracks extends DiscordCommand {
 		return helpBuilder("", 
 				"# Args",
 				"-c or --current\tmakes me show currently playing song",
-				"-p or --paged\tmakes me list tracks as paged results",
+				"-p or --player\tmakes me create a player with buttons",
 				"-l or --local\tmakes me list tracks from local directory",
+				"--playlist=P\twhere P is the playlist to list",
 				"List tracks in current queue.");
 	}
 
 	@Override
 	protected void execute(String input) throws Exception {
+		Guild guild = getGuild();
+		MusicBot bot = getMusicBot();
+		String playlist = bot.getCurrentPlaylist(guild);
+		if (hasArgs("--playlist"))
+			playlist = getParams().getNamed().get("--playlist");
 		int pos = 0;
-		CircularDeque queue = getMusicBot().getPlaylist(getGuild());
-		if (hasArgs("-l", "--local"))
+		Map<String, CircularDeque> queues = getMusicBot().getPlaylists(guild);
+		CircularDeque queue = queues.get(playlist);
+		if (queue == null)
+			println("Playlist does not exist `%s`", playlist);
+		else if (hasArgs("-l", "--local"))
 			listLocal(input);
 		else if (queue.size() == 0)
 			println("No songs queued.");
-		else if (hasArgs("-p", "--paged"))
+		else if (hasArgs("-p", "--player"))
 			createPlayer();
 		else if (hasArgs("-c", "--current"))
 			createCurrent();
-		else
+		else {
+			println("Listing playlist: `%s`", playlist);
 			for (AudioTrack track : queue)
 				println(String.format(
 					(pos == queue.getCurrent()) ? "%d. `%s` (%s)" : "%d. %s (%s)",
 					pos++,
 					track.getInfo().title,
 					StringLib.millisToTime(track.getInfo().length)));
+		}
 	}
 	
 	private void createPlayer() {

@@ -63,7 +63,8 @@ public enum Command {
 	SYNONYMS("synonyms", "syn"), 
 	QR_CODE("qr"), 
 	PLAYLIST("playlist", "pl"),
-	EVAL("eval", "ev");
+	EVAL("eval", "ev"), 
+	HASH("hash", "ha");
 	
 	public static final Logger logger = LoggerFactory.getLogger(Command.class);
 	public final String[] names;

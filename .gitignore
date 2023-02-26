@@ -26,6 +26,10 @@ bin/*
 bat
 *.bat
 
+# Ignore shell files
+sh
+*.sh
+
 # Ignore TTS files
 speak/*
 speak
