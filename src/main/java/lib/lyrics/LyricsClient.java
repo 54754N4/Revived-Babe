@@ -104,6 +104,7 @@ public class LyricsClient {
                         return lyrics;
                     }
                     catch (IOException | NullPointerException | JSONException ex) {
+                    	ex.printStackTrace();
                         return null;
                     }
                 }, executor);
@@ -113,6 +114,7 @@ public class LyricsClient {
             throw new IllegalArgumentException(String.format("Source '%s' does not exist or is not configured correctly", source));
         }
         catch (Exception ignored) {
+        	ignored.printStackTrace();
             return null;
         }
     }
@@ -159,6 +161,7 @@ public class LyricsClient {
         } catch (ConfigException ex) {
             throw new IllegalArgumentException(String.format("Source '%s' does not exist or is not configured correctly", source));
         } catch (Exception ignored) {
+        	ignored.printStackTrace();
             return null;
         }
     }

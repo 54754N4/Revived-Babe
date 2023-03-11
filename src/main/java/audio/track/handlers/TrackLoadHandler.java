@@ -14,29 +14,27 @@ import lib.ListUtil;
 import lib.StringLib;
 
 public class TrackLoadHandler implements AudioLoadResultHandler {
+	private final TrackScheduler scheduler;
 	private final int count, size;
 	private final boolean next, top, playlist;
-	private final TrackScheduler scheduler;
 	private boolean notify;
 	private int toggleNotify, toggleCount;
-	
 	private StatusUpdater callback;
 	
-	public TrackLoadHandler(TrackScheduler scheduler) {
-		this(false, false, 1, false, scheduler, null);
-	}
-	
-	public TrackLoadHandler(boolean top, boolean next, int count, boolean playlist, TrackScheduler scheduler, StatusUpdater callback) {
+	private TrackLoadHandler(
+			TrackScheduler scheduler, boolean top, boolean next, int count, 
+			boolean playlist, StatusUpdater callback, boolean notify, 
+			int toggleNotify, int toggleCount, int size) {
+		this.scheduler = scheduler;
 		this.top = top;
 		this.next = next;
 		this.count = count;
 		this.playlist = playlist;
-		this.scheduler = scheduler;
 		this.callback = callback;
-		notify = true;
-		toggleNotify = -1;
-		toggleCount = 0;
-		size = scheduler.getQueue().size();
+		this.notify = notify;
+		this.toggleNotify = toggleNotify;
+		this.toggleCount = toggleCount;
+		this.size = size;
 	}
 
 	@Override
@@ -104,7 +102,7 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 		}
 	}
 	
-	public TrackLoadHandler setNotify(boolean notify) {
+	private TrackLoadHandler setNotify(boolean notify) {
 		this.notify = notify;
 		return this;
 	}
@@ -118,5 +116,96 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 	private void incrementToggle() {
 		if (++toggleCount == toggleNotify)
 			setNotify(true);
+	}
+	
+	public static class Builder {
+		private int count, size;
+		private boolean next, top, playlist;
+		private TrackScheduler scheduler;
+		private boolean notify;
+		private int toggleNotify, toggleCount;
+		private StatusUpdater callback;
+		
+		public Builder(TrackScheduler scheduler) {
+			this.scheduler = scheduler;
+			top = false;
+			next = false;
+			count = 1;
+			playlist = false;
+			notify = true;
+			toggleNotify = -1;
+			toggleCount = 0;
+			size = scheduler.getQueue().size();
+		}
+		
+		public Builder setSize(int size) {
+			this.size = size;
+			return this;
+		}
+		
+		public Builder setCount(int count) {
+			this.count = count;
+			return this;
+		}
+		
+		public Builder setPlaylist(boolean playlist) {
+			this.playlist = playlist;
+			return this;
+		}
+		
+		public Builder playlist() {
+			return setPlaylist(true);
+		}
+		
+		public Builder setTop(boolean top) {
+			this.top = top;
+			return this;
+		}
+		
+		public Builder top() {
+			return setTop(true);
+		}
+		
+		public Builder setNext(boolean next) {
+			this.next = next;
+			return this;
+		}
+		
+		public Builder next() {
+			return setNext(true);
+		}
+		
+		public Builder setScheduler(TrackScheduler scheduler) {
+			this.scheduler = scheduler;
+			return this;
+		}
+		
+		public Builder setNotify(boolean notify) {
+			this.notify = notify;
+			return this;
+		}
+		
+		public Builder setToggleCount(int toggleCount) {
+			this.toggleCount = toggleCount;
+			return this;
+		}
+		
+		public Builder setToggleNotify(int toggleNotify) {
+			this.toggleNotify = toggleNotify;
+			setNotify(false);
+			return this;
+		}
+		
+		public Builder setStatusUpdater(StatusUpdater callback) {
+			this.callback = callback;
+			return this;
+		}
+		
+		public TrackLoadHandler build() {
+			return new TrackLoadHandler(
+					scheduler, top, next, count, 
+					playlist, callback, notify, 
+					toggleNotify, toggleCount, size);
+		}
 	}
 }

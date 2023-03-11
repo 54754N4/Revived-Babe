@@ -54,7 +54,7 @@ public class Hash extends DiscordCommand {
 		}
 		if (hasAttachment())
 			convertAttachments(algorithm, getMessage().getAttachments())
-				.forEach(pair -> println("%s: %s", pair.getFirst(), markdown(pair.getSecond())));
+				.forEach(pair -> println("`%s`: ```%s```", pair.getFirst(), pair.getSecond()));
 		else {
 			try {
 				println(markdown(lib.encode.Hash.hashString(algorithm, input)));

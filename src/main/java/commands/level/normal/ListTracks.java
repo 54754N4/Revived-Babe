@@ -82,7 +82,8 @@ public class ListTracks extends DiscordCommand {
 		final MusicBot bot = getMusicBot();	// give lambdas already casted
 		final Guild guild = getGuild();
 		final TrackScheduler scheduler = bot.getScheduler(guild);
-		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler)
+		ReactionsHandler handler = new PagedTracksHandler(bot, scheduler, null)
+				.isPlayer()
 				.setTitleSuffix(this::getCurrentStats)
 				.handle(0x23EF, event -> scheduler.togglePause())
 				.handle(0x23EE, event -> scheduler.previousTrack())

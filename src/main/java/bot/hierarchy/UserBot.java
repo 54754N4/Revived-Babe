@@ -119,8 +119,8 @@ public abstract class UserBot extends ListenerAdapter implements User, Runnable 
 	}
 	
 	protected @Nullable IAudioSendFactory getAudioSendFactory() {
-		//return new NativeAudioSendFactory();
-		return null;
+		return new NativeAudioSendFactory();
+//		return null;
 	}
 	
 	protected Compression getCompression() {	// to disable, children override+return Compression.None

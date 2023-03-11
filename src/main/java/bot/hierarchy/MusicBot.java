@@ -584,7 +584,13 @@ public abstract class MusicBot extends UserBot {
 		return manager.loadItemOrdered(
 					manager, 
 					identifier, 
-					new TrackLoadHandler(top, next, count, playlist, getScheduler(guild), callback));
+					new TrackLoadHandler.Builder(getScheduler(guild))
+						.setTop(top)
+						.setNext(next)
+						.setCount(count)
+						.setPlaylist(playlist)
+						.setStatusUpdater(callback)
+						.build());
 	}
 	
 	public Future<Void> playPlaylist(Guild guild, String identifier, StatusUpdater callback) {

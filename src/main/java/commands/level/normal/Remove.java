@@ -22,8 +22,6 @@ public class Remove extends DiscordCommand {
 	public String helpMessage() {
 		return helpBuilder("<indices>",
 			"Deletes the songs specified as parameter, each index separated by spaces.");
-//			"[-t|--tag] <pattern>",
-//			"Deletes the tags that matched the given pattern.");
 	}
 
 	@Override
@@ -50,6 +48,6 @@ public class Remove extends DiscordCommand {
 	}
 	
 	private static String prettyPrintTrack(AudioTrack track) {
-		return String.format("\t%s -> %s", track.getInfo().title, track.getInfo().uri);
+		return String.format("\t%s -> `%s`", track.getInfo().title, track.getInfo().uri);
 	}
 }

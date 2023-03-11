@@ -1,7 +1,11 @@
 package lib.scrape;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class Constants {
-	public static final boolean is64Bit, is32Bit, isIntel, isArm;
+	public static final Logger logger = LoggerFactory.getLogger(Constants.class);
+	public static final boolean is64Bit, is32Bit, isIntel, isArm, isWindows, isLinux;
 	
 	/* Check host OS bit-ness on initial reference to class
 	 * Reference: https://stackoverflow.com/a/5940770/3225638
@@ -16,6 +20,15 @@ public abstract class Constants {
 		is32Bit = !is64Bit;
 		isIntel = arch != null || wow64Arch != null;
 		isArm = prop != null && prop.startsWith("aarch");
+		logger.info("32bit: {} | 64bit: {}", is32Bit, is64Bit);
+		logger.info("intel: {} | arm: {}", isIntel, isArm);
+		logger.info("PROCESSOR_ARCHITECTURE: {}", arch);
+		logger.info("PROCESSOR_ARCHITEW6432: {}", wow64Arch);
+		logger.info("os.arch: {}", prop);
+		String os = System.getProperty("os.name");
+		isWindows = os.startsWith("Win");
+		isLinux = !isWindows;
+		logger.info("OS: {} | Win: {} | Linux: {}", os, isWindows, isLinux);
 	}
 	
 	public static final boolean VERBOSE = true;	// for debugging

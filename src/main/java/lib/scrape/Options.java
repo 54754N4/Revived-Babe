@@ -19,9 +19,10 @@ public interface Options {
 	/* Driver arguments */
 	
 	static final String
+		ARG_HEADLESS = "--headless",
 		ARG_DISABLE_GPU = "--disable-gpu",
 		ARG_DISABLE_EXTENSIONS = "--disable-extensions",
-		ARG_WINDOW_SIZE = String.format("--window-size=%s,%s", SCREEN.width, SCREEN.height);
+		ARG_WINDOW_SIZE = String.format("--window-size=%s,%s", SCREEN.width, SCREEN.height)	;
 	
 	/* Specific browser configs */
 	
@@ -29,7 +30,6 @@ public interface Options {
 	static final Chrome CHROME = new Chrome();
 	static final Edge EDGE = new Edge();
 	static final Safari SAFARI = new Safari();
-//	static final Opera OPERA = new Opera();
 	static final InternetExplorer INTERNET_EXPLORER = new InternetExplorer();
 	
 	static Firefox firefox() {
@@ -48,10 +48,6 @@ public interface Options {
 		return SAFARI;
 	}
 	
-//	static Opera opera() {
-//		return OPERA;
-//	}
-	
 	static InternetExplorer internetExplorer() {
 		return INTERNET_EXPLORER;
 	}
@@ -69,14 +65,16 @@ public interface Options {
 		@Override
 		public FirefoxOptions defaultSettings() {
 			return new FirefoxOptions()
-					.setHeadless(true)
-					.setAcceptInsecureCerts(true)
-                    .addArguments(ARG_DISABLE_GPU, ARG_WINDOW_SIZE);
+                    .addArguments(
+                    		ARG_HEADLESS,
+                    		ARG_DISABLE_GPU,
+                    		ARG_WINDOW_SIZE
+                    );
 		}
 
 		@Override
 		public FirefoxOptions debugging(FirefoxOptions options) {
-			return options.setHeadless(false);
+			return options;
 		}
 	}
 
@@ -84,14 +82,13 @@ public interface Options {
 		@Override
 		public ChromeOptions defaultSettings() {
 			return (ChromeOptions) new ChromeOptions()
-					.setHeadless(true)
 					.setAcceptInsecureCerts(true)
-	                .addArguments(ARG_DISABLE_GPU, ARG_WINDOW_SIZE);
+	                .addArguments(ARG_HEADLESS, ARG_DISABLE_GPU, ARG_WINDOW_SIZE);
 		}
 	
 		@Override
 		public ChromeOptions debugging(ChromeOptions options) {
-			return options.setHeadless(false);
+			return options;
 		}
 	}
 	
@@ -99,14 +96,13 @@ public interface Options {
 		@Override
 		public EdgeOptions defaultSettings() {
 			return (EdgeOptions) new EdgeOptions()
-					.setHeadless(true)
 					.setAcceptInsecureCerts(true)
-	                .addArguments(ARG_DISABLE_GPU, ARG_WINDOW_SIZE);
+	                .addArguments(ARG_HEADLESS, ARG_DISABLE_GPU, ARG_WINDOW_SIZE);
 		}
 	
 		@Override
 		public EdgeOptions debugging(EdgeOptions options) {
-			return options.setHeadless(false);
+			return options;
 		}
 	}
 	
@@ -117,15 +113,6 @@ public interface Options {
 					.setAcceptInsecureCerts(true);
 		}
 	}
-	
-//	public static class Opera implements ConfigurationMethods<OperaOptions> {
-//		@Override
-//		public OperaOptions defaultSettings() {
-//			return (OperaOptions) new OperaOptions()
-//					.setAcceptInsecureCerts(true)
-//	                .addArguments(ARG_DISABLE_GPU, ARG_WINDOW_SIZE);
-//		}
-//	}
 	
 	public static class InternetExplorer implements ConfigurationMethods<InternetExplorerOptions> {
 		@Override

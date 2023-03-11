@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import audio.TrackScheduler;
+import audio.track.handlers.TrackLoadHandler;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
@@ -48,6 +50,7 @@ public class Play extends DiscordCommand {
 	private void play(String input) throws NumberFormatException, InterruptedException, ExecutionException {
 		Guild guild = getGuild();
 		MusicBot bot = getMusicBot();
+		TrackScheduler scheduler = bot.getScheduler(guild);
 		if (input.equals("")) {
 			println(helpMessage());
 			return;
@@ -56,7 +59,7 @@ public class Play extends DiscordCommand {
 			bot.connect(getMessage().getMember().getVoiceState().getChannel());
 		if (StringLib.isInteger(input)) {
 			int index = Integer.parseInt(input),
-				max = bot.getScheduler(guild).getQueue().size();
+				max = scheduler.getQueue().size();
 			if (max == 0) 
 				println("Queue is currently empty..");
 			else if (index >= max || index < 0) 
@@ -74,16 +77,16 @@ public class Play extends DiscordCommand {
 				input = SearchPrefix.YOUTUBE.prefix(input);
 		}
 		getLogger().info("Loading track(s) from: {}", input);
+		TrackLoadHandler trackHandler = createTrackLoadHandler(scheduler);
 		if (hasArgs("-p", "--paged")) {
 			if (StringLib.isURL(input)) {
 				println("`-p` and `--paged` is only listing search results. You can't use urls with this.");
 				return;
 			}
-			PagedTracksHandler handler = new PagedTracksHandler(bot, getMusicBot().getScheduler(guild), new ArrayList<>())
+			PagedTracksHandler handler = new PagedTracksHandler(bot, scheduler, trackHandler, new ArrayList<>())
 					.loopbackIndices();		// indices always between [0,9]
 			bot.play(guild, input, handler).get();
-			getChannel().sendMessage("Loading...")
-				.queue(handler.enableHandlerButtons());
+			getChannel().sendMessage("Loading...").queue(handler.enableHandlerButtons());
 		} else if (input.contains("open.spotify.com")) {
 			List<String> songs = SpotifyLinkConverter.getInstance().convertPlaylist(input);
 			if (songs.size() == 0) {
@@ -93,14 +96,17 @@ public class Play extends DiscordCommand {
 			for (String song : songs)
 				play(song);
 		} else
-			bot.play(guild,
-				input,
-				hasArgs("--top", "-t"),
-				hasArgs("--next", "-n"),
-				hasArgs("--count") ? Integer.parseInt(getParams().getNamed().get("--count")) : 1,
-				hasArgs("-a", "--all"),
-				hasArgs("-v", "--verbose") ? getPrinter() : getLogger()::info)
-			.get();
+			bot.play(guild, input, trackHandler).get();
+	}
+	
+	private TrackLoadHandler createTrackLoadHandler(TrackScheduler scheduler) {
+		return new TrackLoadHandler.Builder(scheduler)
+			.setTop(hasArgs("--top", "-t"))
+			.setNext(hasArgs("--next", "-n"))
+			.setCount(hasArgs("--count") ? Integer.parseInt(getParams().getNamed().get("--count")) : 1)
+			.setPlaylist(hasArgs("-a", "--all"))
+			.setStatusUpdater(hasArgs("-v", "--verbose") ? getPrinter() : getLogger()::info)
+			.build();
 	}
 	
 	public static enum SearchPrefix {

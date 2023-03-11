@@ -5,16 +5,19 @@ import java.util.concurrent.TimeUnit;
 
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
+import commands.model.ThreadsManager;
 import commands.name.Command;
 import lib.PrintBooster;
+import lib.StringLib;
 import lib.lyrics.Lyrics;
 import lib.lyrics.LyricsClient;
 import lib.messages.PagedEmbedHandler;
 import net.dv8tion.jda.api.entities.Message;
 
 public class GetLyrics extends DiscordCommand {
-	public static final LyricsClient CLIENT = new LyricsClient();
-	public static final long TIMEOUT = 5000;
+	public static final String[] SOURCES = {"A-Z Lyrics", "Genius", "MusixMatch", "LyricsFreak"};
+	public static final String DEFAULT_SOURCE = SOURCES[0];
+	public static final long TIMEOUT = 5;
 
 	public GetLyrics(UserBot bot, Message message) {
 		super(bot, message, Command.LYRICS.names);
@@ -33,11 +36,19 @@ public class GetLyrics extends DiscordCommand {
 			println("Tell me what you want me to get lyrics for.");
 			return;
 		}
-		final Lyrics lyrics;
-		try {
-			lyrics = CLIENT.getLyrics(input).get(TIMEOUT, TimeUnit.SECONDS);
-		} catch (Exception e) {
-			println("Failed to retrieve lyrics with error: %s", e.getMessage());
+		long timeout = TIMEOUT;
+		if (hasArgs("--timeout")) {
+			String given = getParams().getNamed().get("--timeout");
+			if (StringLib.isInteger(given))
+				timeout = Long.parseLong(given);
+			else {
+				println("Timeout has to be a number");
+				return;
+			}
+		}
+		final Lyrics lyrics = tryAllSources(input, timeout);
+		if (lyrics == null) {
+			println("Failed to retrieve lyrics: scraping returned `null`.");
 			return;
 		}
 		List<String> results = PrintBooster.splitEmbed(lyrics.getContent());
@@ -48,5 +59,22 @@ public class GetLyrics extends DiscordCommand {
 							.setDescription(part)
 							.setAuthor(lyrics.getAuthor())
 							.setFooter(lyrics.getSource())));
+	}
+	
+	public static Lyrics tryAllSources(String input, long timeout) {
+		LyricsClient client;
+		Lyrics lyrics = null;
+		for (String source : SOURCES) {
+			client = new LyricsClient(source, ThreadsManager.POOL);
+			try {
+				lyrics = client.getLyrics(input).get(timeout, TimeUnit.SECONDS);
+			} catch (Exception e) {
+				continue;
+			}
+			if (lyrics == null || lyrics.getContent() == null)
+				continue;
+			break;
+		}
+		return lyrics;
 	}
 }

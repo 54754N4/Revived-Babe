@@ -6,11 +6,14 @@ import java.util.function.Supplier;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.remote.AbstractDriverOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.github.bonigarcia.wdm.config.DriverManagerType;
 
 public class BrowserConfigurator<K> {
+	private static final Logger logger = LoggerFactory.getLogger(BrowserConfigurator.class);
 	private final Supplier<K> options;
 	private final Function<K, RemoteWebDriver> creator;
 	private final DriverManagerType type;
@@ -25,14 +28,18 @@ public class BrowserConfigurator<K> {
 	 * downloaded, otherwise downloads correct version.
 	 */
 	public RemoteWebDriver createDriver() {
+		logger.info("Setting up webdriver type: {}", type);
 		WebDriverManager manager = WebDriverManager.getInstance(type)
-				.avoidBrowserDetection()
 				.disableCsp();
+		logger.info("Setting targeted for windows: {}", Constants.isWindows);
+		manager = Constants.isWindows ? manager.win() : manager.linux();
+		logger.info("CPU is ARM: {}", Constants.isArm);
 		if (Constants.isArm)
-			manager = manager.linux().arm64();
+			manager = manager.arm64();
 		else
 			manager = Constants.is64Bit ? manager.arch64() : manager.arch32();
 		manager.setup();
+		logger.info("Finished setting up.");
 		return creator.apply(options.get());
 	}
 	
@@ -53,19 +60,17 @@ public class BrowserConfigurator<K> {
 			this.options = options;
 			this.creator = creator;
 			this.type = type;
-		}
-		
-		public Builder<K> config(K options) {
-			this.options = () -> options;
-			return this;
+			logger.info("Created BrowserConfigurator.Builder: {}", getClass());
 		}
 		
 		public Builder<K> config(Supplier<K> options) {
+			logger.info("Configuring option 1: {}", options);
 			this.options = options;
 			return this;
 		}
 
 		public <V> Builder<K> config(Function<K, V> configurator) {
+			logger.info("Configuring option 2: {}", options);
 			final K ops = options.get();
 			configurator.apply(ops);
 			this.options = () -> ops;
@@ -83,6 +88,7 @@ public class BrowserConfigurator<K> {
 		}
 		
 		public BrowserConfigurator<K> build() {
+			logger.info("Building configurator: {}", getClass());
 			return new BrowserConfigurator<>(options, creator, type);
 		}
 	}

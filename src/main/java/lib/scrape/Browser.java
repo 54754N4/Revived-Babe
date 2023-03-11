@@ -19,8 +19,10 @@ import javax.annotation.Nullable;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.ImmutableCapabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Pdf;
@@ -29,6 +31,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.print.PrintOptions;
@@ -40,14 +43,21 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import lib.scrape.BrowserConfigurator.Builder;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import io.github.bonigarcia.wdm.config.Architecture;
+import io.github.bonigarcia.wdm.config.DriverManagerType;
+import io.github.bonigarcia.wdm.config.OperatingSystem;
 
 /* Creates a browser using Selenium that follows the builder pattern
  * to ease with chained calls/actions.
  * Docs: https://www.selenium.dev/documentation/en/webdriver/
  */
 public class Browser implements Closeable, Cloneable {
+	public static final Logger logger = LoggerFactory.getLogger(Browser.class);
+	
     public static final long DEFAULT_TIMEOUT = 15, DEFAULT_POLLING = 5;		// in seconds
     private RemoteWebDriver driver;
     private BrowserConfigurator<? extends AbstractDriverOptions<?>> configurator;
@@ -65,13 +75,22 @@ public class Browser implements Closeable, Cloneable {
     
     public static synchronized Browser getInstance() {
     	if (INSTANCE == null) {
-    		Builder<FirefoxOptions> builder = Configurators.firefox()
-    				.config(Options.FIREFOX::defaultSettings);
-//    				.config(Options.FIREFOX::debugging);
-//    		Builder<ChromeOptions> builder = Configurators.chrome()
-//    				.config(Options.CHROME::defaultSettings);
-//    				.config(Options.CHROME::debugging);
-    		INSTANCE = new Browser(builder.build());
+    		logger.info("Starting WebDriver setup..");
+//    		INSTANCE = new Browser(Configurators.chrome()
+//    				.config(Options.CHROME::defaultSettings)
+////    				.config(Options.CHROME::debugging)
+//    				.build());
+    		INSTANCE = new Browser(Configurators.firefox()
+    				.config(Options.FIREFOX::defaultSettings)
+//    				.config(Options.FIREFOX::debugging)
+    				.build());
+//    		WebDriverManager.getInstance(DriverManagerType.FIREFOX)
+//    			.architecture(Architecture.ARM64)
+//    			.operatingSystem(OperatingSystem.LINUX)
+//    			.setup();
+//    		FirefoxOptions options = new FirefoxOptions()
+//    				.addArguments("--headless", "-headless");
+//    		INSTANCE = new Browser(new FirefoxDriver(options));
     	}
     	return INSTANCE;
     }
@@ -100,7 +119,7 @@ public class Browser implements Closeable, Cloneable {
     
     /* Accessors and setters */
     
-    public RemoteWebDriver getDriver() {
+    public WebDriver getDriver() {
     	return driver;
     }
 
@@ -167,10 +186,6 @@ public class Browser implements Closeable, Cloneable {
     
     public WebElement findElement(By by) {
         return driver.findElement(by);
-    }
-
-    public WebElement findElement(RelativeBy by) {
-    	return driver.findElement(by);
     }
     
     public WebElement findElement(By by, Function<RelativeBy, RelativeBy> relation) {
