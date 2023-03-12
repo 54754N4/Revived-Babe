@@ -18,7 +18,7 @@ public class Disconnect extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (!fromGuild()) 
 			println("Cannot retrieve user voice state outside of the server `#DiscordLimitation`");
 		else if (getMentions().getMembers().size() == 0)

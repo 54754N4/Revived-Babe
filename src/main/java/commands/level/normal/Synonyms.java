@@ -31,7 +31,7 @@ public class Synonyms extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		String lang = DEFAULT_LANG;
 		if (hasArgs("-l")) {
 			printItemsIndexed(languages);

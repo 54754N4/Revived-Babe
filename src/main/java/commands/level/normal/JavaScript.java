@@ -30,7 +30,7 @@ public class JavaScript extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		StringWriter output = new StringWriter();
 		println("Return: %s", eval(input, getBindings(), output));
 		println("%s", output.toString());

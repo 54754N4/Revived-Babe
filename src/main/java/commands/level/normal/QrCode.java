@@ -4,6 +4,7 @@ import java.io.File;
 
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
+import commands.hierarchy.RestCommand;
 import commands.name.Command;
 import json.QrCodeResult;
 import json.QrCodeResult.Symbol;
@@ -38,7 +39,7 @@ public class QrCode extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasAttachment()) {
 			File attached = getMessage().getAttachments()
 					.get(0)
@@ -69,7 +70,7 @@ public class QrCode extends DiscordCommand {
 		if (hasArgs("--bgcolor"))
 			bgcolor = getParams().getNamed().get("--bgcolor");
 		Response response = restRequest(API_ENCODE, data, color, bgcolor);
-		File file = writeFile(response, "download/qr.png");
+		File file = RestCommand.writeFile(response, "download/qr.png");
 		getChannel().sendFiles(FileUpload.fromData(file))
 			.queue(e -> file.delete(), t -> file.delete());
 	}

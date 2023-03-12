@@ -18,7 +18,7 @@ public class Exit extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		printlnIndependently("Exiting");
 		Thread.sleep(2000);
 		getBot().kill(hasArgs("-n", "--now"));

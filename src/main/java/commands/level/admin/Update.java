@@ -36,7 +36,7 @@ public class Update extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasArgs("-cmds", "--commands")) {
 			Invoker.Reflector.update();
 			println("Successfully updated commands list.");

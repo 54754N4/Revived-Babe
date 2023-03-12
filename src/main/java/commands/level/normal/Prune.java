@@ -24,7 +24,7 @@ public class Prune extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		boolean bypass = hasArgs("-a", "--all");
 		if (!StringLib.isInteger(input) && !bypass) {
 			println("Tell me how many messages to delete..");

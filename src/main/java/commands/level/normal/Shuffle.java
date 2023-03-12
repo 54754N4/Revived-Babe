@@ -17,7 +17,7 @@ public class Shuffle extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (!fromMusicBot()) {
 			println("This command only works on music bots");
 		}

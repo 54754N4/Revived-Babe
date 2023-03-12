@@ -30,7 +30,7 @@ public class Eval extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasArgs("-l", "--list"))
 			printItems(factories());
 		else if (hasArgs("-py", "--python"))

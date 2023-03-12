@@ -33,7 +33,7 @@ public class Help extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		Map<List<String>, Class<? extends Command>> dict = isOwner() ? Reflector.admin : Reflector.normal;
 		Type type = isOwner() ? Type.ADMIN : Type.NORMAL;
 		if (hasArgs("-g", "--general")) print(helpGeneral());
@@ -69,25 +69,26 @@ public class Help extends DiscordCommand {
 		return helpify("**__>> GENERAL HELP__**",
 			"Babe's _prefixes_ can be listed just by mentioning her.",
 			"\tThere's 3 ways to execute commands so 3 types of _prefixes_. To put it simply there's the **__SLOW__**, **__FAST__**, and **__MENTION__** prefixes, here's an example of each respectively :",
-			"\t" + inline("hey babe help -h"),
-			"\t" + inline("..help -h"),
-			"\t" + inline("@Babe help -h"),
-			"\n\tIn the previous examples, `-h` is what we call a global arg/parameter since every command has it, so to get any other command's docs all you need to do is `<cmd> -h`.\nOr you could just call the help command and pass the command name as argument like this `help <cmd>`."+markdown("# Note\n\tEvery command executes in a seperate thread.")
+			"\t" + Print.inline("hey babe help -h"),
+			"\t" + Print.inline("..help -h"),
+			"\t" + Print.inline("@Babe help -h"),
+			"\n\tIn the previous examples, `-h` is what we call a global arg/parameter since every command has it, so to get any other command's docs all you need to do is `<cmd> -h`.\nOr you could just call the help command and pass the command name as argument like this `help <cmd>`."
+			+ Print.markdown("# Note\n\tEvery command executes in a seperate thread.")
 		);
 	}
 	
 	public static String helpGlobal() {
 		return helpify("**__>> Global Params__**",
-			inline("-h or --help")+"\tPrints the command's help/manual.",
-			inline("--timed")+"\t\t\tPrints how long the command took to execute.",
-			inline("-ed or --edit")+"\tPrints its output by editing its previously sent messages.",
-			inline("-rep or --reply")+"\tSends output of command as a private message reply.",
-			inline("-d or --delete")+"\tDeletes your msg that invoked the command.",
-			inline("-s or --silent")+"\tPrevents the command from outputting anything.",
-			inline("--after=<seconds>")+"\tExecutes the command after delay in seconds.",
-			inline("--every=<seconds>")+"\tRepeats every period. If you want it to execute instantly, add a '\\*' before (e.g. --every=\\*60)",
+			Print.inline("-h or --help")+"\tPrints the command's help/manual.",
+			Print.inline("--timed")+"\t\t\tPrints how long the command took to execute.",
+			Print.inline("-ed or --edit")+"\tPrints its output by editing its previously sent messages.",
+			Print.inline("-rep or --reply")+"\tSends output of command as a private message reply.",
+			Print.inline("-d or --delete")+"\tDeletes your msg that invoked the command.",
+			Print.inline("-s or --silent")+"\tPrevents the command from outputting anything.",
+			Print.inline("--after=<seconds>")+"\tExecutes the command after delay in seconds.",
+			Print.inline("--every=<seconds>")+"\tRepeats every period. If you want it to execute instantly, add a '\\*' before (e.g. --every=\\*60)",
 			"\n**__>> Global FSM Params__**",
-			inline("--diagram=<scaling>")+"\tFSM commands can draw their state machine diagram, if scaling isn't given defaults to 2.\n"
+			Print.inline("--diagram=<scaling>")+"\tFSM commands can draw their state machine diagram, if scaling isn't given defaults to 2.\n"
 		);
 	}
 	

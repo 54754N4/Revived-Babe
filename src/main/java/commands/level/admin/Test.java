@@ -17,7 +17,7 @@ public class Test extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasArgs("--react"))
 			getChannel().sendMessage("Testing")
 				.queue(new ReactionsHandler(getBot())

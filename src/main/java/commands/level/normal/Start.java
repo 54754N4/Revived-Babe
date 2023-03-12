@@ -21,7 +21,7 @@ public class Start extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (input.startsWith("slave")) 
 			start(Bot.Slaves::newSlave);
 		else if (input.startsWith("echo"))

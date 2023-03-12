@@ -26,7 +26,7 @@ public class Get extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (input.equals("")) {
 			println("You didn't give me any input");
 			return;

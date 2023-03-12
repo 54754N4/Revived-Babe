@@ -25,7 +25,7 @@ public class Remove extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) {
+	public void execute(String input) {
 		if (!fromMusicBot()) {
 			println("Command only works on music bots.");
 			return;

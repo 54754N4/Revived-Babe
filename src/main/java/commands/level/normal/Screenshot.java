@@ -25,7 +25,7 @@ public class Screenshot extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String url) {
+	public void execute(String url) {
 		try {
 			Browser browser = Browser.getInstance().visit(url);
 			File screenshot = hasArgs("--select") ? 

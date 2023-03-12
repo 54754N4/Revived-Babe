@@ -35,7 +35,7 @@ public class Praise extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		println(praise());
 	}
 		

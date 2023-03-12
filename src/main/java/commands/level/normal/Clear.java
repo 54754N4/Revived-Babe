@@ -21,7 +21,7 @@ public class Clear extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasArgs("-b", "--backup")) {
 			clearBackup();
 			println("Cleared backed up queue");

@@ -71,12 +71,14 @@ public class TrackLoadHandler implements AudioLoadResultHandler {
 
 	@Override
 	public void noMatches() {
-		if (callback != null) callback.println("Track search returned nothing.");
+		if (callback != null)
+			callback.println("Track search returned nothing.");
 	}
 
 	@Override
 	public void loadFailed(FriendlyException exception) {
-		if (callback != null) callback.println("Load track(s) failed because: " + exception.getMessage());
+		if (callback != null)
+			callback.println("Load track(s) failed because: " + exception.getMessage());
 	}
 	
 	private void loadSongs(List<AudioTrack> tracks) {

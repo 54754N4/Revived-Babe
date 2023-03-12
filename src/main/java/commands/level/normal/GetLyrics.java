@@ -31,7 +31,7 @@ public class GetLyrics extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (input.length() == 0) {
 			println("Tell me what you want me to get lyrics for.");
 			return;

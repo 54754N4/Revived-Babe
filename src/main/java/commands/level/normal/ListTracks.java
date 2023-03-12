@@ -16,13 +16,13 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
 import audio.TrackScheduler;
+import audio.track.handlers.PagedTracksHandler;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.StringLib;
 import lib.messages.PagedHandler;
-import lib.messages.PagedTracksHandler;
 import lib.messages.ReactionsHandler;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -48,7 +48,7 @@ public class ListTracks extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		Guild guild = getGuild();
 		MusicBot bot = getMusicBot();
 		String playlist = bot.getCurrentPlaylist(guild);

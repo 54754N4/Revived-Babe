@@ -22,7 +22,7 @@ public class Kill extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		boolean now = hasArgs("-n", "--now");
 		if (StringLib.isInteger(input)) {
 			int num = Integer.parseInt(input.trim())-1;

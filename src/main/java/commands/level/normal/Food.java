@@ -19,7 +19,7 @@ public class Food extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		FoodImageResult result = restRequest(FoodImageResult.class, API_CALL);
 		println(result.image);
 	}

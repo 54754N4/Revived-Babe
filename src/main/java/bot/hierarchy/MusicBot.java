@@ -275,6 +275,8 @@ public abstract class MusicBot extends UserBot {
 	/* Joining & leaving */
 	
 	public MusicBot connect(AudioChannel channel) {
+		if (channel == null)
+			return this;
 		setupAudio(channel.getGuild())
 			.getManager(channel.getGuild())
 			.openAudioConnection(channel);

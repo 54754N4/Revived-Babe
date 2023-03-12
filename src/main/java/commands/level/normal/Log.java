@@ -30,7 +30,7 @@ public class Log extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasArgs("-b", "--build"))
 			Files.readAllLines(Paths.get(BUILD_LOG))
 				.forEach(this::println);

@@ -5,27 +5,27 @@ import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-import bot.hierarchy.UserBot;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-public abstract class ListenerCommand extends RoleCommand {
-	private List<ReplyHandler> handlers;
-	
-	public ListenerCommand(UserBot bot, Message message, String[] names) {
-		super(bot, message, names);
-		handlers = new ArrayList<>();
-	}
+public interface ListenerCommand extends ICommand {
+
+	/* Do not override and simply return a new List,
+	 * otherwise every time you try to add a handler
+	 * it will forget all previously added handlers.
+	 * Create the List somewhere else, and simply return
+	 * the pointer/reference in this method.
+	 */
+	List<ReplyHandler> getReplyHandlers();
 	
 	/* Replies events (un-)hooking */
 
-	public ListenerCommand attachListener() {
+	default ListenerCommand attachListener() {
 		getLogger().info("{} started listening to replies", getClass());
 		getBot().getJDA().addEventListener(this);
 		return this;
 	}
 	
-	public ListenerCommand removeListener() {
+	default ListenerCommand removeListener() {
 		getLogger().info("{} stopped listening to replies", getClass());
 		getBot().getJDA().removeEventListener(this);
 		return this;
@@ -33,54 +33,56 @@ public abstract class ListenerCommand extends RoleCommand {
 	
 	/* Handlers handling + dispatching */
 	
-	protected ListenerCommand addReplyHandler(ReplyHandler filter) {
-		handlers.add(filter);
+	default ListenerCommand addReplyHandler(ReplyHandler filter) {
+		getReplyHandlers().add(filter);
 		return this;
 	}
 	
-	@Override
-	public void onMessageReceived(MessageReceivedEvent event) {
+	/* Overrides ListenerAdapter::onMessageReceived by default 
+	 * if inheriting class is of type ListenerAdapter.
+	 */
+	default void onMessageReceived(MessageReceivedEvent event) {
 		final boolean isBot = event.getAuthor().isBot();
 		final boolean isAuthor = event.getAuthor().getIdLong() == getMessage().getAuthor().getIdLong();
 		final String message = event.getMessage().getContentDisplay();
-		handlers.forEach(handler -> dispatch(handler, isBot, isAuthor, message));
+		getReplyHandlers().forEach(handler -> dispatch(handler, isBot, isAuthor, message));
 	}
 	
 	// Conditionally dispatches based on predicate config
-	public void dispatch(ReplyHandler handler, boolean isBot, boolean isAuthor, String text) {
-		if (handler.handleBots != isBot	||			// bot dispatching (handleBots ^ isBot = XOR)
-			(handler.authorOnly && !isAuthor) ||	// don't dispatch on state 10 in truth table	
-			!handler.predicate.test(text, this))
-			return;
-		handler.actions.forEach(action -> action.accept(this));
-	}
+	void dispatch(ReplyHandler handler, boolean isBot, boolean isAuthor, String text);
+	
+	/* ReplyHandler pojo */
 	
 	public static final class ReplyHandler {
 		private final boolean handleBots, authorOnly;
-		private final BiPredicate<String, ListenerCommand> predicate;
-		private final List<Consumer<? super ListenerCommand>> actions;
+		private final BiPredicate<String, Command> predicate;
+		private final List<Consumer<? super Command>> actions;
 		
 		private ReplyHandler(
 				boolean handleBots, 
 				boolean ownerOnly, 
-				BiPredicate<String, ListenerCommand> predicate, 
-				List<Consumer<? super ListenerCommand>> actions) {
+				BiPredicate<String, Command> predicate, 
+				List<Consumer<? super Command>> actions) {
 			this.handleBots = handleBots;
 			this.authorOnly = ownerOnly;
 			this.predicate = predicate;
 			this.actions = actions;
 		}
 
-		public boolean handleBots() {
+		public boolean isHandleBots() {
 			return handleBots;
 		}
-		
-		public boolean ownerOnly() {
+
+		public boolean isAuthorOnly() {
 			return authorOnly;
 		}
 
-		public BiPredicate<String, ListenerCommand> getPredicate() {
+		public BiPredicate<String, Command> getPredicate() {
 			return predicate;
+		}
+
+		public List<Consumer<? super Command>> getActions() {
+			return actions;
 		}
 
 		@Override
@@ -113,8 +115,8 @@ public abstract class ListenerCommand extends RoleCommand {
 		
 		public static final class Builder {
 			private boolean handleBots, authorOnly;
-			private BiPredicate<String, ListenerCommand> predicate;
-			private List<Consumer<? super ListenerCommand>> actions;
+			private BiPredicate<String, Command> predicate;
+			private List<Consumer<? super Command>> actions;
 			
 			public Builder() {
 				predicate = (text, cmd) -> false;	// default predicate never validates
@@ -141,12 +143,12 @@ public abstract class ListenerCommand extends RoleCommand {
 				return this;
 			}
 			
-			public Builder ifTrue(BiPredicate<String, ListenerCommand> predicate) {
+			public Builder ifTrue(BiPredicate<String, Command> predicate) {
 				this.predicate = predicate;
 				return this;
 			}
 			
-			public Builder ifFalse(BiPredicate<String, ListenerCommand> predicate) {
+			public Builder ifFalse(BiPredicate<String, Command> predicate) {
 				this.predicate = predicate.negate();
 				return this;
 			}
@@ -178,7 +180,7 @@ public abstract class ListenerCommand extends RoleCommand {
 				return this;
 			}
 			
-			public Builder setActions(List<Consumer<? super ListenerCommand>> actions) {
+			public Builder setActions(List<Consumer<? super Command>> actions) {
 				this.actions = actions;
 				return this;
 			}

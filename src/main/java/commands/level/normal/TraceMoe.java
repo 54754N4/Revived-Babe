@@ -34,7 +34,7 @@ public class TraceMoe extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		Message message = getMessage();
 		boolean hasAttachment = message.getAttachments().size() != 0,
 			hasInput = !input.equals(""); 

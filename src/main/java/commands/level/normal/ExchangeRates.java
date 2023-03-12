@@ -34,7 +34,7 @@ public class ExchangeRates extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (currencies.size() == 0 || hasArgs("-f", "--fetch"))
 			setup();
 		Map<String, Double> map = currencies;

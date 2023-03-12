@@ -18,6 +18,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
+import commands.hierarchy.RestCommand;
 import commands.name.Command;
 import lib.encode.Encoder;
 import lib.scrape.Browser;
@@ -50,7 +51,7 @@ public class Speak extends DiscordCommand implements AudioLoadResultHandler {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (languages == null || voices == null) {
 			Message loading = getChannel().sendMessage("Loading voices and languages..").complete();
 			languages = loadLanguages();
@@ -91,7 +92,7 @@ public class Speak extends DiscordCommand implements AudioLoadResultHandler {
 			println("HTTP error code %d", response.code());
 			response.body().string().lines().forEach(this::println);
 		} else {
-			File file = writeFile(response, "speak/out.mp3");
+			File file = RestCommand.writeFile(response, "speak/out.mp3");
 			bot.play(guild, file.getAbsolutePath(), this);
 		}
 	}

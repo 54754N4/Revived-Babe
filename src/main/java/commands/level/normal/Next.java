@@ -16,7 +16,7 @@ public class Next extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		getMusicBot().next(getGuild());
 		println("Skipped to next track");
 	}

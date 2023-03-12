@@ -21,7 +21,7 @@ public class Repeat extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		MusicBot bot = getMusicBot();
 		Guild guild = getGuild();
 		if (hasArgs("-q", "--queue")) {

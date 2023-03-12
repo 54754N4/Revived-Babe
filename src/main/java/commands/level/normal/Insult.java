@@ -22,7 +22,7 @@ public class Insult extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		InsultsResult result = restRequest(
 				InsultsResult.class, 
 				API_FORMAT, 

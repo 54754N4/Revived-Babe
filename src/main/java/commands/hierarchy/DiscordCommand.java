@@ -22,7 +22,7 @@ import lib.PrintBooster;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
 
-public abstract class DiscordCommand extends RestCommand {
+public abstract class DiscordCommand extends Command {
 	private static final Map<UserBot, Set<Long>> GUILDS_VISITED = new ConcurrentHashMap<>();	// keep track per bot
 	private static final String[] SCHEDULING_STOP_VERBS = { "abort", "stop", "kill", "shutdown" };
 	protected static final Random rand = new Random();
@@ -49,8 +49,10 @@ public abstract class DiscordCommand extends RestCommand {
 	}
 	
 	public DiscordCommand(UserBot bot, Message message, String[] names) {
-		super(bot, message, names);
+		super(bot, message, names);	
 	}
+	
+	/* Convenience methods */
 	
 	public boolean fromGuild() {
 		Message message = getMessage();
@@ -70,8 +72,6 @@ public abstract class DiscordCommand extends RestCommand {
 			MusicState.clear(getMusicBot(), getGuild().getIdLong());
 		return this;
 	}
-	
-	/* Convenience methods */
 	
 	public boolean isOwner() {
 		return getMessage().getAuthor().getIdLong() == 188033164864782336l;
@@ -100,7 +100,7 @@ public abstract class DiscordCommand extends RestCommand {
 				StringLib.matchesSimplified(text, SCHEDULING_STOP_VERBS) &&
 				StringLib.matchesSimplified(text, names)
 			)
-			.then(Command::kill)
+			.then(cmd -> cmd.kill())
 			.println("Aborting command %s", getClass().getName())
 			.build());
 		return this;
@@ -167,7 +167,7 @@ public abstract class DiscordCommand extends RestCommand {
 			removeUserMessage();
 		executionTime = System.currentTimeMillis();	// start time
 		if (!callerAllowed()) {
-			println("Only the following roles are allowed : %s", Arrays.toString(getAllowedRoles()));
+			println("Only the following roles are allowed : %s", Arrays.toString(getAllowedRoles().toArray(String[]::new)));
 			finalise();
 			return null;
 		} else if (hasArgs(Global.DISPLAY_HELP_MESSAGE.params)) {

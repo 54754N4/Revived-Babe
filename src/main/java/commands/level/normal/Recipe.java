@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
+import commands.hierarchy.RestCommand;
 import commands.name.Command;
 import json.FoodRecipeResults;
 import json.FoodRecipeResults.Result;
@@ -28,7 +29,7 @@ public class Recipe extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		String ingredients = hasArgs("--ingredients") ? getParams().getNamed().get("--ingredients") : "",
 				search = hasArgs("--recipe") ? getParams().getNamed().get("--recipe") : "",
 				page = hasArgs("--page") ? getParams().getNamed().get("--page") : "";
@@ -52,6 +53,6 @@ public class Recipe extends DiscordCommand {
 		if (!search.equals(""))
 			search = "q=" + search + "&";
 		page = page.equals("") ? "p=1" : "p=" + page;
-		return restRequest(FoodRecipeResults.class, API_FORMAT, ingredients, search, page);
+		return RestCommand.rest(FoodRecipeResults.class, API_FORMAT, ingredients, search, page);
 	} 
 }

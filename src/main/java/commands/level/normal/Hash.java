@@ -35,7 +35,7 @@ public class Hash extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		List<String> algorithms = new ArrayList<>(Security.getAlgorithms("MessageDigest"));
 		if (hasArgs("-l", "--list")) {
 			printItemsIndexed(algorithms);

@@ -216,8 +216,8 @@ public class TestApis {
 		
 		public Response execute() {
 			ThrowableSupplier<Response> requester = setup == null ? 
-					() -> RestCommand.restRequest(host, args) :
-					() -> RestCommand.formRequest(setup, host, args);
+					() -> RestCommand.rest(host, args) :
+					() -> RestCommand.form(setup, host, args);
 			assertDoesNotThrow(() -> {
 				response = requester.get();
 				int code = response.code();
@@ -268,8 +268,8 @@ public class TestApis {
 		
 		public T execute() {
 			ThrowableSupplier<T> requester = setup == null ? 
-					() -> RestCommand.restRequest(cls, host, args) :
-					() -> RestCommand.formRequest(cls, setup, host, args);
+					() -> RestCommand.rest(cls, host, args) :
+					() -> RestCommand.form(cls, setup, host, args);
 			assertDoesNotThrow(() -> {
 				result = requester.get();
 				assertNotNull(result);

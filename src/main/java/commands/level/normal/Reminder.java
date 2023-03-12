@@ -33,7 +33,7 @@ public class Reminder extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasArgs("-l", "--list")) {
 			Collection<Reminders.Reminder> reminders = Reminders.getReminders();
 			if (reminders.size() == 0)

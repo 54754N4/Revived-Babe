@@ -19,7 +19,7 @@ public class Stop extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		MusicBot musicBot = getMusicBot();
 		Guild guild = getGuild();
 		boolean wasPaused = musicBot.isPaused(guild);

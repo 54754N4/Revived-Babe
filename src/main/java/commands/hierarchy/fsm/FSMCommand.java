@@ -51,7 +51,7 @@ public abstract class FSMCommand extends DiscordCommand {
 	}
 	
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasArgs(Global.DIAGRAM.params)) {
 			printDiagram();
 			return;

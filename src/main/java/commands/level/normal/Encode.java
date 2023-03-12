@@ -23,7 +23,7 @@ public class Encode extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		Encoder.Type[] types = Encoder.Type.values();
 		if (hasArgs("-l", "--list")) {
 			printItemsIndexed(types);

@@ -11,24 +11,19 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import bot.hierarchy.UserBot;
 import lambda.StatusUpdater;
 import lib.StringLib;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.RestAction;
 
-public abstract class PrintCommand extends Command {
+public interface PrintCommand extends ICommand {
 	public static final int CODEBLOCK_LINE_MAX = 70, DEFAULT_PREV_MSGS = 2;
-	
-	public PrintCommand(UserBot bot, Message message, String[] names) {
-		super(bot, message, names);
-	}
 	
 	/* help building + argument parsing*/
 	
-	protected String helpBuilder(String args, String... lines) {
+	default String helpBuilder(String args, String... lines) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("#"+Arrays.toString(names)+"\n").append("Usage: <name> "+args+"\n");
+		sb.append("#"+Arrays.toString(getNames())+"\n").append("Usage: <name> "+args+"\n");
 		String output;
 		for (String line: lines) {
 			output = line;
@@ -41,84 +36,57 @@ public abstract class PrintCommand extends Command {
 		return markdown(sb.toString());
 	}
 	
-	/* Convenience methods */
-	
-	public static String markdown(String input) {
-		return "```markdown%n"+input+"%n```";
-	}
-	
-	public static String inline(String input) {
-		return "`"+input+"`";
-	}
-	
-	public static String codeBlock(String input) {
-		return codeBlock("", input);
-	}
-	
-	public static String codeBlock(String language, String input) {
-		return new StringBuilder()
-			.append("```")
-			.append(language+"\n")
-			.append(input+"\n")
-			.append("```")
-			.toString();
-	}
-	
-	private String format(String format, Object... args) {
-		return String.format(format, args);
-	}
-	
-	public void println() {
+	default void println() {
 		print("%n");
 	}
 	
-	public void print(String format, Object... args) { 
+	default void print(String format, Object... args) { 
 		getStdout().append(format(format, args));
 	}
 	
-	public void println(String format, Object... args) {
+	default void println(String format, Object... args) {
 		print(format+"%n", args);
 	}
 	
-	public void printlnIndependently() {
+	default void printlnIndependently() {
 		printIndependently("%n");
 	}
 	
-	public void printIndependently(String format, Object... args) {
+	default void printIndependently(String format, Object... args) {
 		if (format.equals("")) return;
 		getChannel().sendMessage(format(format, args))
 			.queue();
 	}
 	
-	public void printlnIndependently(String format, Object... args) {
+	default void printlnIndependently(String format, Object... args) {
 		printIndependently(format+"%n", args);
 	}
 	
-	public void printCentered(String text) {
+	default void printCentered(String text) {
 		print(StringLib.center(text, CODEBLOCK_LINE_MAX));
 	}
 	
-	public void printlnCentered(String text) {
+	default void printlnCentered(String text) {
 		println(StringLib.center(text, CODEBLOCK_LINE_MAX));
 	}
 	
-	protected <T> void printItems(Stream<T> stream) {
+	default <T> void printItems(Stream<T> stream) {
 		printItems(stream.toArray());
 	}
 	
-	protected <T> void printItemsIndexed(Stream<T> stream) {
+	default <T> void printItemsIndexed(Stream<T> stream) {
 		printItemsIndexed(stream.toArray());
 	}
 	
-	protected <T> void printItems(Collection<T> list) {
+	default <T> void printItems(Collection<T> list) {
 		printItems(list.toArray());
 	}
 	
-	protected <T> void printItemsIndexed(Collection<T> list) {
+	default <T> void printItemsIndexed(Collection<T> list) {
 		printItemsIndexed(list.toArray());
 	}
 	
-	protected <T> void printItems(T[] list, Predicate<T> condition, Function<T, String> action) {
+	default <T> void printItems(T[] list, Predicate<T> condition, Function<T, String> action) {
 		String printable;
 		for (T item : list) {
 			printable = item.toString();
@@ -128,7 +96,7 @@ public abstract class PrintCommand extends Command {
 		}
 	}
 
-	protected <T> void printItemsIndexed(T[] list, BiPredicate<Integer, T> condition, BiFunction<Integer, T, String> action) {
+	default <T> void printItemsIndexed(T[] list, BiPredicate<Integer, T> condition, BiFunction<Integer, T, String> action) {
 		String printable;
 		int i = 0;
 		for (T item : list) {
@@ -139,44 +107,90 @@ public abstract class PrintCommand extends Command {
 		}
 	}
 	
-	protected <T> void printItems(T[] list) {
+	default <T> void printItems(T[] list) {
 		for (T item : list) print(markdown("%s"), item.toString());
 	}
 	
-	protected <T> void printItemsIndexed(T[] list) {
+	default <T> void printItemsIndexed(T[] list) {
 		int i = 0;
 		for (T item : list) print(markdown("%d.\t%s"), i++, item.toString());
 	}
 	
-	protected <K, V> void printMapFiltered(Map<K, V> map, String filter) {
+	default <K, V> void printMapFiltered(Map<K, V> map, String filter) {
 		for (Entry<K, V> entry : map.entrySet())
 			if (StringLib.matchSimplified(entry.getKey().toString(), filter)
 				|| StringLib.matchSimplified(entry.getValue().toString(), filter))
 				print(markdown("%s = %s"), entry.getKey(), entry.getValue());
 	}
 	
-	protected <K, V> void printMap(Map<K, V> map) {
+	default <K, V> void printMap(Map<K, V> map) {
 		for (Entry<K, V> entry : map.entrySet()) 
 			print(markdown("%s = %s"), entry.getKey(), entry.getValue());
 	}
 	
-	protected void printBlock(Collection<String> lines) {
+	default void printBlock(Collection<String> lines) {
 		println("```");
 		lines.forEach(this::println);
 		println("```");
 	}
 	
-	protected RestAction<Void> destructibleMessage(String message) {
+	default RestAction<Void> destructibleMessage(String message) {
 		return destructibleMessage(message, 5);
 	}
 	
-	protected RestAction<Void> destructibleMessage(String message, long seconds) {
+	default RestAction<Void> destructibleMessage(String message, long seconds) {
 		return getChannel().sendMessage(message)
 				.delay(Duration.ofSeconds(seconds))
 				.flatMap(Message::delete);
 	}
 
-	protected StatusUpdater getPrinter() {
+	default StatusUpdater getPrinter() {
 		return str -> println(str);
+	}
+	
+	/* Convenience methods */
+	
+	private String format(String format, Object... args) {
+		return String.format(format, args);
+	}
+	
+	default String markdown(String input) {
+		return Print.markdown(input);
+	}
+	
+	default String inline(String input) {
+		return Print.inline(input);
+	}
+	
+	default String codeBlock(String input) {
+		return Print.codeBlock(input);
+	}
+	
+	default String codeBlock(String language, String input) {
+		return Print.codeBlock(language, input);
+	}
+	
+	/* Static alternatives in case commands use them in static methods */
+	public static interface Print {
+		public static String markdown(String input) {
+			return "```markdown%n"+input+"%n```";
+		}
+		
+		public static String inline(String input) {
+			return "`"+input+"`";
+		}
+		
+		public static String codeBlock(String input) {
+			return codeBlock("", input);
+		}
+		
+		public static String codeBlock(String language, String input) {
+			return new StringBuilder()
+				.append("```")
+				.append(language+"\n")
+				.append(input+"\n")
+				.append("```")
+				.toString();
+		}
 	}
 }

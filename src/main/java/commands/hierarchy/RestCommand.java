@@ -13,66 +13,35 @@ import java.util.function.Function;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
-import bot.hierarchy.UserBot;
-import net.dv8tion.jda.api.entities.Message;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public abstract class RestCommand extends ListenerCommand {
-	private static Gson gson;
-	private static OkHttpClient client;
-	
-	public RestCommand(UserBot bot, Message message, String[] names) {
-		super(bot, message, names);
-	}
-
-	/* Lazy loaded singletons */
-	
-	private static final synchronized Gson gson() {
-		if (gson == null)
-			gson = new Gson();
-		return gson;
-	}
-	
-	private static final synchronized OkHttpClient client() {
-		if (client == null)
-			client = new OkHttpClient();
-		return client;
-	}
+public interface RestCommand extends ICommand {
+	public static final Gson GSON = new Gson();
+	public static final OkHttpClient HTTP_CLIENT = new OkHttpClient();
 	
 	/* Rest + multipart/form requests convenience methods */
 	
-	public static Response restRequest(String apiFormat, Object...args) throws IOException {
-		Request request = new Request.Builder()
-				.url(String.format(apiFormat, args))
-				.build();
-		return execute(request);
+	default Response restRequest(String apiFormat, Object...args) throws IOException {
+		return rest(apiFormat, args);
 	}
 	
-	public static <T> T restRequest(Class<T> cls, String apiFormat, Object... args) throws IOException {
-		return convert(cls, restRequest(apiFormat, args));
+	default <T> T restRequest(Class<T> cls, String apiFormat, Object... args) throws IOException {
+		return rest(cls, apiFormat, args);
 	}
 	
-	public static Response formRequest(Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
-		MultipartBody.Builder requestBody = new MultipartBody.Builder()
-				.setType(MultipartBody.FORM);
-		requestBody = setup.apply(requestBody);
-		RequestBody body = requestBody.build();
-		Request request = new Request.Builder()
-				.url(String.format(apiFormat, args))
-				.post(body)
-				.build();
-		return execute(request);
+	default Response formRequest(Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
+		return form(setup, apiFormat, args);
 	}
 	
-	public static <T> T formRequest(Class<T> cls, Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
-		return convert(cls, formRequest(setup, apiFormat, args));
+	default <T> T formRequest(Class<T> cls, Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
+		return form(cls, setup, apiFormat, args);
 	}
 	
-	/* Convenience methods */
+	/* Equivalent static convenience methods */
 	
 	public static File writeFile(Response response, String filepath) throws FileNotFoundException, IOException {
 		try (FileOutputStream fos = new FileOutputStream(filepath)) {
@@ -95,11 +64,38 @@ public abstract class RestCommand extends ListenerCommand {
 		}
 	}
 	
+	public static Response rest(String apiFormat, Object...args) throws IOException {
+		Request request = new Request.Builder()
+				.url(String.format(apiFormat, args))
+				.build();
+		return execute(request);
+	}
+	
+	public static <T> T rest(Class<T> cls, String apiFormat, Object... args) throws IOException {
+		return convert(cls, rest(apiFormat, args));
+	}
+	
+	public static Response form(Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
+		MultipartBody.Builder requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM);
+		requestBody = setup.apply(requestBody);
+		RequestBody body = requestBody.build();
+		Request request = new Request.Builder()
+				.url(String.format(apiFormat, args))
+				.post(body)
+				.build();
+		return execute(request);
+	}
+	
+	public static <T> T form(Class<T> cls, Function<MultipartBody.Builder, MultipartBody.Builder> setup, String apiFormat, Object...args) throws IOException {
+		return convert(cls, form(setup, apiFormat, args));
+	}
+	
 	public static Response execute(Request request) throws IOException {
-		return client().newCall(request).execute();
+		return HTTP_CLIENT.newCall(request).execute();
 	}
 	
 	public static <T> T convert(Class<T> cls, Response response) throws JsonSyntaxException, IOException {
-		return gson().fromJson(response.body().string(), cls);
+		return GSON.fromJson(response.body().string(), cls);
 	}
 }

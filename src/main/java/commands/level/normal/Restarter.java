@@ -31,7 +31,7 @@ public class Restarter extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasArgs("-l", "--log")) {
 			println(getUpdateLog());
 			return;

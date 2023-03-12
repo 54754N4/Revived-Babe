@@ -20,7 +20,7 @@ public class Volume extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (hasUnnamedDigit())
 			handleRelativeNegative();
 		else if (input.equals(""))

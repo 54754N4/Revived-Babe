@@ -65,7 +65,7 @@ public class Server extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		Guild guild = getGuild();
 		manager = ServerManager.manage(guild);
 		if (hasArgs("-na", "--name")) 

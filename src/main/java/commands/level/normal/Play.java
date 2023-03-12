@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import audio.TrackScheduler;
+import audio.track.handlers.PagedTracksHandler;
 import audio.track.handlers.TrackLoadHandler;
 import bot.hierarchy.MusicBot;
 import bot.hierarchy.UserBot;
@@ -12,9 +13,9 @@ import commands.hierarchy.DiscordCommand;
 import commands.name.Command;
 import lib.SpotifyLinkConverter;
 import lib.StringLib;
-import lib.messages.PagedTracksHandler;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 
 public class Play extends DiscordCommand {
 	
@@ -40,7 +41,7 @@ public class Play extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (input.equals(""))
 			return;
 		for (String term : input.split(","))
@@ -55,8 +56,14 @@ public class Play extends DiscordCommand {
 			println(helpMessage());
 			return;
 		}
-		if (!bot.isConnected(guild))
-			bot.connect(getMessage().getMember().getVoiceState().getChannel());
+		if (!bot.isConnected(guild)) {
+			AudioChannel audio = getMessage().getMember().getVoiceState().getChannel();
+			if (audio == null) {
+				println("Can't join voice channel, you're not in one");
+				return;
+			} else
+				bot.connect(audio);
+		}
 		if (StringLib.isInteger(input)) {
 			int index = Integer.parseInt(input),
 				max = scheduler.getQueue().size();

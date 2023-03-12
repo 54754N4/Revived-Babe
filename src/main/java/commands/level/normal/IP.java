@@ -32,7 +32,7 @@ public class IP extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (isOwner() && hasArgs("-me"))
 			println("Your IP is: ", restRequest(BabeIPResult.class, BABE_IP_API_CALL).ip);
 		if (input.equals("")) 

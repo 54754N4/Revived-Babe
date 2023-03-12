@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import bot.hierarchy.UserBot;
 import commands.hierarchy.DiscordCommand;
+import commands.hierarchy.RestCommand;
 import commands.name.Command;
 import json.TimeResult;
 import lib.StringLib;
@@ -35,7 +36,7 @@ public class Time extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (TIMEZONES == null) 
 			TIMEZONES = getTimezones();
 		if (hasArgs("-l", "--list")) {
@@ -72,7 +73,7 @@ public class Time extends DiscordCommand {
 	
 	public static TimeResult getTime(String timezone) {
 		try {
-			return restRequest(TimeResult.class, API_FORMAT, "timezone/"+timezone);
+			return RestCommand.rest(TimeResult.class, API_FORMAT, "timezone/"+timezone);
 		} catch (IOException e) {
 			logger.error("Couldn't get time for "+timezone, e);
 			return null;
@@ -88,7 +89,7 @@ public class Time extends DiscordCommand {
 	}
 
 	public static List<String> getTimezones() throws IOException {
-		Response response = restRequest(API_FORMAT, "timezone.txt");
+		Response response = RestCommand.rest(API_FORMAT, "timezone.txt");
 		final List<String> timezones = new ArrayList<>();
 		response.body().string().lines().forEach(timezones::add);
 		return timezones;

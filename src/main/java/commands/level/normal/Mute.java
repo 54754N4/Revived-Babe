@@ -23,7 +23,7 @@ public class Mute extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		List<String> toggled = new ArrayList<>();
 		MusicBot bot = getMusicBot();
 		if (getMentions().getMembers().size() != 0) {

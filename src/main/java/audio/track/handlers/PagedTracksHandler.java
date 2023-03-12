@@ -1,4 +1,4 @@
-package lib.messages;
+package audio.track.handlers;
 
 import java.util.List;
 
@@ -9,9 +9,9 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import audio.CircularDeque;
 import audio.TrackScheduler;
-import audio.track.handlers.TrackLoadHandler;
 import bot.hierarchy.UserBot;
 import lib.StringLib;
+import lib.messages.PagedHandler;
 
 public class PagedTracksHandler extends PagedHandler<AudioTrack> implements AudioLoadResultHandler {
 	public static final String NOTES_EMOJI = new String(Character.toChars(0x1F3B6));

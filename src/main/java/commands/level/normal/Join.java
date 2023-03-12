@@ -18,7 +18,7 @@ public class Join extends DiscordCommand {
 	}
 
 	@Override
-	protected void execute(String input) throws Exception {
+	public void execute(String input) throws Exception {
 		if (getMessage().getMember() == null || getGuild() == null) { 
 			println("Sadly music commands only work in guilds/servers, not from private/group messages.");
 			return;

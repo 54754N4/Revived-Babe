@@ -1,8 +1,9 @@
 package commands.hierarchy;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,7 +23,9 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-public abstract class Command extends ListenerAdapter implements Callable<Void> {
+public abstract class Command extends ListenerAdapter 
+		implements PrintCommand, RoleCommand, ListenerCommand, RestCommand {
+	
 	public final String[] names;
 	private final Logger logger;
 	private AtomicBoolean keepAlive, finished;
@@ -31,7 +34,9 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 	private Message message;				// message trigger
 	private MessageChannel channel;
 	private StringBuilder stdout;
-	// The following attributes are set when start() is called
+	private Set<String> allowedRoles;
+	private List<ReplyHandler> replyHandlers;
+	// The following attributes are set when Command::start is called
 	private String input;
 	private Params params;				// named + unnamed parameters
 	private Mentions mentioned;			// mentioned users/channels
@@ -51,30 +56,53 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		finished = new AtomicBoolean();
 		stdout = new StringBuilder();
 		logger = LoggerFactory.getLogger(getClass());
+		allowedRoles = new HashSet<>();
+		replyHandlers = new ArrayList<>();
 	}
 	
 	/* Accessors and Setters */
 	
+	@Override
+	public String[] getNames() {
+		return names;
+	}
+	
+	@Override
+	public Set<String> getAllowedRoles() {
+		return allowedRoles;
+	}
+	
+	@Override
+	public List<ReplyHandler> getReplyHandlers() {
+		return replyHandlers;
+	}
+	
+	@Override
 	public boolean isFinished() {
 		return finished.get();
 	}
 	
+	@Override
 	public boolean keepAlive() {
 		return keepAlive.get();
 	}
 	
-	protected Logger getLogger() {
+	@Override
+	public Logger getLogger() {
 		return logger;
 	}
 	
+	@Override
 	public UserBot getBot() {
 		return bot;
 	}
 	
+	@Override
 	public Guild getGuild() {
 		return guild;
 	}
 	
+	@Override
 	public Message getMessage() {
 		return message;
 	}
@@ -84,60 +112,83 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		return this;
 	}
 	
+	@Override
 	public MessageChannel getChannel() {
 		return channel;
 	}
 	
+	@Override
 	public StringBuilder getStdout() {
 		return stdout;
 	}
 	
+	@Override
 	public String getInput() {
 		return input;
 	}
 	
+	@Override
 	public Params getParams() {
 		return params;
 	}
 	
+	@Override
 	public Mentions getMentions() {
 		return mentioned;
 	}
 	
+	@Override
 	public Future<?> getThread() {
 		return thread;
 	}
 	
 	/* Convenience methods */
 	
-	protected Command kill() {
+	@Override
+	public Command kill() {
 		keepAlive.set(false);
 		finished.set(true);
 		return this;
 	}
 	
-	protected Command setKeepAlive() {
+	@Override
+	public Command setKeepAlive() {
 		keepAlive.set(true);
 		return this;
 	}
 	
-	protected Command setFinished() {
+	@Override
+	public Command setFinished() {
 		finished.set(true);
 		return this;
 	}
 	
+	@Override
 	public void actTyping() {
 		channel.sendTyping()
 			.queue(Consumers::ignore, Consumers::ignore);
 	}
 	
-	protected void clearStdout() {
+	@Override
+	public void clearStdout() {
 		stdout.delete(0, stdout.length());
+	}
+	
+	/* ListenerCommand method implementation for dispatching */
+	
+	@Override
+	public void dispatch(ReplyHandler handler, boolean isBot, boolean isAuthor, String text) {
+		if (handler.isHandleBots() != isBot	||			// bot dispatching (handleBots ^ isBot = XOR)
+			(handler.isAuthorOnly() && !isAuthor) ||	// don't dispatch on state 10 in truth table	
+			!handler.getPredicate().test(text, this))
+			return;
+		handler.getActions().forEach(action -> action.accept(this));
 	}
 	
 	/* Args/input handling */
 	
-	protected boolean hasArgs(String... args) {
+	@Override
+	public boolean hasArgs(String... args) {
 		for (String param : params.getAll()) 
 			if (StringLib.matches(param, args)) 
 				return true;
@@ -167,6 +218,7 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		return StringLib.unQuote(input.trim()).trim(); // remove explicit quotes and trailing spaces
 	}
 	
+	@Override
 	public Command start(String command) {
 		mentioned = new Mentions(bot, message, command);			// filter mentions from input first
 		input = treatInput(mentioned.getFilteredMessage());	// then cleanup input
@@ -177,15 +229,5 @@ public abstract class Command extends ListenerAdapter implements Callable<Void> 
 		thread = ThreadsManager.POOL.submit(this);
 		logger.info("Started command {} thread", getClass());
 		return this;
-	}
-	
-	public abstract String helpMessage();
-	protected abstract void execute(String input) throws Exception;
-	
-	public static class Comparator implements java.util.Comparator<Command> {
-		@Override
-		public int compare(Command cmd0, Command cmd1) {
-			return cmd0.names[0].compareTo(cmd1.names[0]);
-		}
 	}
 }
